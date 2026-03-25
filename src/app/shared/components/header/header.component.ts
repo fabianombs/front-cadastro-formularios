@@ -16,7 +16,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: 'Usuários', path: '/users', roles: ['ROLE_ADMIN'] },
   { label: 'Clientes', path: '/clients', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
   { label: 'Criar Formulário', path: '/form-builder', roles: ['ROLE_ADMIN'] },
-  { label: 'Formulários', path: '/forms', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO', 'ROLE_CLIENT'] },
+  { label: 'Formulários', path: '/forms', roles: ['ROLE_FUNCIONARIO', 'ROLE_CLIENT'] },
   { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN'] } // 🔥 Novo
 
 ];

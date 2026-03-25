@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormTemplateService, FormTemplate, CreateFormTemplateRequest } from '../../core/services/form-template.service';
+import { ClientService, Client } from '../../core/services/client.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { switchMap, of } from 'rxjs';
 
@@ -15,16 +16,16 @@ import { switchMap, of } from 'rxjs';
 export class CreateTemplateComponent implements OnInit {
 
   public templateForm: FormGroup;
-  public clients: { id: number; name: string }[] = [];
+  public clients: Client[] = []; // Lista de clientes da API
 
-  // 🔹 Propriedades necessárias para template HTML
   public template: FormTemplate | null = null;
   public slug: string | null = null;
   public loading = false;
 
   constructor(
     private fb: FormBuilder,
-    private service: FormTemplateService,
+    private templateService: FormTemplateService,
+    private clientService: ClientService, // ✅ Usando o ClientService correto
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -43,7 +44,6 @@ export class CreateTemplateComponent implements OnInit {
   ngOnInit(): void {
     this.loadClients();
 
-    // 🔹 Carrega template caso exista slug na rota
     this.route.params
       .pipe(
         switchMap(params => {
@@ -51,7 +51,7 @@ export class CreateTemplateComponent implements OnInit {
           if (slugParam) {
             this.slug = slugParam;
             this.loading = true;
-            return this.service.getTemplateBySlug(slugParam);
+            return this.templateService.getTemplateBySlug(slugParam);
           }
           return of(null);
         })
@@ -83,14 +83,11 @@ export class CreateTemplateComponent implements OnInit {
     this.fields.removeAt(i);
   }
 
+  // 🔹 Carrega clientes da API real
   loadClients() {
-    this.service.getAllTemplates().subscribe({
+    this.clientService.findAll(0, 100).subscribe({ // Pegando até 100 clientes
       next: clients => {
-        // 👀 Substitua por endpoint real de clientes se tiver
-        this.clients = [
-          { id: 1, name: 'Cliente 1' },
-          { id: 2, name: 'Cliente 2' }
-        ];
+        this.clients = clients; // ✔️ Array de clientes extraído do content
         this.cdr.detectChanges();
       },
       error: () => console.error('Erro ao carregar clientes')
@@ -106,7 +103,7 @@ export class CreateTemplateComponent implements OnInit {
       fields: this.templateForm.value.fields
     };
 
-    this.service.createTemplate(payload.clientId, payload).subscribe({
+    this.templateService.createTemplate(payload.clientId, payload).subscribe({
       next: (res: FormTemplate) => {
         alert('Template criado com sucesso!');
         this.template = res;
@@ -135,7 +132,6 @@ export class CreateTemplateComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 🔹 Link para preenchimento do formulário
   get formLink(): string {
     return `/forms/${this.template?.slug ?? ''}`;
   }

@@ -1,31 +1,36 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal } from '@angular/core';
+import { FormTemplateService, FormTemplate, FormField } from '../../core/services/form-template.service';
 import { RouterLink } from '@angular/router';
-import { FormTemplate, FormTemplateService } from '../../core/services/form-template.service';
 
 @Component({
   selector: 'app-forms-all',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './forms-all.component.html',
-  styleUrls: ['./forms-all.component.scss']
+  styleUrls: ['./forms-all.component.scss'],
+  standalone: true
 })
 export class FormsAllComponent implements OnInit {
-  service = inject(FormTemplateService);
-  templates: FormTemplate[] = [];
 
-  ngOnInit() {
+  templates = signal<FormTemplate[]>([]); // array de templates
+  loading = signal<boolean>(true); // sinal de loading correto
+
+  constructor(private templateService: FormTemplateService) {}
+
+  ngOnInit(): void {
     this.loadTemplates();
   }
 
   loadTemplates() {
-    this.service.getAllTemplates().subscribe({
-      next: (res) => {
-        this.templates = res;
-        console.log("@@@@@", res);
-        
+    this.loading.set(true);
+    this.templateService.getAllTemplates().subscribe({
+      next: (data) => {
+        this.templates.set(data);
+        this.loading.set(false);
       },
-      error: () => alert('Erro ao carregar formulários')
+      error: (err) => {
+        console.error('Erro ao carregar templates', err);
+        this.loading.set(false);
+      }
     });
   }
 }

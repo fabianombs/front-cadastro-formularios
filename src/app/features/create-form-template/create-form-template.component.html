@@ -8,10 +8,6 @@
   </div>
 
   <form [formGroup]="templateForm" (ngSubmit)="submit()" *ngIf="!slug">
-    <div class="mb-3">
-      <label>Nome do Template</label>
-      <input type="text" class="form-control" formControlName="name">
-    </div>
 
     <div class="mb-3">
       <label>Cliente</label>
@@ -20,6 +16,12 @@
         <option *ngFor="let c of clients" [value]="c.id">{{ c.name }}</option>
       </select>
     </div>
+
+    <div class="mb-3">
+      <label>Nome do Template para ser atribuido para o cliente</label>
+      <input type="text" class="form-control" formControlName="name">
+    </div>
+
 
     <div formArrayName="fields">
       <div *ngFor="let f of fields.controls; let i=index" [formGroupName]="i" class="border p-3 mb-2">
@@ -58,7 +60,7 @@
     <h4>Campos do Formulário</h4>
     <ul class="list-group">
       <li class="list-group-item" *ngFor="let f of template.fields">
-        {{ f.label }} - {{ f.type }} 
+        {{ f.label }} - {{ f.type }}
         <span *ngIf="f.required" class="text-danger">(*)</span>
       </li>
     </ul>

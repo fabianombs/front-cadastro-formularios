@@ -27,7 +27,7 @@ export class ClienteComponent implements OnInit {
 
     this.service.findAll().subscribe({
       next: (res) => {
-        this.clients.set(res.content); // ⚠️ Page<>
+        this.clients.set(res); // ⚠️ Page<>
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

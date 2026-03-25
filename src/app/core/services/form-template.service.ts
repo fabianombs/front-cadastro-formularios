@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 export interface FormField {
   label: string;
   type: string;
+  id: number;
   required: boolean;
 }
 
@@ -13,7 +14,8 @@ export interface FormTemplate {
   id: number;
   name: string;
   slug: string;
-  fields: FormField[];
+  clientName: string;         // ⚡ string simples
+  fields: FormField[];        // ⚡ array de campos
 }
 
 export interface CreateFormTemplateRequest {
