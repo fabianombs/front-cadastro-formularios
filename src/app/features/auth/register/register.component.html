@@ -1,0 +1,114 @@
+<div class="auth-wrapper d-flex align-items-center justify-content-center"
+     (mousemove)="onMouseMove($event)">
+
+  <div class="container">
+
+    <div class="row shadow-lg rounded-4 overflow-hidden">
+
+      <!-- 🎨 LADO VISUAL -->
+      <div class="col-lg-6 d-none d-lg-flex auth-visual text-white p-5 flex-column justify-content-center">
+
+        <h1 class="fw-bold">Crie sua conta 🚀</h1>
+        <p class="opacity-75">Leva menos de 1 minuto</p>
+
+        <ul class="mt-4 list-unstyled">
+          <li class="mb-2">✔ Acesso rápido e seguro</li>
+          <li class="mb-2">✔ Gestão de clientes</li>
+          <li>✔ Experiência moderna</li>
+        </ul>
+
+      </div>
+
+      <!-- 🧾 FORM -->
+      <div class="col-lg-6 bg-white p-4 p-md-5">
+
+        <h3 class="fw-bold mb-4 text-center">Cadastro</h3>
+
+        @if (error()) {
+          <div class="alert alert-danger">
+            {{ error() }}
+          </div>
+        }
+
+        @if (success()) {
+          <div class="alert alert-success">
+            Conta criada com sucesso 🎉
+          </div>
+        }
+
+        <!-- ⚠️ ERRO SENHA -->
+        @if (form.errors?.['mismatch']) {
+          <div class="alert alert-warning">
+            Senhas não coincidem
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <input class="form-control"
+                     placeholder="Nome completo"
+                     formControlName="name">
+            </div>
+
+            <div class="col-md-6">
+              <input class="form-control"
+                     placeholder="Email"
+                     formControlName="email">
+            </div>
+
+            <div class="col-12">
+              <input class="form-control"
+                     placeholder="Username"
+                     formControlName="username">
+            </div>
+
+            <div class="col-md-6">
+              <input type="password"
+                     class="form-control"
+                     placeholder="Senha"
+                     formControlName="password">
+            </div>
+
+            <div class="col-md-6">
+              <input type="password"
+                     class="form-control"
+                     placeholder="Confirmar senha"
+                     formControlName="confirmPassword">
+            </div>
+
+          </div>
+
+          <!-- 🚀 BOTÃO -->
+          <button
+            type="submit"
+            class="btn btn-primary w-100 mt-4 d-flex justify-content-center align-items-center gap-2"
+            [disabled]="form.invalid || loading()"
+          >
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm"></span>
+              Criando...
+            } @else {
+              Criar conta
+            }
+          </button>
+
+        </form>
+
+        <!-- FOOTER -->
+        <div class="text-center mt-3">
+          <small>
+            Já tem conta?
+            <a routerLink="/login" class="fw-semibold">Entrar</a>
+          </small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

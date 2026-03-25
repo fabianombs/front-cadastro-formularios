@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+
+  <!-- LOGO -->
+  <a class="navbar-brand fw-bold" routerLink="/">
+    MyApp
+  </a>
+
+  <!-- MOBILE -->
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- MENU -->
+  <div class="collapse navbar-collapse" id="navbarNav">
+
+    <ul class="navbar-nav me-auto">
+
+      @for (item of filteredMenu(); track item.path) {
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="item.path">
+            {{ item.label }}
+          </a>
+        </li>
+      }
+
+    </ul>
+
+    <!-- USER -->
+    <div class="d-flex align-items-center gap-3 text-white">
+
+      <span class="small">
+        Olá, <strong>{{ user()?.sub }}</strong>
+      </span>
+
+      <span class="badge bg-info text-dark">
+        {{ user()?.role }}
+      </span>
+
+      <button class="btn btn-outline-light btn-sm" (click)="logout()">
+        Sair
+      </button>
+
+    </div>
+
+  </div>
+
+</nav>
