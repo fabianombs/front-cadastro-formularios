@@ -1,0 +1,96 @@
+<div class="container mt-4">
+
+  <div class="card shadow-lg border-0">
+    
+    <div class="card-header bg-dark text-white">
+      <h4 class="mb-0">Cadastrar Cliente</h4>
+    </div>
+
+    <div class="card-body">
+
+      <form (ngSubmit)="submit()">
+
+        <div class="row g-3">
+
+          <!-- Nome -->
+          <div class="col-md-6">
+            <label class="form-label">Nome *</label>
+            <input class="form-control"
+                   [(ngModel)]="form().name"
+                   name="name">
+            <small class="text-danger">{{ errors().name }}</small>
+          </div>
+
+          <!-- Email -->
+          <div class="col-md-6">
+            <label class="form-label">Email *</label>
+            <input class="form-control"
+                   [(ngModel)]="form().email"
+                   name="email">
+            <small class="text-danger">{{ errors().email }}</small>
+          </div>
+
+          <!-- Username -->
+          <div class="col-md-6">
+            <label class="form-label">Username *</label>
+            <input class="form-control"
+                   [(ngModel)]="form().username"
+                   name="username">
+            <small class="text-danger">{{ errors().username }}</small>
+          </div>
+
+          <!-- Telefone -->
+          <div class="col-md-6">
+            <label class="form-label">Telefone</label>
+            <input class="form-control"
+                   [(ngModel)]="form().phone"
+                   name="phone">
+          </div>
+
+          <!-- Empresa -->
+          <div class="col-md-6">
+            <label class="form-label">Empresa</label>
+            <input class="form-control"
+                   [(ngModel)]="form().company"
+                   name="company">
+          </div>
+
+          <!-- Notes -->
+          <div class="col-12">
+            <label class="form-label">Observações</label>
+            <textarea class="form-control"
+                      rows="3"
+                      [(ngModel)]="form().notes"
+                      name="notes"></textarea>
+          </div>
+
+        </div>
+
+        <!-- Botões -->
+        <div class="mt-4 d-flex justify-content-between">
+
+          <button type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="redirectToList()">
+            Voltar
+          </button>
+
+          <button class="btn btn-success"
+                  [disabled]="loading()">
+
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+              Criar Cliente
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>

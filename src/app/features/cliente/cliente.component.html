@@ -1,0 +1,67 @@
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Clientes</h2>
+
+    <!-- 🔥 só ADMIN vê -->
+    @if (isAdmin()) {
+      <button class="btn btn-success" (click)="goToCreate()">
+        Novo Cliente
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="text-center">
+      <div class="spinner-border"></div>
+    </div>
+  }
+
+  @if (!loading()) {
+
+    <table class="table table-striped table-hover">
+
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>Empresa</th>
+
+          @if (isAdmin()) {
+            <th>Ações</th>
+          }
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (client of clients(); track client.id) {
+
+          <tr>
+            <td>{{ client.id }}</td>
+            <td>{{ client.name }}</td>
+            <td>{{ client.email }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.company }}</td>
+
+            <!-- 🔥 só ADMIN -->
+            @if (isAdmin()) {
+              <td>
+                <button class="btn btn-danger btn-sm"
+                        (click)="deleteClient(client.id)">
+                  Excluir
+                </button>
+              </td>
+            }
+
+          </tr>
+
+        }
+      </tbody>
+
+    </table>
+
+  }
+
+</div>

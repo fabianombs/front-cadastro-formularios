@@ -16,15 +16,73 @@
           <th>ID</th>
           <th>Username</th>
           <th>Role</th>
+          @if (isAdmin()) {
+            <th>Ações</th>
+          }
         </tr>
       </thead>
 
       <tbody>
         @for (user of users(); track user.id) {
           <tr>
+
             <td>{{ user.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.role }}</td>
+
+            <!-- Username -->
+            <td>
+              @if (editingUserId() === user.id) {
+                <input class="form-control"
+                       [(ngModel)]="editedUser().username">
+              } @else {
+                {{ user.username }}
+              }
+            </td>
+
+            <!-- Role -->
+            <td>
+              @if (editingUserId() === user.id) {
+                <select class="form-select"
+                        [(ngModel)]="editedUser().role">
+                  <option value="ROLE_ADMIN">ADMIN</option>
+                  <option value="ROLE_FUNCIONARIO">FUNCIONARIO</option>
+                  <option value="ROLE_CLIENT">CLIENT</option>
+                </select>
+              } @else {
+                {{ user.role }}
+              }
+            </td>
+
+            <!-- Ações -->
+            @if (isAdmin()) {
+              <td>
+                @if (editingUserId() === user.id) {
+
+                  <button class="btn btn-success btn-sm me-2"
+                          (click)="saveEdit(user.id)">
+                    Salvar
+                  </button>
+
+                  <button class="btn btn-secondary btn-sm"
+                          (click)="cancelEdit()">
+                    Cancelar
+                  </button>
+
+                } @else {
+
+                  <button class="btn btn-primary btn-sm me-2"
+                          (click)="startEdit(user)">
+                    Editar
+                  </button>
+
+                  <button class="btn btn-danger btn-sm"
+                          (click)="deleteUser(user.id)">
+                    Excluir
+                  </button>
+
+                }
+              </td>
+            }
+
           </tr>
         }
       </tbody>

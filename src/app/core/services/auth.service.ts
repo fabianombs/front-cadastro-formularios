@@ -7,10 +7,10 @@ import { AuthResponse } from '../models/auth.model';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  // 🔥 Estado base (fonte da verdade)
+  // 🔥 Fonte da verdade
   private _token = signal<string | null>(localStorage.getItem('token'));
 
-  // 🔥 Estado derivado (user decodificado)
+  // 🔥 Usuário decodificado
   user = computed<JwtPayload | null>(() => {
     const token = this._token();
     if (!token) return null;
@@ -22,29 +22,46 @@ export class AuthService {
     }
   });
 
-  // 🔥 Estado de autenticação
+  // 🔥 Auth state
   isAuthenticated = computed(() => !!this.user());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  // 🔥 ROLE (DERIVADO)
+  role = computed(() => this.user()?.role ?? null);
 
+  constructor(private http: HttpClient, private router: Router) { }
+
+  // ==========================
   // 🔐 LOGIN
+  // ==========================
   login(payload: { username: string; password: string }) {
-    return this.http.post<AuthResponse>('http://localhost:8080/auth/login', payload);
+    return this.http.post<AuthResponse>(
+      'http://localhost:8080/auth/login',
+      payload
+    );
   }
 
+  // ==========================
   // 📝 REGISTER
+  // ==========================
   register(payload: any) {
-    return this.http.post('http://localhost:8080/auth/register', payload);
+    return this.http.post(
+      'http://localhost:8080/auth/register',
+      payload
+    );
   }
 
+  // ==========================
   // 🚪 LOGOUT
+  // ==========================
   logout() {
     localStorage.removeItem('token');
     this._token.set(null);
     this.router.navigate(['/login']);
   }
 
+  // ==========================
   // 📌 SET SESSION
+  // ==========================
   setSession(token: string) {
     localStorage.setItem('token', token);
     this._token.set(token);
@@ -54,9 +71,39 @@ export class AuthService {
     return this._token();
   }
 
-  // 🔍 Decode JWT
+  // ==========================
+  // 🔐 ROLE HELPERS
+  // ==========================
+  isAdmin(): boolean {
+    return this.role() === 'ROLE_ADMIN';
+  }
+
+  isFuncionario(): boolean {
+    return this.role() === 'ROLE_FUNCIONARIO';
+  }
+
+  isClient(): boolean {
+    return this.role() === 'ROLE_CLIENT';
+  }
+
+  hasRole(role: string): boolean {
+    return this.role() === role;
+  }
+
+  canViewClients(): boolean {
+    return this.isAdmin() || this.isFuncionario();
+  }
+
+  // ==========================
+  // 🔍 Decode JWT (SAFE)
+  // ==========================
   private decodeToken(token: string): JwtPayload {
     const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+
+    // 🔥 Corrige base64url
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = atob(base64);
+
+    return JSON.parse(decoded);
   }
 }

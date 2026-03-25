@@ -43,15 +43,22 @@ export const routes: Routes = [
       },
 
       // 👥 CLIENTS (FUNCIONARIO + ADMIN)
-      // {
-      //   path: 'clients',
-      //   loadComponent: () => import('./features/clients/clients.component')
-      //     .then(m => m.ClientsComponent),
-      //   canActivate: [authGuard],
-      //   data: {
-      //     roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO']
-      //   }
-      // }
+      {
+        path: 'clients',
+        loadComponent: () => import('./features/cliente/cliente.component')
+          .then(m => m.ClienteComponent),
+        canActivate: [authGuard],
+        data: {
+          roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO']
+        }
+      },
+      {
+        path: 'clients/new',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/cliente/create-client/create-client.component')
+          .then(m => m.CreateClientComponent)
+      }
+
 
     ]
   },
