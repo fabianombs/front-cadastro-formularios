@@ -1,0 +1,36 @@
+<div class="container mt-4">
+
+  <!-- Título do template -->
+  @if (template()) {
+    <h3>Submissões do Formulário: {{ template()?.name }}</h3>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div>Carregando...</div>
+  }
+
+  <!-- Nenhuma submissão -->
+  @if (!loading() && submissions().length === 0) {
+    <div>Nenhuma submissão encontrada.</div>
+  }
+
+  <!-- Listagem de submissões -->
+  @if (!loading() && submissions().length > 0) {
+    @for (submission of submissions(); track submission.id) {
+      <div class="card mb-3">
+        <div class="card-header">
+          #{{ submission.id }} - {{ submission.submittedAt | date:'short' }}
+        </div>
+        <ul class="list-group list-group-flush">
+          @for (field of submission.data; track field.label) {
+            <li class="list-group-item">
+              <strong>{{ field.label }}:</strong> {{ field.value }}
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  }
+
+</div>

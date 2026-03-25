@@ -1,33 +1,34 @@
-import { Component, OnInit, inject } from '@angular/core';
+// src/app/features/template-list/template-list.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormTemplateService, FormTemplate } from '../../core/services/form-template.service';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { RouterLink } from '@angular/router';
-import { FormTemplate, FormTemplateService } from '../../core/services/form-template.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterModule],
   templateUrl: './template-list.component.html',
   styleUrls: ['./template-list.component.scss']
 })
 export class TemplateListComponent implements OnInit {
   templates: FormTemplate[] = [];
-  service = inject(FormTemplateService);
-  route = inject(ActivatedRoute);
+  loading = true;
+  isAdmin = false; // implementar verificação real via AuthService
 
-  ngOnInit() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (slug) {
-      this.service.getTemplateBySlug(slug).subscribe({
-        next: t => this.templates = [t], // mostra apenas o template especificado
-        error: () => alert('Formulário não encontrado')
-      });
-    } else {
-      this.service.getAllTemplates().subscribe({
-        next: res => this.templates = res,
-        error: () => alert('Erro ao carregar formulários')
-      });
-    }
+  constructor(private service: FormTemplateService) {}
+
+  ngOnInit(): void {
+    // Para testes vamos assumir isAdmin=true
+    this.isAdmin = true;
+    const obs = this.isAdmin ? this.service.getAllTemplates() : this.service.getMyTemplates();
+
+    obs.subscribe({
+      next: (res) => {
+        this.templates = res;
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
   }
 }

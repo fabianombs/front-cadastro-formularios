@@ -1,42 +1,41 @@
 <div class="container mt-4">
-  <!-- Loading Template -->
-  <ng-container *ngIf="loading; else loadedTpl">
-    <p>Carregando formulário...</p>
-  </ng-container>
 
-  <!-- Form Template -->
-  <ng-template #loadedTpl>
-    <h3 *ngIf="template">Formulário: {{ template.name }}</h3>
+  <!-- Botão Voltar -->
+  <div class="mb-4">
+    <button class="btn btn-secondary" routerLink="/">← Voltar para Home</button>
+  </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" *ngIf="template">
-      <div formArrayName="fields">
-        <div *ngFor="let field of fields.controls; let i = index" [formGroupName]="i" class="mb-3">
-          <label>{{ field.get('label')?.value }} <span *ngIf="field.get('required')?.value">*</span></label>
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="alert alert-info">Carregando formulário...</div>
+  }
 
-          <input 
-            *ngIf="field.get('type')?.value === 'text' || field.get('type')?.value === 'email'" 
-            [type]="field.get('type')?.value" 
-            formControlName="value" 
-            class="form-control" 
-            [placeholder]="field.get('label')?.value" 
+  <!-- Formulário -->
+  @if (template()) {
+    <h3 class="mb-4">Formulário: {{ template()?.name }}</h3>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <!-- Campos dinâmicos -->
+      @for (fg of formFields(); track fg.value.label) {
+        <div class="mb-3">
+          <label class="form-label">{{ fg.value.label }}</label>
+
+          <input
+            class="form-control"
+            [type]="fg.value.type"
+            [formControl]="getControl($index)"
+            [required]="fg.value.required"
           />
 
-          <input 
-            *ngIf="field.get('type')?.value === 'number'" 
-            type="number" 
-            formControlName="value" 
-            class="form-control" 
-            [placeholder]="field.get('label')?.value" 
-          />
-
-          <!-- Error message -->
-          <div class="text-danger mt-1" *ngIf="field.get('value')?.invalid && field.get('value')?.touched">
-            Campo obrigatório!
-          </div>
+          <!-- Validação -->
+          @if (getControl($index).invalid && getControl($index).touched) {
+            <div class="text-danger">Campo obrigatório!</div>
+          }
         </div>
-      </div>
+      }
 
-      <button type="submit" class="btn btn-primary mt-3">Enviar</button>
+      <button class="btn btn-primary" type="submit">Enviar</button>
     </form>
-  </ng-template>
+  }
 </div>

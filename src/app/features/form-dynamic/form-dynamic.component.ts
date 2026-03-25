@@ -1,22 +1,22 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormTemplateService, FormTemplate, FormField } from '../../core/services/form-template.service';
-import { switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-form-dynamic',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './form-dynamic.component.html',
   styleUrls: ['./form-dynamic.component.scss']
 })
 export class FormDynamicComponent implements OnInit {
 
-  public template: FormTemplate | null = null;
-  public loading = false;
+  public template = signal<FormTemplate | null>(null);
+  public loading = signal<boolean>(false);
   public form: FormGroup;
+  public formFields = signal<FormGroup[]>([]);
 
   constructor(
     private route: ActivatedRoute,
@@ -24,73 +24,79 @@ export class FormDynamicComponent implements OnInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) {
-    this.form = this.fb.group({
-      fields: this.fb.array([])
-    });
-  }
-
-  get fields(): FormArray {
-    return this.form.get('fields') as FormArray;
+    this.form = this.fb.group({});
   }
 
   ngOnInit(): void {
-    // Observe route params to handle slug changes dynamically
-    this.route.params
-      .pipe(
-        switchMap(params => {
-          const slug = params['slug'];
-          if (!slug) return of(null);
+    this.loading.set(true);
 
-          this.loading = true;
-          this.template = null;  // Reset previous template
-          this.fields.clear();   // Clear previous form
-          this.cdr.detectChanges();
-
-          return this.service.getTemplateBySlug(slug);
-        })
-      )
-      .subscribe({
-        next: (template: FormTemplate | null) => {
-          if (template) {
-            this.template = template;
-            this.buildForm(template.fields);
-          }
-          this.loading = false;
-          this.cdr.detectChanges();
+    const slug = this.route.snapshot.params['slug'];
+    if (slug) {
+      this.service.getTemplateBySlug(slug).subscribe({
+        next: (template) => {
+          this.template.set(template);
+          this.buildForm(template.fields);
+          this.loading.set(false);
         },
         error: () => {
-          console.error('Erro ao carregar o formulário');
-          this.loading = false;
+          alert('Erro ao carregar o formulário');
+          this.loading.set(false);
         }
       });
+    }
   }
 
-  buildForm(fields: FormField[]) {
-    this.fields.clear();
-    fields.forEach(f => {
-      this.fields.push(this.fb.group({
+  private buildForm(fields: FormField[]) {
+    const fgArray: FormGroup[] = fields.map(f =>
+      this.fb.group({
         label: [f.label],
         type: [f.type],
         value: ['', f.required ? Validators.required : []],
         required: [f.required ?? false]
-      }));
+      })
+    );
+
+    // Armazena os fields no Signal
+    this.formFields.set(fgArray);
+
+    // Adiciona controles no FormGroup principal para submit
+    fgArray.forEach((fg, i) => {
+      const control = fg.get('value') as FormControl;
+      this.form.addControl(`field_${i}`, control);
     });
+
     this.cdr.detectChanges();
   }
 
-  submit() {
+  public submit() {
     if (this.form.invalid) {
       alert('Preencha todos os campos obrigatórios!');
       return;
     }
 
-    const payload = this.fields.controls.map(c => ({
-      label: c.value.label,
-      type: c.value.type,
-      value: c.value.value
+    const payload = this.formFields().map((fg, i) => ({
+      label: fg.value.label,
+      type: fg.value.type,
+      value: (this.form.get(`field_${i}`) as FormControl).value
     }));
 
     console.log('Dados enviados:', payload);
-    alert('Formulário enviado com sucesso! (apenas log no console)');
+
+    if (this.template()) {
+      this.service.submitForm({
+        templateId: this.template()!.id,
+        data: payload
+      }).subscribe({
+        next: () => {
+          alert('Formulário enviado com sucesso!');
+          this.form.reset();
+        },
+        error: () => alert('Erro ao enviar formulário')
+      });
+    }
+  }
+
+  public getControl(index: number): FormControl {
+    return this.form.get(`field_${index}`) as FormControl;
   }
 }
