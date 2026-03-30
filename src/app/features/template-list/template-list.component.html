@@ -1,100 +1,89 @@
-<div class="container mt-4">
+<div class="page">
 
-  @if (template()) {
-    <h3>
-      {{ template()?.name }}
-      <small class="text-muted">({{ template()?.clientName }})</small>
-    </h3>
-  }
-
-  <!-- 🔍 FILTROS -->
-  <div class="row mt-3 g-2">
-
-    <!-- 🔎 Busca -->
-    <div class="col-md-4">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Buscar..."
-        [ngModel]="filterText()"
-        (ngModelChange)="filterText.set($event)" />
+  <div class="page-header">
+    <div>
+      @if (template()) {
+        <h1 class="page-title">{{ template()?.name }}</h1>
+        <p class="page-subtitle">{{ template()?.clientName }} &mdash; Respostas recebidas</p>
+      } @else {
+        <h1 class="page-title">Respostas</h1>
+      }
     </div>
-
-    <!-- 📅 Data início -->
-    <div class="col-md-3">
-      <input
-        type="date"
-        class="form-control"
-        [ngModel]="startDate()"
-        (ngModelChange)="startDate.set($event)" />
-    </div>
-
-    <!-- 📅 Data fim -->
-    <div class="col-md-3">
-      <input
-        type="date"
-        class="form-control"
-        [ngModel]="endDate()"
-        (ngModelChange)="endDate.set($event)" />
-    </div>
-
+    <a routerLink="/forms-all" class="btn-outline">← Voltar</a>
   </div>
 
-  <!-- ⏳ LOADING -->
+  <!-- Filtros -->
+  <div class="card" style="margin-bottom: 20px; padding: 16px 20px;">
+    <div class="filters-row">
+      <div class="filter-field" style="flex: 2;">
+        <label>Buscar</label>
+        <input
+          type="text"
+          placeholder="Pesquisar em todas as colunas..."
+          [ngModel]="filterText()"
+          (ngModelChange)="filterText.set($event)" />
+      </div>
+      <div class="filter-field">
+        <label>Data início</label>
+        <input
+          type="date"
+          [ngModel]="startDate()"
+          (ngModelChange)="startDate.set($event)" />
+      </div>
+      <div class="filter-field">
+        <label>Data fim</label>
+        <input
+          type="date"
+          [ngModel]="endDate()"
+          (ngModelChange)="endDate.set($event)" />
+      </div>
+    </div>
+  </div>
+
   @if (loading()) {
-    <div class="alert alert-info mt-3">Carregando...</div>
+    <div class="loading-center"><div class="spinner"></div></div>
   }
 
-  <!-- ⚠️ SEM DADOS -->
   @if (!loading() && filteredSubmissions().length === 0) {
-    <div class="alert alert-warning mt-3">
-      Nenhuma resposta encontrada.
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>Nenhuma resposta encontrada</p>
+        <small>Tente ajustar os filtros ou aguarde novas respostas</small>
+      </div>
     </div>
   }
 
-  <!-- 📊 TABELA -->
   @if (filteredSubmissions().length > 0) {
-
-    <div class="table-responsive mt-4">
-      <table class="table table-bordered table-hover table-striped align-middle">
-
-        <thead class="table-dark">
-          <tr>
-            <th (click)="sort('id')" style="cursor:pointer">
-              ID
-            </th>
-
-            <th (click)="sort('createdAt')" style="cursor:pointer">
-              Data
-            </th>
-
-            @for (col of columns(); track col) {
-              <th (click)="sort(col)" style="cursor:pointer">
-                {{ formatLabel(col) }}
-              </th>
-            }
-          </tr>
-        </thead>
-
-        <tbody>
-          @for (sub of filteredSubmissions(); track sub.id) {
+    <div class="card">
+      <div class="table-info">
+        <span class="result-count">{{ filteredSubmissions().length }} resultado(s)</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td>{{ sub.id }}</td>
-
-              <td>{{ sub.createdAt | date:'short' }}</td>
-
+              <th class="sortable" (click)="sort('id')">ID</th>
+              <th class="sortable" (click)="sort('createdAt')">Data</th>
               @for (col of columns(); track col) {
-                <td>
-                  {{ getValue(sub, col) }}
-                </td>
+                <th class="sortable" (click)="sort(col)">{{ formatLabel(col) }}</th>
               }
             </tr>
-          }
-        </tbody>
-
-      </table>
+          </thead>
+          <tbody>
+            @for (sub of filteredSubmissions(); track sub.id) {
+              <tr>
+                <td><span class="badge badge-gray">#{{ sub.id }}</span></td>
+                <td class="text-muted">{{ sub.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+                @for (col of columns(); track col) {
+                  <td>{{ getValue(sub, col) }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-
   }
 
 </div>

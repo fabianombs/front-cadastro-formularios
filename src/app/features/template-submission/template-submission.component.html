@@ -1,37 +1,50 @@
-<div class="container mt-4">
+<div class="page">
 
-  @if (template()) {
-    <h3>Submissões do Formulário: {{ template()?.name }}</h3>
-  }
+  <div class="page-header">
+    <div>
+      @if (template()) {
+        <h1 class="page-title">{{ template()?.name }}</h1>
+        <p class="page-subtitle">Detalhes de cada submissão recebida</p>
+      }
+    </div>
+    <a routerLink="/forms-all" class="btn-outline">← Voltar</a>
+  </div>
 
   @if (loading()) {
-    <div>Carregando...</div>
+    <div class="loading-center"><div class="spinner"></div></div>
   }
 
   @if (!loading() && submissions().length === 0) {
-    <div>Nenhuma submissão encontrada.</div>
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Nenhuma submissão encontrada</p>
+        <small>As respostas aparecerão aqui quando alguém preencher o formulário</small>
+      </div>
+    </div>
   }
 
   @if (!loading() && submissions().length > 0) {
-    @for (submission of submissions(); track submission.id) {
-      <div class="card mb-3">
-
-        <div class="card-header">
-          #{{ submission.id }} - {{ submission.createdAt | date:'short' }}
+    <div class="submissions-list">
+      @for (submission of submissions(); track submission.id) {
+        <div class="card submission-card">
+          <div class="submission-header">
+            <div class="sub-id-badge">
+              <span>#{{ submission.id }}</span>
+            </div>
+            <span class="sub-date">{{ submission.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="submission-fields">
+            @for (field of submission.values | keyvalue; track field.key) {
+              <div class="sub-field">
+                <span class="sub-field-key">{{ field.key }}</span>
+                <span class="sub-field-value">{{ field.value }}</span>
+              </div>
+            }
+          </div>
         </div>
-
-        <ul class="list-group list-group-flush">
-
-          @for (field of submission.values | keyvalue; track field.key) {
-            <li class="list-group-item">
-              <strong>{{ field.key }}:</strong> {{ field.value }}
-            </li>
-          }
-
-        </ul>
-
-      </div>
-    }
+      }
+    </div>
   }
 
 </div>

@@ -1,72 +1,156 @@
-<div class="container mt-4" *ngIf="!loading; else loadingTpl">
-  <h3 *ngIf="!slug">Criar Formulário</h3>
-  <h3 *ngIf="slug">Visualizar Formulário: {{ template?.name }}</h3>
+<div class="page">
 
-  <div *ngIf="slug && template" class="mb-3">
-    <strong>Link público para preenchimento:</strong>
-    <a [routerLink]="formLink">{{ formLink }}</a>
-  </div>
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-center"><div class="spinner"></div></div>
+  }
 
-  <form [formGroup]="templateForm" (ngSubmit)="submit()" *ngIf="!slug">
+  @if (!loading) {
 
-    <div class="mb-3">
-      <label>Cliente</label>
-      <select class="form-select" formControlName="clientId">
-        <option value="" disabled>Selecione</option>
-        <option *ngFor="let c of clients" [ngValue]="c.id">{{ c.name }}</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label>Nome do Template para ser atribuido para o cliente</label>
-      <input type="text" class="form-control" formControlName="name">
-    </div>
-
-
-    <div formArrayName="fields">
-      <div *ngFor="let f of fields.controls; let i=index" [formGroupName]="i" class="border p-3 mb-2">
-        <div class="d-flex justify-content-between">
-          <strong>Campo {{ i + 1 }}</strong>
-          <button type="button" class="btn btn-danger btn-sm" (click)="removeField(i)">Remover</button>
+    <!-- View mode: exibindo template criado -->
+    @if (slug && template) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ template.name }}</h1>
+          <p class="page-subtitle">Cliente: {{ template.clientName }}</p>
         </div>
+        <a routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
+      </div>
 
-        <div class="mb-2 mt-2">
-          <label>Label</label>
-          <input type="text" class="form-control" formControlName="label">
+      <div class="card" style="margin-bottom: 16px; padding: 16px 20px;">
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 4px;">Link público para preenchimento</p>
+        <a [routerLink]="formLink" style="font-size: 14px; font-weight: 600; color: #3b82f6;">
+          {{ formLink }}
+        </a>
+      </div>
+
+      <div class="card">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+          <h2 style="font-size: 15px;">Campos do formulário</h2>
         </div>
-
-        <div class="mb-2">
-          <label>Tipo</label>
-          <select class="form-select" formControlName="type">
-            <option value="text">Texto</option>
-            <option value="email">Email</option>
-            <option value="number">Número</option>
-            <option value="date">Data</option>
-          </select>
-        </div>
-
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" formControlName="required">
-          <label class="form-check-label">Obrigatório</label>
+        <div style="padding: 8px 0;">
+          @for (f of template.fields; track f.id) {
+            <div class="field-row">
+              <div class="field-row-info">
+                <span class="field-row-label">{{ f.label }}</span>
+                <span class="badge badge-gray">{{ f.type }}</span>
+              </div>
+              @if (f.required) {
+                <span class="badge badge-red">Obrigatório</span>
+              }
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
 
-    <button type="button" class="btn btn-secondary mb-2" (click)="addField()">Adicionar Campo</button>
-    <button type="submit" class="btn btn-primary mb-2 ms-2">Criar Template</button>
-  </form>
+    <!-- Create mode -->
+    @if (!slug) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Criar formulário</h1>
+          <p class="page-subtitle">Configure o template e os campos do formulário</p>
+        </div>
+      </div>
 
-  <div *ngIf="slug && template">
-    <h4>Campos do Formulário</h4>
-    <ul class="list-group">
-      <li class="list-group-item" *ngFor="let f of template.fields">
-        {{ f.label }} - {{ f.type }}
-        <span *ngIf="f.required" class="text-danger">(*)</span>
-      </li>
-    </ul>
-  </div>
+      <form [formGroup]="templateForm" (ngSubmit)="submit()">
+        <div class="form-grid">
+
+          <!-- Coluna esquerda: configuração geral -->
+          <div class="form-section card">
+            <div class="section-header">
+              <h2 class="section-title">Configuração geral</h2>
+            </div>
+            <div class="section-body">
+
+              <div class="field">
+                <label>Cliente <span class="required">*</span></label>
+                <select formControlName="clientId">
+                  <option [ngValue]="null" disabled>Selecione um cliente</option>
+                  @for (c of clients; track c.id) {
+                    <option [ngValue]="c.id">{{ c.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Nome do template <span class="required">*</span></label>
+                <input type="text" formControlName="name" placeholder="Ex: Formulário de atendimento">
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Coluna direita: campos -->
+          <div class="form-section card">
+            <div class="section-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 class="section-title">Campos do formulário</h2>
+              <button type="button" class="btn-outline" style="font-size:12px; padding:5px 12px;" (click)="addField()">
+                + Adicionar campo
+              </button>
+            </div>
+            <div class="section-body">
+
+              @if (fields.length === 0) {
+                <div class="empty-state" style="padding: 32px 16px;">
+                  <div class="empty-icon" style="font-size:28px;">📝</div>
+                  <p style="font-size:13px;">Nenhum campo adicionado</p>
+                  <small>Clique em "Adicionar campo" para começar</small>
+                </div>
+              }
+
+              <div formArrayName="fields">
+                @for (f of fields.controls; track $index) {
+                  <div [formGroupName]="$index" class="field-item">
+                    <div class="field-item-header">
+                      <span class="field-item-number">Campo {{ $index + 1 }}</span>
+                      <button type="button" class="btn-danger" style="padding:4px 10px; font-size:11px;" (click)="removeField($index)">
+                        Remover
+                      </button>
+                    </div>
+                    <div class="field-item-body">
+                      <div class="field" style="margin-bottom:12px;">
+                        <label>Label</label>
+                        <input type="text" formControlName="label" placeholder="Ex: Nome completo">
+                      </div>
+                      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div class="field" style="margin-bottom:0;">
+                          <label>Tipo</label>
+                          <select formControlName="type">
+                            <option value="text">Texto</option>
+                            <option value="email">Email</option>
+                            <option value="number">Número</option>
+                            <option value="date">Data</option>
+                          </select>
+                        </div>
+                        <div class="field" style="margin-bottom:0;">
+                          <label>&nbsp;</label>
+                          <label class="checkbox-label">
+                            <input type="checkbox" formControlName="required">
+                            <span>Obrigatório</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
+            Criar template
+          </button>
+        </div>
+
+      </form>
+    }
+
+  }
+
 </div>
-
-<ng-template #loadingTpl>
-  <p>Carregando template...</p>
-</ng-template>

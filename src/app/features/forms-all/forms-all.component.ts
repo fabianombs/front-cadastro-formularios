@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormTemplateService, FormTemplate, FormSubmission } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
@@ -20,6 +20,14 @@ export class FormsAllComponent implements OnInit {
   templates = signal<FormTemplate[]>([]);
   submissionsMap = signal<{ [templateId: number]: FormSubmission[] }>({});
   loading = signal(true);
+
+  totalSubmissions = computed(() =>
+    Object.values(this.submissionsMap()).reduce((acc, subs) => acc + subs.length, 0)
+  );
+
+  templatesWithResponses = computed(() =>
+    Object.values(this.submissionsMap()).filter(subs => subs.length > 0).length
+  );
 
   ngOnInit(): void {
 

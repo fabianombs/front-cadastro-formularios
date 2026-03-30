@@ -1,41 +1,55 @@
-<div class="container mt-4">
+<div class="page" style="max-width: 640px;">
 
-  <!-- Botão Voltar -->
-  <div class="mb-4">
-    <button class="btn btn-secondary" routerLink="/">← Voltar para Home</button>
-  </div>
-
-  <!-- Loading -->
   @if (loading()) {
-    <div class="alert alert-info">Carregando formulário...</div>
+    <div class="loading-center"><div class="spinner"></div></div>
   }
 
-  <!-- Formulário -->
   @if (template()) {
-    <h3 class="mb-4">Formulário: {{ template()?.name }}</h3>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ template()?.name }}</h1>
+        <p class="page-subtitle">Preencha todos os campos e clique em Enviar</p>
+      </div>
+    </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">Dados do formulário</span>
+        <span class="badge badge-blue">{{ template()?.clientName }}</span>
+      </div>
+      <div class="section-body">
 
-      <!-- Campos dinâmicos -->
-      @for (fg of formFields(); track fg.value.label) {
-        <div class="mb-3">
-          <label class="form-label">{{ fg.value.label }}</label>
+        <form [formGroup]="form" (ngSubmit)="submit()">
 
-          <input
-            class="form-control"
-            [type]="fg.value.type"
-            [formControl]="getControl($index)"
-            [required]="fg.value.required"
-          />
-
-          <!-- Validação -->
-          @if (getControl($index).invalid && getControl($index).touched) {
-            <div class="text-danger">Campo obrigatório!</div>
+          @for (fg of formFields(); track fg.value.label) {
+            <div class="field">
+              <label>
+                {{ fg.value.label }}
+                @if (fg.value.required) {
+                  <span style="color:#ef4444; margin-left:2px;">*</span>
+                }
+              </label>
+              <input
+                [type]="fg.value.type"
+                [formControl]="getControl($index)"
+                [required]="fg.value.required"
+                [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
+              />
+              @if (getControl($index).invalid && getControl($index).touched) {
+                <span class="field-error">Campo obrigatório</span>
+              }
+            </div>
           }
-        </div>
-      }
 
-      <button class="btn btn-primary" type="submit">Enviar</button>
-    </form>
+          <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:12px;">
+            <a routerLink="/" class="btn-outline">Cancelar</a>
+            <button type="submit" class="btn-primary">Enviar resposta</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
   }
+
 </div>

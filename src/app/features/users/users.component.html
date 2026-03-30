@@ -1,93 +1,82 @@
-<div class="container mt-4">
+<div class="page">
 
-  <h2 class="mb-4">Usuários</h2>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Usuários</h1>
+      <p class="page-subtitle">Gerencie os usuários e permissões de acesso</p>
+    </div>
+  </div>
 
   @if (loading()) {
-    <div class="text-center">
-      <div class="spinner-border"></div>
-    </div>
+    <div class="loading-center"><div class="spinner"></div></div>
   }
 
   @if (!loading()) {
-    <table class="table table-striped table-hover">
-
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Role</th>
-          @if (isAdmin()) {
-            <th>Ações</th>
-          }
-        </tr>
-      </thead>
-
-      <tbody>
-        @for (user of users(); track user.id) {
-          <tr>
-
-            <td>{{ user.id }}</td>
-
-            <!-- Username -->
-            <td>
-              @if (editingUserId() === user.id) {
-                <input class="form-control"
-                       [(ngModel)]="editedUser().username">
-              } @else {
-                {{ user.username }}
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Perfil</th>
+              @if (isAdmin()) {
+                <th style="width: 160px;"></th>
               }
-            </td>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr>
+                <td><span class="badge badge-gray">#{{ user.id }}</span></td>
 
-            <!-- Role -->
-            <td>
-              @if (editingUserId() === user.id) {
-                <select class="form-select"
-                        [(ngModel)]="editedUser().role">
-                  <option value="ROLE_ADMIN">ADMIN</option>
-                  <option value="ROLE_FUNCIONARIO">FUNCIONARIO</option>
-                  <option value="ROLE_CLIENT">CLIENT</option>
-                </select>
-              } @else {
-                {{ user.role }}
-              }
-            </td>
+                <td>
+                  @if (editingUserId() === user.id) {
+                    <input class="inline-input" [(ngModel)]="editedUser().username">
+                  } @else {
+                    <div class="user-cell">
+                      <div class="user-avatar-sm">{{ user.username.charAt(0).toUpperCase() }}</div>
+                      <span class="fw-500">{{ user.username }}</span>
+                    </div>
+                  }
+                </td>
 
-            <!-- Ações -->
-            @if (isAdmin()) {
-              <td>
-                @if (editingUserId() === user.id) {
+                <td>
+                  @if (editingUserId() === user.id) {
+                    <select class="inline-select" [(ngModel)]="editedUser().role">
+                      <option value="ROLE_ADMIN">ADMIN</option>
+                      <option value="ROLE_FUNCIONARIO">FUNCIONARIO</option>
+                      <option value="ROLE_CLIENT">CLIENT</option>
+                    </select>
+                  } @else {
+                    <span class="badge"
+                      [class.badge-red]="user.role === 'ROLE_ADMIN'"
+                      [class.badge-blue]="user.role === 'ROLE_FUNCIONARIO'"
+                      [class.badge-gray]="user.role === 'ROLE_CLIENT'">
+                      {{ user.role }}
+                    </span>
+                  }
+                </td>
 
-                  <button class="btn btn-success btn-sm me-2"
-                          (click)="saveEdit(user.id)">
-                    Salvar
-                  </button>
-
-                  <button class="btn btn-secondary btn-sm"
-                          (click)="cancelEdit()">
-                    Cancelar
-                  </button>
-
-                } @else {
-
-                  <button class="btn btn-primary btn-sm me-2"
-                          (click)="startEdit(user)">
-                    Editar
-                  </button>
-
-                  <button class="btn btn-danger btn-sm"
-                          (click)="deleteUser(user.id)">
-                    Excluir
-                  </button>
-
+                @if (isAdmin()) {
+                  <td>
+                    <div class="row-actions">
+                      @if (editingUserId() === user.id) {
+                        <button class="btn-success" (click)="saveEdit(user.id)">Salvar</button>
+                        <button class="btn-outline" style="padding:5px 10px; font-size:12px;" (click)="cancelEdit()">Cancelar</button>
+                      } @else {
+                        <button class="btn-outline" style="padding:5px 10px; font-size:12px;" (click)="startEdit(user)">Editar</button>
+                        <button class="btn-danger" (click)="deleteUser(user.id)">Excluir</button>
+                      }
+                    </div>
+                  </td>
                 }
-              </td>
+              </tr>
             }
-
-          </tr>
-        }
-      </tbody>
-
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
   }
 
 </div>

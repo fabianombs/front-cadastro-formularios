@@ -1,67 +1,75 @@
-<div class="container mt-4">
+<div class="page">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Clientes</h2>
-
-    <!-- 🔥 só ADMIN vê -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Clientes</h1>
+      <p class="page-subtitle">Gerencie os clientes cadastrados na plataforma</p>
+    </div>
     @if (isAdmin()) {
-      <button class="btn btn-success" (click)="goToCreate()">
-        Novo Cliente
-      </button>
+      <button class="btn-primary" (click)="goToCreate()">+ Novo cliente</button>
     }
   </div>
 
   @if (loading()) {
-    <div class="text-center">
-      <div class="spinner-border"></div>
-    </div>
+    <div class="loading-center"><div class="spinner"></div></div>
   }
 
   @if (!loading()) {
-
-    <table class="table table-striped table-hover">
-
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Telefone</th>
-          <th>Empresa</th>
-
-          @if (isAdmin()) {
-            <th>Ações</th>
-          }
-        </tr>
-      </thead>
-
-      <tbody>
-        @for (client of clients(); track client.id) {
-
-          <tr>
-            <td>{{ client.id }}</td>
-            <td>{{ client.name }}</td>
-            <td>{{ client.email }}</td>
-            <td>{{ client.phone }}</td>
-            <td>{{ client.company }}</td>
-
-            <!-- 🔥 só ADMIN -->
-            @if (isAdmin()) {
-              <td>
-                <button class="btn btn-danger btn-sm"
-                        (click)="deleteClient(client.id)">
-                  Excluir
-                </button>
-              </td>
-            }
-
-          </tr>
-
-        }
-      </tbody>
-
-    </table>
-
+    @if (clients().length === 0) {
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <p>Nenhum cliente cadastrado</p>
+          <small>Clique em "Novo cliente" para adicionar</small>
+        </div>
+      </div>
+    } @else {
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Empresa</th>
+                @if (isAdmin()) {
+                  <th style="width: 80px;"></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (client of clients(); track client.id) {
+                <tr>
+                  <td><span class="badge badge-gray">#{{ client.id }}</span></td>
+                  <td>
+                    <div class="client-name-cell">
+                      <div class="client-avatar">{{ client.name.charAt(0).toUpperCase() }}</div>
+                      <span class="fw-500">{{ client.name }}</span>
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ client.email }}</td>
+                  <td class="text-muted">{{ client.phone || '—' }}</td>
+                  <td>
+                    @if (client.company) {
+                      <span class="badge badge-blue">{{ client.company }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  @if (isAdmin()) {
+                    <td>
+                      <button class="btn-danger" (click)="deleteClient(client.id)">Excluir</button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
   }
 
 </div>

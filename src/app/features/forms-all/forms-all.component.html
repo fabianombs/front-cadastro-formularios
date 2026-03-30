@@ -1,47 +1,94 @@
-<div class="container mt-4">
+<div class="page">
 
-  <h3>Formulários</h3>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Formulários</h1>
+      <p class="page-subtitle">Gerencie seus formulários e acompanhe as respostas</p>
+    </div>
+    <a routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
+  </div>
 
+  <!-- Loading -->
   @if (loading()) {
-    <div class="alert alert-info">Carregando...</div>
+    <div class="loading-center">
+      <div class="spinner"></div>
+    </div>
   }
 
+  <!-- Empty -->
   @if (!loading() && templates().length === 0) {
-    <div class="alert alert-warning">Nenhum formulário encontrado</div>
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>Nenhum formulário encontrado</p>
+        <small>Crie seu primeiro formulário para começar</small>
+      </div>
+    </div>
   }
 
-  @for (t of templates(); track t.id) {
-
-    <div class="card mb-3">
-
-      <div class="card-body">
-
-        <h5>{{ t.name }}</h5>
-        <small>{{ t.clientName }}</small>
-
-        <div class="mt-2">
-          <a [routerLink]="['/forms', t.slug]">Preencher</a> |
-          <a [routerLink]="['/forms', t.slug, 'list']">Ver respostas</a>
-        </div>
-
-        <hr>
-
-        <h6>Respostas:</h6>
-
-        @if (submissionsMap()[t.id]?.length === 0) {
-          <div>Nenhuma resposta</div>
-        }
-
-        @for (s of submissionsMap()[t.id]; track s.id) {
-          <div class="border p-2 mb-2">
-            #{{ s.id }} - {{ s.createdAt | date:'short' }}
-          </div>
-        }
-
+  <!-- Stats -->
+  @if (!loading() && templates().length > 0) {
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value">{{ templates().length }}</span>
+        <span class="stat-label">Formulários ativos</span>
       </div>
-
+      <div class="stat-card">
+        <span class="stat-value">{{ totalSubmissions() }}</span>
+        <span class="stat-label">Respostas recebidas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ templatesWithResponses() }}</span>
+        <span class="stat-label">Com respostas</span>
+      </div>
     </div>
 
+    <!-- Cards Grid -->
+    <div class="templates-grid">
+      @for (t of templates(); track t.id) {
+        <div class="template-card">
+
+          <div class="tc-header">
+            <div class="tc-icon">{{ t.name.charAt(0).toUpperCase() }}</div>
+            <div class="tc-meta">
+              <h3 class="tc-name">{{ t.name }}</h3>
+              <span class="badge badge-blue">{{ t.clientName }}</span>
+            </div>
+          </div>
+
+          <div class="tc-stats">
+            <div class="tc-stat">
+              <span class="tc-stat-value">{{ submissionsMap()[t.id]?.length ?? 0 }}</span>
+              <span class="tc-stat-label">Respostas</span>
+            </div>
+            <div class="tc-divider"></div>
+            <div class="tc-stat">
+              <span class="tc-stat-value">{{ t.fields?.length ?? 0 }}</span>
+              <span class="tc-stat-label">Campos</span>
+            </div>
+          </div>
+
+          <div class="tc-actions">
+            <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
+            <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
+          </div>
+
+          @if ((submissionsMap()[t.id]?.length ?? 0) > 0) {
+            <div class="tc-recent">
+              <p class="tc-recent-title">Últimas respostas</p>
+              @for (s of submissionsMap()[t.id].slice(0, 3); track s.id) {
+                <div class="tc-sub-row">
+                  <span class="tc-sub-id">#{{ s.id }}</span>
+                  <span class="tc-sub-date">{{ s.createdAt | date:'dd/MM/yy HH:mm' }}</span>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
   }
 
 </div>
