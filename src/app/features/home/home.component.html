@@ -1,12 +1,175 @@
 <div class="page">
 
+  <!-- ══ HEADER ══════════════════════════════════════════════════ -->
   <div class="page-header">
     <div>
       <h1 class="page-title">Dashboard</h1>
       <p class="page-subtitle">Bem-vindo à plataforma FormsPro</p>
     </div>
+    @if (summary()) {
+      <button class="btn-outline" style="gap:8px;" (click)="exportDashboard()">
+        ⬇ Exportar Excel
+      </button>
+    }
   </div>
 
+  <!-- ══ LOADING ══════════════════════════════════════════════════ -->
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner"></div></div>
+  }
+
+  @if (!loading() && summary()) {
+
+    <!-- ══ KPI CARDS ════════════════════════════════════════════ -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.totalTemplates }}</span>
+          <span class="kpi-label">Formulários</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.totalClients }}</span>
+          <span class="kpi-label">Clientes</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-indigo">
+        <div class="kpi-icon">✏️</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.totalSubmissions }}</span>
+          <span class="kpi-label">Submissões</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.confirmedAppointments }}</span>
+          <span class="kpi-label">Agend. confirmados</span>
+        </div>
+        @if (summary()!.totalAppointments > 0) {
+          <span class="kpi-rate">{{ confirmRate() }}% de {{ summary()!.totalAppointments }}</span>
+        }
+      </div>
+
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon">❌</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.cancelledAppointments }}</span>
+          <span class="kpi-label">Agend. cancelados</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-icon">🟢</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ summary()!.presentAttendanceRecords }}<span class="kpi-total"> / {{ summary()!.totalAttendanceRecords }}</span></span>
+          <span class="kpi-label">Presença</span>
+        </div>
+        @if (summary()!.totalAttendanceRecords > 0) {
+          <div class="kpi-progress">
+            <div class="kpi-progress-bar" [style.width.%]="attendanceRate()"></div>
+          </div>
+          <span class="kpi-rate">{{ attendanceRate() }}% presentes</span>
+        }
+      </div>
+
+    </div>
+
+    <!-- ══ TABELA POR FORMULÁRIO ════════════════════════════════ -->
+    @if (summary()!.templates?.length > 0) {
+      <div class="card" style="overflow:hidden; margin-bottom:28px;">
+        <div class="table-info" style="border-bottom:1px solid var(--border);">
+          <span class="result-count">Desempenho por formulário</span>
+          <span style="font-size:12px; color:var(--text-muted);">{{ summary()!.templates.length }} formulário(s)</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Formulário</th>
+                <th>Cliente</th>
+                <th style="text-align:center;">Tipo</th>
+                <th style="text-align:center;">Submissões</th>
+                <th style="text-align:center;">Confirmados</th>
+                <th style="text-align:center;">Cancelados</th>
+                <th style="text-align:center;">Presença</th>
+                <th style="width:80px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of summary()!.templates; track t.id) {
+                <tr>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <div class="tmpl-avatar">{{ t.name.charAt(0).toUpperCase() }}</div>
+                      <span style="font-weight:500;">{{ t.name }}</span>
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ t.clientName || '—' }}</td>
+                  <td style="text-align:center;">
+                    @if (t.hasSchedule) {
+                      <span class="badge badge-blue">Agenda</span>
+                    } @else {
+                      <span class="badge badge-gray">Formulário</span>
+                    }
+                  </td>
+                  <td style="text-align:center;">
+                    @if (!t.hasSchedule) {
+                      <strong>{{ t.submissionCount }}</strong>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td style="text-align:center;">
+                    @if (t.hasSchedule) {
+                      <span style="color:#16a34a; font-weight:600;">{{ t.appointmentConfirmed }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td style="text-align:center;">
+                    @if (t.hasSchedule) {
+                      <span style="color:#dc2626; font-weight:600;">{{ t.appointmentCancelled }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td style="text-align:center; min-width:120px;">
+                    @if (t.attendanceTotal > 0) {
+                      <div class="attendance-cell">
+                        <span style="font-size:12px; font-weight:600;">{{ t.attendancePresent }}/{{ t.attendanceTotal }}</span>
+                        <div class="mini-progress">
+                          <div class="mini-progress-bar" [style.width.%]="attendancePercent(t)"></div>
+                        </div>
+                        <span style="font-size:11px; color:var(--text-muted);">{{ attendancePercent(t) }}%</span>
+                      </div>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <a [routerLink]="['/forms', t.slug, 'list']" class="btn-outline" style="padding:5px 10px; font-size:11px; white-space:nowrap;">
+                      Ver detalhes
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }
+
+  <!-- ══ ATALHOS DE NAVEGAÇÃO ══════════════════════════════════ -->
   <div class="home-grid">
 
     <a routerLink="/forms-all" class="home-card">

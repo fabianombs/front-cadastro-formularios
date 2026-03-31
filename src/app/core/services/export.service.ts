@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { FormSubmission, AppointmentResponse, AttendanceRecord } from './form-template.service';
+import { DashboardSummary } from './dashboard.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExportService {
@@ -70,6 +71,53 @@ export class ExportService {
     });
 
     this.writeFile(rows, `presenca_${this.slug(templateName)}`);
+  }
+
+  // ─────────────────────────────────────────────
+  // DASHBOARD RESUMO
+  // ─────────────────────────────────────────────
+  exportDashboard(summary: DashboardSummary): void {
+    const wb = XLSX.utils.book_new();
+
+    // Aba 1 — Resumo geral
+    const resumo = [
+      { 'Métrica': 'Total de Formulários',     'Valor': summary.totalTemplates },
+      { 'Métrica': 'Total de Clientes',         'Valor': summary.totalClients },
+      { 'Métrica': 'Total de Submissões',       'Valor': summary.totalSubmissions },
+      { 'Métrica': 'Total de Agendamentos',     'Valor': summary.totalAppointments },
+      { 'Métrica': 'Agend. Confirmados',        'Valor': summary.confirmedAppointments },
+      { 'Métrica': 'Agend. Cancelados',         'Valor': summary.cancelledAppointments },
+      { 'Métrica': 'Total Lista de Presença',   'Valor': summary.totalAttendanceRecords },
+      { 'Métrica': 'Presentes',                 'Valor': summary.presentAttendanceRecords },
+    ];
+    const wsResumo = XLSX.utils.json_to_sheet(resumo);
+    this.autoWidth(wsResumo, resumo as any);
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    // Aba 2 — Por formulário
+    if (summary.templates?.length) {
+      const rows = summary.templates.map(t => ({
+        'Formulário':           t.name,
+        'Cliente':              t.clientName ?? '',
+        'Tem Agenda':           t.hasSchedule ? 'Sim' : 'Não',
+        'Submissões':           t.submissionCount,
+        'Agend. Total':         t.appointmentTotal,
+        'Agend. Confirmados':   t.appointmentConfirmed,
+        'Agend. Cancelados':    t.appointmentCancelled,
+        'Lista Presença Total': t.attendanceTotal,
+        'Presentes':            t.attendancePresent,
+      }));
+      const wsTemplates = XLSX.utils.json_to_sheet(rows);
+      this.autoWidth(wsTemplates, rows as any);
+      XLSX.utils.book_append_sheet(wb, wsTemplates, 'Por Formulário');
+    }
+
+    XLSX.writeFile(wb, `dashboard_${this.formatFileDate()}.xlsx`);
+  }
+
+  private formatFileDate(): string {
+    const now = new Date();
+    return `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
   }
 
   // ─────────────────────────────────────────────
