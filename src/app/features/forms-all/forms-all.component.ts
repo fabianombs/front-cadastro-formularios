@@ -1,14 +1,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { FormTemplateService, FormTemplate, FormSubmission } from '../../core/services/form-template.service';
+import { FormTemplateService, FormTemplate, AppointmentResponse } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-forms-all',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [CommonModule, RouterLink, DatePipe],
   templateUrl: './forms-all.component.html',
   styleUrls: ['./forms-all.component.scss']
 })
@@ -18,15 +18,19 @@ export class FormsAllComponent implements OnInit {
   private auth = inject(AuthService);
 
   templates = signal<FormTemplate[]>([]);
-  submissionsMap = signal<{ [templateId: number]: FormSubmission[] }>({});
+
+  appointmentsMap = signal<{ [templateId: number]: AppointmentResponse[] }>({});
+  submissionsMap = signal<{ [templateId: number]: any[] }>({}); // 🔥 NOVO
+
   loading = signal(true);
 
-  totalSubmissions = computed(() =>
-    Object.values(this.submissionsMap()).reduce((acc, subs) => acc + subs.length, 0)
+  // 📊 métricas
+  totalAppointments = computed(() =>
+    Object.values(this.appointmentsMap()).reduce((acc, list) => acc + list.length, 0)
   );
 
-  templatesWithResponses = computed(() =>
-    Object.values(this.submissionsMap()).filter(subs => subs.length > 0).length
+  templatesWithAppointments = computed(() =>
+    Object.values(this.appointmentsMap()).filter(list => list.length > 0).length
   );
 
   ngOnInit(): void {
@@ -47,26 +51,40 @@ export class FormsAllComponent implements OnInit {
           return;
         }
 
+        // 🔥 AGORA BUSCA OS DOIS
         const calls = templates.map(t =>
-          this.service.getSubmissionsByTemplate(t.id)
+          forkJoin({
+            appointments: this.service.getAppointmentsByTemplate(t.id),
+            submissions: this.service.getSubmissionsByTemplate(t.id)
+          })
         );
 
         forkJoin(calls).subscribe({
           next: (results) => {
 
-            const map: { [key: number]: FormSubmission[] } = {};
+            const appMap: { [key: number]: AppointmentResponse[] } = {};
+            const subMap: { [key: number]: any[] } = {};
 
             templates.forEach((t, index) => {
-              map[t.id] = results[index];
+              appMap[t.id] = results[index].appointments;
+              subMap[t.id] = results[index].submissions;
             });
 
-            this.submissionsMap.set(map);
+            this.appointmentsMap.set(appMap);
+            this.submissionsMap.set(subMap);
+
             this.loading.set(false);
           },
-          error: () => this.loading.set(false)
+          error: (err) => {
+            console.error('Erro ao buscar dados:', err);
+            this.loading.set(false);
+          }
         });
       },
-      error: () => this.loading.set(false)
+      error: (err) => {
+        console.error('Erro ao buscar templates:', err);
+        this.loading.set(false);
+      }
     });
   }
 }

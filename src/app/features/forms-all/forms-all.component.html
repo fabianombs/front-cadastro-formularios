@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Formulários</h1>
-      <p class="page-subtitle">Gerencie seus formulários e acompanhe as respostas</p>
+      <p class="page-subtitle">Gerencie seus formulários e acompanhe os dados</p>
     </div>
     <a routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
   </div>
@@ -27,28 +27,36 @@
     </div>
   }
 
-  <!-- Stats -->
+  <!-- Conteúdo -->
   @if (!loading() && templates().length > 0) {
+
+    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
         <span class="stat-value">{{ templates().length }}</span>
-        <span class="stat-label">Formulários ativos</span>
+        <span class="stat-label">Formulários</span>
       </div>
       <div class="stat-card">
-        <span class="stat-value">{{ totalSubmissions() }}</span>
-        <span class="stat-label">Respostas recebidas</span>
+        <span class="stat-value">{{ totalAppointments() }}</span>
+        <span class="stat-label">Agendamentos</span>
       </div>
       <div class="stat-card">
-        <span class="stat-value">{{ templatesWithResponses() }}</span>
-        <span class="stat-label">Com respostas</span>
+        <span class="stat-value">{{ templatesWithAppointments() }}</span>
+        <span class="stat-label">Com agenda</span>
       </div>
     </div>
 
-    <!-- Cards Grid -->
+    <!-- Cards -->
     <div class="templates-grid">
       @for (t of templates(); track t.id) {
+
+        @let apps = appointmentsMap()[t.id] ?? [];
+        @let subs = submissionsMap()[t.id] ?? [];
+        @let hasAppointments = apps.length > 0;
+
         <div class="template-card">
 
+          <!-- HEADER -->
           <div class="tc-header">
             <div class="tc-icon">{{ t.name.charAt(0).toUpperCase() }}</div>
             <div class="tc-meta">
@@ -57,38 +65,79 @@
             </div>
           </div>
 
+          <!-- STATS -->
           <div class="tc-stats">
             <div class="tc-stat">
-              <span class="tc-stat-value">{{ submissionsMap()[t.id]?.length ?? 0 }}</span>
-              <span class="tc-stat-label">Respostas</span>
+              <span class="tc-stat-value">
+                {{ hasAppointments ? apps.length : subs.length }}
+              </span>
+              <span class="tc-stat-label">
+                {{ hasAppointments ? 'Agendamentos' : 'Respostas' }}
+              </span>
             </div>
+
             <div class="tc-divider"></div>
+
             <div class="tc-stat">
               <span class="tc-stat-value">{{ t.fields?.length ?? 0 }}</span>
               <span class="tc-stat-label">Campos</span>
             </div>
           </div>
 
+          <!-- ACTIONS -->
           <div class="tc-actions">
-            <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
-            <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
+            <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">
+              Preencher
+            </a>
+
+            <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">
+              {{ hasAppointments ? 'Ver agenda' : 'Ver respostas' }}
+            </a>
           </div>
 
-          @if ((submissionsMap()[t.id]?.length ?? 0) > 0) {
-            <div class="tc-recent">
-              <p class="tc-recent-title">Últimas respostas</p>
-              @for (s of submissionsMap()[t.id].slice(0, 3); track s.id) {
+          <!-- LISTA -->
+          <div class="tc-recent">
+
+            @if (hasAppointments) {
+
+              <p class="tc-recent-title">Últimos agendamentos</p>
+
+              @for (a of apps.slice(0, 3); track a.id) {
                 <div class="tc-sub-row">
-                  <span class="tc-sub-id">#{{ s.id }}</span>
-                  <span class="tc-sub-date">{{ s.createdAt | date:'dd/MM/yy HH:mm' }}</span>
+                  <span class="tc-sub-id">#{{ a.id }}</span>
+
+                  <span class="tc-sub-date">
+                    {{ a.slotDate | date:'dd/MM/yy' }} {{ a.slotTime }}
+                  </span>
+
+                  <span class="tc-sub-date">
+                    {{ a.bookedByName }}
+                  </span>
                 </div>
               }
-            </div>
-          }
+
+            } @else {
+
+              <p class="tc-recent-title">Últimas respostas</p>
+
+              @for (s of subs.slice(0, 3); track s.id) {
+                <div class="tc-sub-row">
+                  <span class="tc-sub-id">#{{ s.id }}</span>
+
+                  <span class="tc-sub-date">
+                    {{ s.createdAt | date:'dd/MM/yy HH:mm' }}
+                  </span>
+                </div>
+              }
+
+            }
+
+          </div>
 
         </div>
       }
     </div>
+
   }
 
 </div>
