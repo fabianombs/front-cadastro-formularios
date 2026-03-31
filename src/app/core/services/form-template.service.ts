@@ -190,9 +190,9 @@ export class FormTemplateService {
     );
   }
 
-  getAttendance(templateId: number): Observable<AttendanceRecord[]> {
-    return this.http.get<AttendanceRecord[]>(
-      `http://localhost:8080/attendance/template/${templateId}`
+  getAttendance(templateId: number, page = 0, size = 1000): Observable<PageResponse<AttendanceRecord>> {
+    return this.http.get<PageResponse<AttendanceRecord>>(
+      `http://localhost:8080/attendance/template/${templateId}?page=${page}&size=${size}`
     );
   }
 
