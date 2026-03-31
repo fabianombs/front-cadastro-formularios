@@ -18,6 +18,11 @@ export class ClienteComponent implements OnInit {
   clients = signal<Client[]>([]);
   loading = signal(true);
 
+  page = signal(0);
+  readonly size = 10;
+  totalPages = signal(0);
+  totalElements = signal(0);
+
   ngOnInit() {
     this.loadClients();
   }
@@ -25,13 +30,29 @@ export class ClienteComponent implements OnInit {
   loadClients() {
     this.loading.set(true);
 
-    this.service.findAll().subscribe({
+    this.service.findAll(this.page(), this.size).subscribe({
       next: (res) => {
-        this.clients.set(res); // ⚠️ Page<>
+        this.clients.set(res.content);
+        this.totalPages.set(res.totalPages);
+        this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  nextPage() {
+    if (this.page() < this.totalPages() - 1) {
+      this.page.update(p => p + 1);
+      this.loadClients();
+    }
+  }
+
+  prevPage() {
+    if (this.page() > 0) {
+      this.page.update(p => p - 1);
+      this.loadClients();
+    }
   }
 
   isAdmin() {

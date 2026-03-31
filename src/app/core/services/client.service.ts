@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { PageResponse } from '../models/page-response.model';
 
 export interface Client {
   id: number;
@@ -31,10 +32,8 @@ export class ClientService {
     return this.http.post<Client>(this.api, data);
   }
 
- // 🔹 Busca todos os clientes e extrai apenas o content
-  findAll(page = 0, size = 10): Observable<Client[]> {
-    return this.http.get<any>(`${this.api}?page=${page}&size=${size}`)
-      .pipe(map(res => res.content)); // Extrai o array de clientes
+  findAll(page = 0, size = 10): Observable<PageResponse<Client>> {
+    return this.http.get<PageResponse<Client>>(`${this.api}?page=${page}&size=${size}`);
   }
 
   delete(id: number) {

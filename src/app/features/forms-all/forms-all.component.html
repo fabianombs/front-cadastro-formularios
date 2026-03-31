@@ -33,7 +33,7 @@
     <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
-        <span class="stat-value">{{ templates().length }}</span>
+        <span class="stat-value">{{ totalElements() }}</span>
         <span class="stat-label">Formulários</span>
       </div>
       <div class="stat-card">
@@ -105,14 +105,10 @@
               @for (a of apps.slice(0, 3); track a.id) {
                 <div class="tc-sub-row">
                   <span class="tc-sub-id">#{{ a.id }}</span>
-
                   <span class="tc-sub-date">
                     {{ a.slotDate | date:'dd/MM/yy' }} {{ a.slotTime }}
                   </span>
-
-                  <span class="tc-sub-date">
-                    {{ a.bookedByName }}
-                  </span>
+                  <span class="tc-sub-date">{{ a.bookedByName }}</span>
                 </div>
               }
 
@@ -123,7 +119,6 @@
               @for (s of subs.slice(0, 3); track s.id) {
                 <div class="tc-sub-row">
                   <span class="tc-sub-id">#{{ s.id }}</span>
-
                   <span class="tc-sub-date">
                     {{ s.createdAt | date:'dd/MM/yy HH:mm' }}
                   </span>
@@ -137,6 +132,15 @@
         </div>
       }
     </div>
+
+    <!-- Paginação -->
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="btn-outline" [disabled]="page() === 0" (click)="prevPage()">← Anterior</button>
+        <span class="pagination-info">Página {{ page() + 1 }} de {{ totalPages() }} &nbsp;·&nbsp; {{ totalElements() }} formulários</span>
+        <button class="btn-outline" [disabled]="page() >= totalPages() - 1" (click)="nextPage()">Próxima →</button>
+      </div>
+    }
 
   }
 

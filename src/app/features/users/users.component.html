@@ -76,6 +76,15 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Paginação -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="btn-outline" [disabled]="page() === 0" (click)="prevPage()">← Anterior</button>
+          <span class="pagination-info">Página {{ page() + 1 }} de {{ totalPages() }} &nbsp;·&nbsp; {{ totalElements() }} registros</span>
+          <button class="btn-outline" [disabled]="page() >= totalPages() - 1" (click)="nextPage()">Próxima →</button>
+        </div>
+      }
     </div>
   }
 

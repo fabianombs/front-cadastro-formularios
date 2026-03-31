@@ -11,6 +11,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ExportService } from '../../core/services/export.service';
 import { FormsModule } from '@angular/forms';
+import { map } from 'rxjs/operators';
 
 interface FilterableField {
   col: string;
@@ -82,7 +83,7 @@ export class TemplateListComponent implements OnInit {
       next: (t) => {
         this.template.set(t);
 
-        this.service.getAppointmentsByTemplate(t.id).subscribe({
+        this.service.getAppointmentsByTemplate(t.id, 0, 500).pipe(map(p => p.content)).subscribe({
           next: (apps) => this.appointments.set(apps),
           error: ()   => this.appointments.set([])
         });
@@ -98,7 +99,7 @@ export class TemplateListComponent implements OnInit {
           error: () => this.attendance.set([])
         });
 
-        this.service.getSubmissionsByTemplate(t.id).subscribe({
+        this.service.getSubmissionsByTemplate(t.id, 0, 500).pipe(map(p => p.content)).subscribe({
           next: (subs) => {
             this.submissions.set(subs);
             this.buildColumns(subs);

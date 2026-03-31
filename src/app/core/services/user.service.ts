@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { PageResponse } from '../models/page-response.model';
 
 export interface User {
   id: number;
@@ -21,8 +22,8 @@ export class UserService {
   private http = inject(HttpClient);
   private api = 'http://localhost:8080/users';
 
-  findAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.api);
+  findAll(page = 0, size = 10): Observable<PageResponse<User>> {
+    return this.http.get<PageResponse<User>>(`${this.api}?page=${page}&size=${size}`);
   }
 
   update(id: number, data: UpdateUserRequest): Observable<void> {

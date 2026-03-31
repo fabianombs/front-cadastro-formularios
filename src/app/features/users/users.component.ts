@@ -17,6 +17,11 @@ export class UsersComponent implements OnInit {
   users = signal<User[]>([]);
   loading = signal(true);
 
+  page = signal(0);
+  readonly size = 10;
+  totalPages = signal(0);
+  totalElements = signal(0);
+
   editingUserId = signal<number | null>(null);
   editedUser = signal<Partial<User>>({});
 
@@ -27,18 +32,32 @@ export class UsersComponent implements OnInit {
   loadUsers() {
     this.loading.set(true);
 
-    this.userService.findAll().subscribe({
+    this.userService.findAll(this.page(), this.size).subscribe({
       next: (res) => {
-        this.users.set(res);
+        this.users.set(res.content);
+        this.totalPages.set(res.totalPages);
+        this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
 
+  nextPage() {
+    if (this.page() < this.totalPages() - 1) {
+      this.page.update(p => p + 1);
+      this.loadUsers();
+    }
+  }
+
+  prevPage() {
+    if (this.page() > 0) {
+      this.page.update(p => p - 1);
+      this.loadUsers();
+    }
+  }
+
   isAdmin() {
-    console.log("####################################################", this.authService.isAdmin());
-    
     return this.authService.isAdmin();
   }
 
