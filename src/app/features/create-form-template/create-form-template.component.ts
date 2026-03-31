@@ -142,7 +142,7 @@ export class CreateTemplateComponent implements OnInit {
 
   loadClients() {
     this.clientService.findAll(0, 100).subscribe({
-      next: clients => { this.clients = clients; this.cdr.detectChanges(); },
+      next: res => { this.clients = res.content; this.cdr.detectChanges(); },
       error: () => console.error('Erro ao carregar clientes')
     });
   }

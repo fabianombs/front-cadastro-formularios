@@ -1,15 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormTemplateService, FormTemplate, FormSubmission } from '../../core/services/form-template.service';
 import { signal } from '@angular/core';
 import { DatePipe, KeyValuePipe } from '@angular/common';
+import { map } from 'rxjs/operators';
 
 
 
 @Component({
   selector: 'app-template-submission',
   standalone: true,
-  imports: [DatePipe, KeyValuePipe],
+  imports: [DatePipe, KeyValuePipe, RouterLink],
   templateUrl: './template-submission.component.html',
   styleUrls: ['./template-submission.component.scss']
 })
@@ -41,7 +42,7 @@ ngOnInit(): void {
     next: (t) => {
       this.template.set(t);
 
-      this.service.getSubmissionsByTemplate(t.id).subscribe({
+      this.service.getSubmissionsByTemplate(t.id).pipe(map(p => p.content)).subscribe({
         next: (subs) => {
           this.submissions.set(subs);
           this.loading.set(false);

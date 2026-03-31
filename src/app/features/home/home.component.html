@@ -7,6 +7,39 @@
     </div>
   </div>
 
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner"></div></div>
+  }
+
+  @if (!loading() && summary()) {
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.totalTemplates }}</span>
+        <span class="stat-label">Formulários</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.totalClients }}</span>
+        <span class="stat-label">Clientes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.totalSubmissions }}</span>
+        <span class="stat-label">Submissões</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.confirmedAppointments }}</span>
+        <span class="stat-label">Agend. confirmados</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.cancelledAppointments }}</span>
+        <span class="stat-label">Agend. cancelados</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ summary()!.presentAttendanceRecords }} / {{ summary()!.totalAttendanceRecords }}</span>
+        <span class="stat-label">Presença</span>
+      </div>
+    </div>
+  }
+
   <div class="home-grid">
 
     <a routerLink="/forms-all" class="home-card">
