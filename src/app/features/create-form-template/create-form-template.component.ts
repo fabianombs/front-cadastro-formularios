@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } fr
 import { CommonModule } from '@angular/common';
 import { FormTemplateService, FormTemplate, CreateFormTemplateRequest } from '../../core/services/form-template.service';
 import { ClientService, Client } from '../../core/services/client.service';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { switchMap, of } from 'rxjs';
 
 @Component({
@@ -16,7 +16,7 @@ import { switchMap, of } from 'rxjs';
 export class CreateTemplateComponent implements OnInit {
 
   public templateForm: FormGroup;
-  public clients: Client[] = []; // Lista de clientes da API
+  public clients: Client[] = [];
 
   public template: FormTemplate | null = null;
   public slug: string | null = null;
@@ -25,20 +25,56 @@ export class CreateTemplateComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private templateService: FormTemplateService,
-    private clientService: ClientService, // ✅ Usando o ClientService correto
+    private clientService: ClientService,
     private route: ActivatedRoute,
-    private router: Router,
     private cdr: ChangeDetectorRef
   ) {
     this.templateForm = this.fb.group({
       name: ['', Validators.required],
       clientId: [null, Validators.required],
-      fields: this.fb.array([])
+      fields: this.fb.array([]),
+      hasSchedule: [false],
+      scheduleConfig: this.fb.group({
+        startTime: ['08:00'],
+        endTime: ['17:00'],
+        slotDurationMinutes: [60, [Validators.min(15), Validators.max(480)]],
+        maxDaysAhead: [30, [Validators.min(1), Validators.max(365)]]
+      })
     });
   }
 
   get fields(): FormArray {
     return this.templateForm.get('fields') as FormArray;
+  }
+
+  get hasSchedule(): boolean {
+    return this.templateForm.get('hasSchedule')?.value === true;
+  }
+
+  get scheduleConfig(): FormGroup {
+    return this.templateForm.get('scheduleConfig') as FormGroup;
+  }
+
+  get previewSlots(): string[] {
+    if (!this.hasSchedule) return [];
+    const cfg = this.scheduleConfig.value;
+    if (!cfg.startTime || !cfg.endTime || !cfg.slotDurationMinutes) return [];
+    return this.generateSlotPreview(cfg.startTime, cfg.endTime, cfg.slotDurationMinutes);
+  }
+
+  private generateSlotPreview(start: string, end: string, duration: number): string[] {
+    const slots: string[] = [];
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    let totalStart = sh * 60 + sm;
+    const totalEnd = eh * 60 + em;
+    while (totalStart + duration <= totalEnd) {
+      const h = Math.floor(totalStart / 60).toString().padStart(2, '0');
+      const m = (totalStart % 60).toString().padStart(2, '0');
+      slots.push(`${h}:${m}`);
+      totalStart += duration;
+    }
+    return slots;
   }
 
   ngOnInit(): void {
@@ -83,11 +119,10 @@ export class CreateTemplateComponent implements OnInit {
     this.fields.removeAt(i);
   }
 
-  // 🔹 Carrega clientes da API real
   loadClients() {
-    this.clientService.findAll(0, 100).subscribe({ // Pegando até 100 clientes
+    this.clientService.findAll(0, 100).subscribe({
       next: clients => {
-        this.clients = clients; // ✔️ Array de clientes extraído do content
+        this.clients = clients;
         this.cdr.detectChanges();
       },
       error: () => console.error('Erro ao carregar clientes')
@@ -97,10 +132,17 @@ export class CreateTemplateComponent implements OnInit {
   submit() {
     if (this.templateForm.invalid) return;
 
+    const formValue = this.templateForm.value;
     const payload: CreateFormTemplateRequest = {
-      name: this.templateForm.value.name,
-      clientId: this.templateForm.value.clientId,
-      fields: this.templateForm.value.fields
+      name: formValue.name,
+      clientId: formValue.clientId,
+      fields: formValue.fields,
+      scheduleConfig: formValue.hasSchedule ? {
+        startTime: formValue.scheduleConfig.startTime + ':00',
+        endTime: formValue.scheduleConfig.endTime + ':00',
+        slotDurationMinutes: formValue.scheduleConfig.slotDurationMinutes,
+        maxDaysAhead: formValue.scheduleConfig.maxDaysAhead
+      } : null
     };
 
     this.templateService.createTemplate(payload.clientId, payload).subscribe({
@@ -120,8 +162,18 @@ export class CreateTemplateComponent implements OnInit {
   loadTemplateToForm(template: FormTemplate) {
     this.templateForm.patchValue({
       name: template.name,
-      clientId: (template as any).clientId ?? null
+      clientId: (template as any).clientId ?? null,
+      hasSchedule: template.hasSchedule
     });
+
+    if (template.hasSchedule && template.scheduleConfig) {
+      this.scheduleConfig.patchValue({
+        startTime: template.scheduleConfig.startTime.substring(0, 5),
+        endTime: template.scheduleConfig.endTime.substring(0, 5),
+        slotDurationMinutes: template.scheduleConfig.slotDurationMinutes,
+        maxDaysAhead: template.scheduleConfig.maxDaysAhead
+      });
+    }
 
     this.fields.clear();
     template.fields.forEach(f => {

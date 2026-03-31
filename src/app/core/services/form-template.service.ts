@@ -10,18 +10,28 @@ export interface FormField {
   required: boolean;
 }
 
+export interface ScheduleConfig {
+  startTime: string;   // "HH:mm:ss"
+  endTime: string;
+  slotDurationMinutes: number;
+  maxDaysAhead: number;
+}
+
 export interface FormTemplate {
   id: number;
   name: string;
   slug: string;
   clientName: string;
   fields: FormField[];
+  hasSchedule: boolean;
+  scheduleConfig: ScheduleConfig | null;
 }
 
 export interface CreateFormTemplateRequest {
   name: string;
   clientId: number;
-  fields: FormField[];
+  fields: Omit<FormField, 'id'>[];
+  scheduleConfig?: ScheduleConfig | null;
 }
 
 export interface FormSubmission {
@@ -31,10 +41,45 @@ export interface FormSubmission {
   createdAt: string;
 }
 
-// 🔥 CORRETO
 export interface CreateFormSubmissionRequest {
   templateId: number;
   values: { [key: string]: string };
+}
+
+// ===== AGENDAMENTO =====
+
+export interface SlotInfo {
+  time: string;      // "HH:mm:ss"
+  available: boolean;
+}
+
+export interface AvailableSlotsResponse {
+  date: string;      // "YYYY-MM-DD"
+  slots: SlotInfo[];
+}
+
+export interface BookAppointmentRequest {
+  templateId: number;
+  slotDate: string;         // "YYYY-MM-DD"
+  slotTime: string;         // "HH:mm:ss"
+  bookedByName: string;
+  bookedByContact: string;
+  extraValues: { [key: string]: string };
+}
+
+export interface AppointmentResponse {
+  id: number;
+  templateId: number;
+  templateName: string;
+  slotDate: string;
+  slotTime: string;
+  status: 'AGENDADO' | 'CANCELADO';
+  bookedByName: string;
+  bookedByContact: string;
+  cancelledBy: string | null;
+  cancelledAt: string | null;
+  extraValues: { [key: string]: string };
+  createdAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +87,7 @@ export class FormTemplateService {
 
   private apiUrl = 'http://localhost:8080/form-templates';
   private submissionsUrl = 'http://localhost:8080/form-submissions';
+  private appointmentsUrl = 'http://localhost:8080/appointments';
 
   constructor(private http: HttpClient) {}
 
@@ -71,12 +117,37 @@ export class FormTemplateService {
     return this.http.post<FormSubmission>(this.submissionsUrl, payload);
   }
 
-  // 🔥 NOVO PADRÃO
   getSubmissionsByTemplate(templateId: number): Observable<FormSubmission[]> {
     return this.http.get<FormSubmission[]>(`${this.submissionsUrl}/template/${templateId}`);
   }
 
   getSubmissionsBySlug(slug: string): Observable<FormSubmission[]> {
     return this.http.get<FormSubmission[]>(`${this.submissionsUrl}/slug/${slug}`);
+  }
+
+  // ================= AGENDAMENTOS =================
+
+  getAvailableSlots(templateId: number, date: string): Observable<AvailableSlotsResponse> {
+    return this.http.get<AvailableSlotsResponse>(
+      `${this.appointmentsUrl}/template/${templateId}/slots?date=${date}`
+    );
+  }
+
+  getAvailableSlotsRange(templateId: number, from: string, to: string): Observable<AvailableSlotsResponse[]> {
+    return this.http.get<AvailableSlotsResponse[]>(
+      `${this.appointmentsUrl}/template/${templateId}/slots/range?from=${from}&to=${to}`
+    );
+  }
+
+  bookAppointment(payload: BookAppointmentRequest): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`${this.appointmentsUrl}/book`, payload);
+  }
+
+  cancelAppointment(appointmentId: number): Observable<AppointmentResponse> {
+    return this.http.patch<AppointmentResponse>(`${this.appointmentsUrl}/${appointmentId}/cancel`, {});
+  }
+
+  getAppointmentsByTemplate(templateId: number): Observable<AppointmentResponse[]> {
+    return this.http.get<AppointmentResponse[]>(`${this.appointmentsUrl}/template/${templateId}`);
   }
 }
