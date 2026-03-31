@@ -5,9 +5,11 @@ import {
   FormTemplateService,
   FormTemplate,
   FormSubmission,
-  AppointmentResponse
+  AppointmentResponse,
+  AttendanceRecord
 } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 import { FormsModule } from '@angular/forms';
 
 interface FilterableField {
@@ -28,6 +30,7 @@ export class TemplateListComponent implements OnInit {
 
   private route    = inject(ActivatedRoute);
   private service  = inject(FormTemplateService);
+  private exporter = inject(ExportService);
   public  auth     = inject(AuthService);
 
   // ── Estado base ─────────────────────────────────────────────
@@ -38,7 +41,7 @@ export class TemplateListComponent implements OnInit {
   loading     = signal(true);
 
   // ── Aba ativa ────────────────────────────────────────────────
-  activeTab   = signal<'appointments' | 'submissions'>('appointments');
+  activeTab   = signal<'appointments' | 'submissions' | 'attendance'>('appointments');
 
   // ── Filtros globais ─────────────────────────────────────────
   globalSearch    = signal('');
@@ -53,6 +56,23 @@ export class TemplateListComponent implements OnInit {
   cancellingId    = signal<number | null>(null);
   deletingId      = signal<number | null>(null);
 
+  // ── Presença ─────────────────────────────────────────────────
+  attendance      = signal<AttendanceRecord[]>([]);
+  attendanceCols  = computed<string[]>(() => {
+    const keys = new Set<string>();
+    this.attendance().forEach(r => Object.keys(r.rowData || {}).forEach(k => keys.add(k)));
+    return Array.from(keys);
+  });
+  attendanceStats = computed(() => ({
+    total    : this.attendance().length,
+    presente : this.attendance().filter(r => r.attended).length,
+    ausente  : this.attendance().filter(r => !r.attended).length,
+  }));
+  markingId       = signal<number | null>(null);
+
+  // Busca local dentro da aba presença
+  attendanceSearch = signal('');
+
   // ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -61,11 +81,21 @@ export class TemplateListComponent implements OnInit {
     this.service.getTemplateBySlug(slug).subscribe({
       next: (t) => {
         this.template.set(t);
-        this.activeTab.set(t.hasSchedule ? 'appointments' : 'submissions');
 
         this.service.getAppointmentsByTemplate(t.id).subscribe({
           next: (apps) => this.appointments.set(apps),
           error: ()   => this.appointments.set([])
+        });
+
+        this.service.getAttendance(t.id).subscribe({
+          next: (recs) => {
+            this.attendance.set(recs);
+            // Define aba padrão após carregar tudo
+            if (t.hasSchedule) this.activeTab.set('appointments');
+            else if (recs.length > 0) this.activeTab.set('attendance');
+            else this.activeTab.set('submissions');
+          },
+          error: () => this.attendance.set([])
         });
 
         this.service.getSubmissionsByTemplate(t.id).subscribe({
@@ -298,6 +328,64 @@ export class TemplateListComponent implements OnInit {
   clearAllFilters() {
     this.globalSearch.set('');
     this.fieldFilters.set({});
+  }
+
+  // ── Presença filtrada ────────────────────────────────────────
+  filteredAttendance = computed<AttendanceRecord[]>(() => {
+    const search = this.attendanceSearch().toLowerCase().trim();
+    if (!search) return this.attendance();
+    return this.attendance().filter(r =>
+      Object.values(r.rowData || {}).some(v => v.toLowerCase().includes(search)) ||
+      (r.notes ?? '').toLowerCase().includes(search)
+    );
+  });
+
+  toggleAttendance(record: AttendanceRecord) {
+    this.markingId.set(record.id);
+    this.service.markAttendance(record.id, {
+      attended: !record.attended,
+      notes: record.notes ?? null
+    }).subscribe({
+      next: (updated) => {
+        this.attendance.update(list => list.map(r => r.id === record.id ? updated : r));
+        this.markingId.set(null);
+      },
+      error: () => {
+        alert('Erro ao atualizar presença.');
+        this.markingId.set(null);
+      }
+    });
+  }
+
+  saveNote(record: AttendanceRecord, note: string) {
+    this.service.markAttendance(record.id, {
+      attended: record.attended,
+      notes: note || null
+    }).subscribe({
+      next: (updated) => {
+        this.attendance.update(list => list.map(r => r.id === record.id ? updated : r));
+      },
+      error: () => alert('Erro ao salvar observação.')
+    });
+  }
+
+  // ── Exports ──────────────────────────────────────────────────
+  exportSubmissionsXlsx() {
+    const t = this.template();
+    if (!t) return;
+    this.exporter.exportSubmissions(this.filteredSubmissions(), t.name);
+  }
+
+  exportAppointmentsXlsx() {
+    const t = this.template();
+    if (!t) return;
+    this.exporter.exportAppointments(this.filteredAppointments(), t.name);
+  }
+
+  exportAttendanceXlsx() {
+    const t = this.template();
+    if (!t) return;
+    this.exporter.exportAttendance(this.filteredAttendance(), t.name);
   }
 
   doDelete(id: number) {

@@ -1,8 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormTemplateService, FormTemplate, CreateFormTemplateRequest } from '../../core/services/form-template.service';
+import {
+  FormTemplateService,
+  FormTemplate,
+  CreateFormTemplateRequest,
+  AttendanceRecord
+} from '../../core/services/form-template.service';
 import { ClientService, Client } from '../../core/services/client.service';
+import { ExportService } from '../../core/services/export.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { switchMap, of } from 'rxjs';
 
@@ -22,10 +28,22 @@ export class CreateTemplateComponent implements OnInit {
   public slug: string | null = null;
   public loading = false;
 
+  // Presença — dados em memória antes de criar o template
+  public pendingAttendanceRows: Record<string, string>[] = [];
+  public pendingAttendanceCols: string[] = [];
+  public pendingAttendanceFileName = '';
+  public parsingFile = false;
+
+  // Presença — dados já salvos (view mode)
+  public attendanceRecords: AttendanceRecord[] = [];
+  public attendanceCols: string[] = [];
+  public importingAttendance = false;
+
   constructor(
     private fb: FormBuilder,
     private templateService: FormTemplateService,
     private clientService: ClientService,
+    private exportService: ExportService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {
@@ -34,6 +52,7 @@ export class CreateTemplateComponent implements OnInit {
       clientId: [null, Validators.required],
       fields: this.fb.array([]),
       hasSchedule: [false],
+      hasAttendance: [false],
       scheduleConfig: this.fb.group({
         startTime: ['08:00'],
         endTime: ['17:00'],
@@ -49,6 +68,10 @@ export class CreateTemplateComponent implements OnInit {
 
   get hasSchedule(): boolean {
     return this.templateForm.get('hasSchedule')?.value === true;
+  }
+
+  get hasAttendance(): boolean {
+    return this.templateForm.get('hasAttendance')?.value === true;
   }
 
   get scheduleConfig(): FormGroup {
@@ -97,13 +120,11 @@ export class CreateTemplateComponent implements OnInit {
           if (res) {
             this.template = res;
             this.loadTemplateToForm(res);
+            this.loadAttendance(res.id);
           }
           this.loading = false;
         },
-        error: () => {
-          console.error('Erro ao carregar template');
-          this.loading = false;
-        }
+        error: () => { this.loading = false; }
       });
   }
 
@@ -121,14 +142,45 @@ export class CreateTemplateComponent implements OnInit {
 
   loadClients() {
     this.clientService.findAll(0, 100).subscribe({
-      next: clients => {
-        this.clients = clients;
-        this.cdr.detectChanges();
-      },
+      next: clients => { this.clients = clients; this.cdr.detectChanges(); },
       error: () => console.error('Erro ao carregar clientes')
     });
   }
 
+  // ── Upload no CREATE mode ──────────────────────────────────────
+  onPendingFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.parsingFile = true;
+    this.pendingAttendanceFileName = file.name;
+
+    this.exportService.readExcelFile(file).then(rows => {
+      this.pendingAttendanceRows = rows;
+      const keys = new Set<string>();
+      rows.forEach(r => Object.keys(r).forEach(k => keys.add(k)));
+      this.pendingAttendanceCols = Array.from(keys);
+      this.parsingFile = false;
+      this.cdr.detectChanges();
+    }).catch(() => {
+      alert('Arquivo inválido. Use .xlsx ou .xls');
+      this.pendingAttendanceFileName = '';
+      this.pendingAttendanceRows = [];
+      this.pendingAttendanceCols = [];
+      this.parsingFile = false;
+    });
+
+    input.value = '';
+  }
+
+  clearPendingFile() {
+    this.pendingAttendanceRows = [];
+    this.pendingAttendanceCols = [];
+    this.pendingAttendanceFileName = '';
+  }
+
+  // ── Submit ────────────────────────────────────────────────────
   submit() {
     if (this.templateForm.invalid) return;
 
@@ -147,13 +199,27 @@ export class CreateTemplateComponent implements OnInit {
 
     this.templateService.createTemplate(payload.clientId, payload).subscribe({
       next: (res: FormTemplate) => {
-        alert('Template criado com sucesso!');
         this.template = res;
         this.slug = res.slug;
         this.loadTemplateToForm(res);
+
+        // Se tem lista pendente, importa logo após criar
+        if (formValue.hasAttendance && this.pendingAttendanceRows.length > 0) {
+          this.importingAttendance = true;
+          this.templateService.importAttendance(res.id, { rows: this.pendingAttendanceRows }).subscribe({
+            next: (records) => {
+              this.setAttendanceRecords(records);
+              this.importingAttendance = false;
+              this.cdr.detectChanges();
+            },
+            error: () => {
+              alert('Template criado, mas houve erro ao importar a lista de presença.');
+              this.importingAttendance = false;
+            }
+          });
+        }
       },
       error: (err) => {
-        console.error('Erro ao criar template:', err.status, err.error);
         alert(`Erro ao criar template (${err.status}): ${err.error?.message ?? 'Verifique o console'}`);
       }
     });
@@ -185,6 +251,53 @@ export class CreateTemplateComponent implements OnInit {
     });
 
     this.cdr.detectChanges();
+  }
+
+  // ── Attendance (view mode) ─────────────────────────────────────
+  loadAttendance(templateId: number) {
+    this.templateService.getAttendance(templateId).subscribe({
+      next: (records) => this.setAttendanceRecords(records),
+      error: () => {}
+    });
+  }
+
+  onAttendanceFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.template) return;
+
+    this.importingAttendance = true;
+    this.exportService.readExcelFile(file).then(rows => {
+      this.templateService.importAttendance(this.template!.id, { rows }).subscribe({
+        next: (records) => {
+          this.setAttendanceRecords(records);
+          this.importingAttendance = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          alert('Erro ao importar planilha.');
+          this.importingAttendance = false;
+        }
+      });
+    }).catch(() => {
+      alert('Arquivo inválido. Use .xlsx ou .xls');
+      this.importingAttendance = false;
+    });
+
+    input.value = '';
+  }
+
+  private setAttendanceRecords(records: AttendanceRecord[]) {
+    this.attendanceRecords = records;
+    const keys = new Set<string>();
+    records.forEach(r => Object.keys(r.rowData || {}).forEach(k => keys.add(k)));
+    this.attendanceCols = Array.from(keys);
+    this.cdr.detectChanges();
+  }
+
+  exportAttendance() {
+    if (!this.template) return;
+    this.exportService.exportAttendance(this.attendanceRecords, this.template.name);
   }
 
   get formLink(): string {

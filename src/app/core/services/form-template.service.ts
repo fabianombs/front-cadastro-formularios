@@ -67,6 +67,28 @@ export interface BookAppointmentRequest {
   extraValues: { [key: string]: string };
 }
 
+// ===== LISTA DE PRESENÇA =====
+
+export interface AttendanceRecord {
+  id: number;
+  templateId: number;
+  rowData: { [key: string]: string };
+  attended: boolean;
+  attendedAt: string | null;
+  notes: string | null;
+  rowOrder: number;
+  createdAt: string;
+}
+
+export interface ImportAttendanceRequest {
+  rows: { [key: string]: string }[];
+}
+
+export interface MarkAttendanceRequest {
+  attended: boolean;
+  notes: string | null;
+}
+
 export interface AppointmentResponse {
   id: number;
   templateId: number;
@@ -149,6 +171,36 @@ export class FormTemplateService {
 
   deleteSubmission(submissionId: number): Observable<void> {
     return this.http.delete<void>(`${this.submissionsUrl}/${submissionId}`);
+  }
+
+  // ================= ATTENDANCE =================
+
+  importAttendance(templateId: number, payload: ImportAttendanceRequest): Observable<AttendanceRecord[]> {
+    return this.http.post<AttendanceRecord[]>(
+      `http://localhost:8080/attendance/template/${templateId}/import`, payload
+    );
+  }
+
+  getAttendance(templateId: number): Observable<AttendanceRecord[]> {
+    return this.http.get<AttendanceRecord[]>(
+      `http://localhost:8080/attendance/template/${templateId}`
+    );
+  }
+
+  markAttendance(recordId: number, payload: MarkAttendanceRequest): Observable<AttendanceRecord> {
+    return this.http.patch<AttendanceRecord>(
+      `http://localhost:8080/attendance/${recordId}/mark`, payload
+    );
+  }
+
+  updateAttendanceRowData(recordId: number, rowData: { [key: string]: string }): Observable<AttendanceRecord> {
+    return this.http.patch<AttendanceRecord>(
+      `http://localhost:8080/attendance/${recordId}/data`, rowData
+    );
+  }
+
+  deleteAttendanceRecord(recordId: number): Observable<void> {
+    return this.http.delete<void>(`http://localhost:8080/attendance/${recordId}`);
   }
 
   getAppointmentsByTemplate(templateId: number): Observable<AppointmentResponse[]> {

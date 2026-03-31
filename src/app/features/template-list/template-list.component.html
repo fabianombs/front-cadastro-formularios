@@ -5,11 +5,7 @@
     <div>
       @if (template()) {
         <h1 class="page-title">{{ template()!.name }}</h1>
-        <p class="page-subtitle">
-          {{ template()!.clientName }}
-          @if (template()!.hasSchedule) { &mdash; Agendamentos }
-          @else { &mdash; Respostas recebidas }
-        </p>
+        <p class="page-subtitle">{{ template()!.clientName }}</p>
       } @else {
         <h1 class="page-title">Respostas</h1>
       }
@@ -24,31 +20,35 @@
 
   @if (!loading()) {
 
-    <!-- ══ TABS (se houver os dois) ═══════════════════════════ -->
-    @if (template()!.hasSchedule && submissions().length > 0) {
-      <div style="display:flex; gap:2px; margin-bottom:16px; background:#f1f5f9; border-radius:10px; padding:4px; width:fit-content;">
-        <button
-          (click)="activeTab.set('appointments')"
-          [style]="activeTab()==='appointments'
-            ? 'background:#fff; color:#1e293b; font-weight:700; border:none; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.08);'
-            : 'background:transparent; color:#64748b; border:none; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer;'">
+    <!-- ══ TABS ═══════════════════════════════════════════════ -->
+    <div style="display:flex; gap:2px; margin-bottom:20px; background:#f1f5f9; border-radius:10px; padding:4px; width:fit-content; flex-wrap:wrap;">
+
+      @if (template()!.hasSchedule) {
+        <button (click)="activeTab.set('appointments')" [class]="activeTab()==='appointments' ? 'tab-btn tab-btn--active' : 'tab-btn'">
           Agendamentos
-          <span style="background:#6366f1;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;">
+          <span [style]="activeTab()==='appointments' ? 'background:#6366f1;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
             {{ appointmentStats().total }}
           </span>
         </button>
-        <button
-          (click)="activeTab.set('submissions')"
-          [style]="activeTab()==='submissions'
-            ? 'background:#fff; color:#1e293b; font-weight:700; border:none; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.08);'
-            : 'background:transparent; color:#64748b; border:none; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer;'">
-          Respostas
-          <span style="background:#3b82f6;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;">
-            {{ submissions().length }}
+      }
+
+      <button (click)="activeTab.set('submissions')" [class]="activeTab()==='submissions' ? 'tab-btn tab-btn--active' : 'tab-btn'">
+        Respostas
+        <span [style]="activeTab()==='submissions' ? 'background:#3b82f6;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
+          {{ submissions().length }}
+        </span>
+      </button>
+
+      @if (attendance().length > 0) {
+        <button (click)="activeTab.set('attendance')" [class]="activeTab()==='attendance' ? 'tab-btn tab-btn--active' : 'tab-btn'">
+          Lista de Presença
+          <span [style]="activeTab()==='attendance' ? 'background:#10b981;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
+            {{ attendanceStats().total }}
           </span>
         </button>
-      </div>
-    }
+      }
+
+    </div>
 
     <!-- ════════════════════════════════════════════════════════ -->
     <!-- ABA: AGENDAMENTOS                                        -->
@@ -76,30 +76,26 @@
         <div class="search-row">
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar por nome, contato, data..."
-              [ngModel]="globalSearch()"
-              (ngModelChange)="globalSearch.set($event)" />
+            <input type="text" class="search-input" placeholder="Buscar por nome, contato, data..."
+              [ngModel]="globalSearch()" (ngModelChange)="globalSearch.set($event)" />
             @if (globalSearch()) {
               <button class="clear-input" (click)="globalSearch.set('')">×</button>
             }
           </div>
-
           <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
-            <span>Filtros</span>
-            @if (activeFiltersCount() > 0) {
-              <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
-            }
+            Filtros
+            @if (activeFiltersCount() > 0) { <span class="filter-count-badge">{{ activeFiltersCount() }}</span> }
             <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
           </button>
+          @if (filteredAppointments().length > 0) {
+            <button class="btn-outline" style="font-size:12px; padding:8px 14px; white-space:nowrap;" (click)="exportAppointmentsXlsx()">
+              ⬇ Exportar Excel
+            </button>
+          }
         </div>
 
         @if (filtersOpen()) {
           <div class="dynamic-filters">
-
-            <!-- Filtro por status -->
             <div class="filter-item">
               <label class="filter-label">Status</label>
               <select class="filter-control"
@@ -110,27 +106,21 @@
                 <option value="CANCELADO">Cancelado</option>
               </select>
             </div>
-
-            <!-- Filtro por data range -->
             <div class="filter-item" style="grid-column: span 2;">
               <label class="filter-label">Período</label>
               <div class="date-range">
                 <input type="date" class="filter-control"
                   [ngModel]="getFieldFilter('appt_date__start')"
-                  (ngModelChange)="setFieldFilter('appt_date__start', $event)"
-                  placeholder="De" />
+                  (ngModelChange)="setFieldFilter('appt_date__start', $event)" />
                 <span class="date-sep">→</span>
                 <input type="date" class="filter-control"
                   [ngModel]="getFieldFilter('appt_date__end')"
-                  (ngModelChange)="setFieldFilter('appt_date__end', $event)"
-                  placeholder="Até" />
+                  (ngModelChange)="setFieldFilter('appt_date__end', $event)" />
               </div>
             </div>
-
           </div>
         }
 
-        <!-- Active chips -->
         @if (activeFiltersList().length > 0) {
           <div class="active-filters">
             <span class="active-filters-label">Ativos:</span>
@@ -139,7 +129,7 @@
                 <span class="chip-label">{{ chip.label }}</span>
                 <span class="chip-sep">:</span>
                 <span class="chip-value">{{ chip.value }}</span>
-                <button class="chip-remove" (click)="clearFilter(chip.key)" title="Remover">×</button>
+                <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
               </span>
             }
             <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
@@ -147,61 +137,40 @@
         }
       </div>
 
-      <!-- Tabela de agendamentos -->
       @if (filteredAppointments().length === 0) {
         <div class="card">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
             <p>Nenhum agendamento encontrado</p>
-            @if (activeFiltersCount() > 0) {
-              <small>Tente remover os filtros ativos</small>
-            }
+            @if (activeFiltersCount() > 0) { <small>Tente remover os filtros ativos</small> }
           </div>
         </div>
       } @else {
         <div class="card" style="overflow:hidden;">
-
           <div class="table-info">
             <span class="result-count">
               {{ filteredAppointments().length }}
-              @if (filteredAppointments().length < appointments().length) {
-                de {{ appointments().length }}
-              }
+              @if (filteredAppointments().length < appointments().length) { de {{ appointments().length }} }
               agendamento(s)
             </span>
             @if (sortColumn()) {
-              <span class="sort-info">
-                ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() === 'asc' ? '↑' : '↓' }}
-              </span>
+              <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
             }
           </div>
-
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th class="sortable" (click)="sort('slotDate')">
-                    Data <span class="sort-icon" [style.color]="isSorted('slotDate') ? '#3b82f6' : ''">{{ sortIcon('slotDate') }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('slotTime')">
-                    Hora <span class="sort-icon" [style.color]="isSorted('slotTime') ? '#3b82f6' : ''">{{ sortIcon('slotTime') }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('status')">
-                    Status <span class="sort-icon" [style.color]="isSorted('status') ? '#3b82f6' : ''">{{ sortIcon('status') }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('bookedByName')">
-                    Nome <span class="sort-icon" [style.color]="isSorted('bookedByName') ? '#3b82f6' : ''">{{ sortIcon('bookedByName') }}</span>
-                  </th>
+                  <th class="sortable" (click)="sort('slotDate')">Data <span class="sort-icon" [style.color]="isSorted('slotDate') ? '#3b82f6' : ''">{{ sortIcon('slotDate') }}</span></th>
+                  <th class="sortable" (click)="sort('slotTime')">Hora <span class="sort-icon" [style.color]="isSorted('slotTime') ? '#3b82f6' : ''">{{ sortIcon('slotTime') }}</span></th>
+                  <th class="sortable" (click)="sort('status')">Status <span class="sort-icon" [style.color]="isSorted('status') ? '#3b82f6' : ''">{{ sortIcon('status') }}</span></th>
+                  <th class="sortable" (click)="sort('bookedByName')">Nome <span class="sort-icon" [style.color]="isSorted('bookedByName') ? '#3b82f6' : ''">{{ sortIcon('bookedByName') }}</span></th>
                   <th>Contato</th>
                   @for (col of appointmentExtraCols(); track col) {
-                    <th class="sortable" (click)="sort(col)">
-                      {{ formatLabel(col) }} <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{ sortIcon(col) }}</span>
-                    </th>
+                    <th class="sortable" (click)="sort(col)">{{ formatLabel(col) }} <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{ sortIcon(col) }}</span></th>
                   }
                   <th>Agendado em</th>
-                  @if (auth.isAdmin() || auth.isClient()) {
-                    <th>Ação</th>
-                  }
+                  @if (auth.isAdmin() || auth.isClient()) { <th>Ação</th> }
                 </tr>
               </thead>
               <tbody>
@@ -225,12 +194,9 @@
                     @if (auth.isAdmin() || auth.isClient()) {
                       <td>
                         @if (a.status === 'AGENDADO') {
-                          <button
-                            (click)="doCancel(a.id)"
-                            [disabled]="cancellingId() === a.id"
-                            style="background:none;border:1px solid #fca5a5;color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;"
-                            onmouseover="this.style.background='#fef2f2'"
-                            onmouseout="this.style.background='none'">
+                          <button (click)="doCancel(a.id)" [disabled]="cancellingId() === a.id"
+                            style="background:none;border:1px solid #fca5a5;color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;"
+                            onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
                             {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
                           </button>
                         } @else {
@@ -243,40 +209,35 @@
               </tbody>
             </table>
           </div>
-
         </div>
       }
-
     }
 
     <!-- ════════════════════════════════════════════════════════ -->
-    <!-- ABA: RESPOSTAS (submissions)                             -->
+    <!-- ABA: RESPOSTAS                                           -->
     <!-- ════════════════════════════════════════════════════════ -->
     @if (activeTab() === 'submissions') {
 
-      <!-- Filtros submissions -->
       <div class="filters-card">
         <div class="search-row">
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar em todos os campos..."
-              [ngModel]="globalSearch()"
-              (ngModelChange)="globalSearch.set($event)" />
+            <input type="text" class="search-input" placeholder="Buscar em todos os campos..."
+              [ngModel]="globalSearch()" (ngModelChange)="globalSearch.set($event)" />
             @if (globalSearch()) {
               <button class="clear-input" (click)="globalSearch.set('')">×</button>
             }
           </div>
-
           <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
-            <span>Filtros</span>
-            @if (activeFiltersCount() > 0) {
-              <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
-            }
+            Filtros
+            @if (activeFiltersCount() > 0) { <span class="filter-count-badge">{{ activeFiltersCount() }}</span> }
             <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
           </button>
+          @if (filteredSubmissions().length > 0) {
+            <button class="btn-outline" style="font-size:12px; padding:8px 14px; white-space:nowrap;" (click)="exportSubmissionsXlsx()">
+              ⬇ Exportar Excel
+            </button>
+          }
         </div>
 
         @if (filtersOpen() && filterableFields().length > 0) {
@@ -284,17 +245,13 @@
             @for (field of filterableFields(); track field.col) {
               <div class="filter-item" [style]="field.filterType === 'daterange' ? 'grid-column: span 2;' : ''">
                 <label class="filter-label">{{ field.label }}</label>
-
                 @if (field.filterType === 'select') {
                   <select class="filter-control"
                     [ngModel]="getFieldFilter(field.col)"
                     (ngModelChange)="setFieldFilter(field.col, $event)">
                     <option value="">Todos</option>
-                    @for (val of field.uniqueVals; track val) {
-                      <option [value]="val">{{ val }}</option>
-                    }
+                    @for (val of field.uniqueVals; track val) { <option [value]="val">{{ val }}</option> }
                   </select>
-
                 } @else if (field.filterType === 'daterange') {
                   <div class="date-range">
                     <input type="date" class="filter-control"
@@ -305,25 +262,20 @@
                       [ngModel]="getFieldFilter(field.col + '__end')"
                       (ngModelChange)="setFieldFilter(field.col + '__end', $event)" />
                   </div>
-
                 } @else if (field.filterType === 'number') {
                   <input type="number" class="filter-control"
                     [ngModel]="getFieldFilter(field.col)"
-                    (ngModelChange)="setFieldFilter(field.col, $event)"
-                    placeholder="Filtrar..." />
-
+                    (ngModelChange)="setFieldFilter(field.col, $event)" placeholder="Filtrar..." />
                 } @else {
                   <input type="text" class="filter-control"
                     [ngModel]="getFieldFilter(field.col)"
-                    (ngModelChange)="setFieldFilter(field.col, $event)"
-                    placeholder="Filtrar..." />
+                    (ngModelChange)="setFieldFilter(field.col, $event)" placeholder="Filtrar..." />
                 }
               </div>
             }
           </div>
         }
 
-        <!-- Active filter chips -->
         @if (activeFiltersList().length > 0) {
           <div class="active-filters">
             <span class="active-filters-label">Ativos:</span>
@@ -332,7 +284,7 @@
                 <span class="chip-label">{{ chip.label }}</span>
                 <span class="chip-sep">:</span>
                 <span class="chip-value">{{ chip.value }}</span>
-                <button class="chip-remove" (click)="clearFilter(chip.key)" title="Remover">×</button>
+                <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
               </span>
             }
             <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
@@ -340,56 +292,37 @@
         }
       </div>
 
-      <!-- Vazio -->
       @if (filteredSubmissions().length === 0) {
         <div class="card">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
             <p>Nenhuma resposta encontrada</p>
-            @if (activeFiltersCount() > 0) {
-              <small>Tente remover os filtros ativos</small>
-            } @else {
-              <small>As respostas aparecerão aqui quando alguém preencher o formulário</small>
-            }
+            @if (activeFiltersCount() > 0) { <small>Tente remover os filtros ativos</small> }
+            @else { <small>As respostas aparecerão aqui quando alguém preencher o formulário</small> }
           </div>
         </div>
       } @else {
         <div class="card" style="overflow:hidden;">
-
           <div class="table-info">
             <span class="result-count">
               {{ filteredSubmissions().length }}
-              @if (filteredSubmissions().length < submissions().length) {
-                de {{ submissions().length }}
-              }
+              @if (filteredSubmissions().length < submissions().length) { de {{ submissions().length }} }
               resposta(s)
             </span>
             @if (sortColumn()) {
-              <span class="sort-info">
-                ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() === 'asc' ? '↑' : '↓' }}
-              </span>
+              <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
             }
           </div>
-
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th class="sortable" (click)="sort('id')" style="width:60px;">
-                    ID <span class="sort-icon" [style.color]="isSorted('id') ? '#3b82f6' : ''">{{ sortIcon('id') }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('createdAt')">
-                    Data <span class="sort-icon" [style.color]="isSorted('createdAt') ? '#3b82f6' : ''">{{ sortIcon('createdAt') }}</span>
-                  </th>
+                  <th class="sortable" (click)="sort('id')" style="width:60px;">ID <span class="sort-icon" [style.color]="isSorted('id') ? '#3b82f6' : ''">{{ sortIcon('id') }}</span></th>
+                  <th class="sortable" (click)="sort('createdAt')">Data <span class="sort-icon" [style.color]="isSorted('createdAt') ? '#3b82f6' : ''">{{ sortIcon('createdAt') }}</span></th>
                   @for (col of columns(); track col) {
-                    <th class="sortable" (click)="sort(col)">
-                      {{ formatLabel(col) }}
-                      <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{ sortIcon(col) }}</span>
-                    </th>
+                    <th class="sortable" (click)="sort(col)">{{ formatLabel(col) }} <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{ sortIcon(col) }}</span></th>
                   }
-                  @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
-                    <th style="width:80px;">Ação</th>
-                  }
+                  @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) { <th style="width:80px;">Ação</th> }
                 </tr>
               </thead>
               <tbody>
@@ -397,17 +330,12 @@
                   <tr>
                     <td class="text-muted">#{{ sub.id }}</td>
                     <td>{{ sub.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-                    @for (col of columns(); track col) {
-                      <td>{{ getValue(sub, col) }}</td>
-                    }
+                    @for (col of columns(); track col) { <td>{{ getValue(sub, col) }}</td> }
                     @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
                       <td>
-                        <button
-                          (click)="doDelete(sub.id)"
-                          [disabled]="deletingId() === sub.id"
-                          style="background:none;border:1px solid #fca5a5;color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;"
-                          onmouseover="this.style.background='#fef2f2'"
-                          onmouseout="this.style.background='none'">
+                        <button (click)="doDelete(sub.id)" [disabled]="deletingId() === sub.id"
+                          style="background:none;border:1px solid #fca5a5;color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;"
+                          onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
                           {{ deletingId() === sub.id ? '...' : 'Excluir' }}
                         </button>
                       </td>
@@ -417,10 +345,118 @@
               </tbody>
             </table>
           </div>
-
         </div>
       }
+    }
 
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABA: LISTA DE PRESENÇA                                   -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'attendance') {
+
+      <!-- Stats presença -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;">
+        <div class="card" style="padding:16px 20px; text-align:center;">
+          <div style="font-size:24px; font-weight:800; color:#1e293b;">{{ attendanceStats().total }}</div>
+          <div style="font-size:12px; color:#64748b; margin-top:2px;">Total</div>
+        </div>
+        <div class="card" style="padding:16px 20px; text-align:center;">
+          <div style="font-size:24px; font-weight:800; color:#10b981;">{{ attendanceStats().presente }}</div>
+          <div style="font-size:12px; color:#64748b; margin-top:2px;">Presentes</div>
+        </div>
+        <div class="card" style="padding:16px 20px; text-align:center;">
+          <div style="font-size:24px; font-weight:800; color:#f59e0b;">{{ attendanceStats().ausente }}</div>
+          <div style="font-size:12px; color:#64748b; margin-top:2px;">Ausentes</div>
+        </div>
+      </div>
+
+      <!-- Barra de busca + export -->
+      <div class="filters-card">
+        <div class="search-row">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Buscar na lista..."
+              [ngModel]="attendanceSearch()" (ngModelChange)="attendanceSearch.set($event)" />
+            @if (attendanceSearch()) {
+              <button class="clear-input" (click)="attendanceSearch.set('')">×</button>
+            }
+          </div>
+          <button class="btn-outline" style="font-size:12px; padding:8px 14px; white-space:nowrap;" (click)="exportAttendanceXlsx()">
+            ⬇ Exportar Excel
+          </button>
+        </div>
+      </div>
+
+      @if (filteredAttendance().length === 0) {
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>Nenhum registro encontrado</p>
+          </div>
+        </div>
+      } @else {
+        <div class="card" style="overflow:hidden;">
+          <div class="table-info">
+            <span class="result-count">
+              {{ filteredAttendance().length }}
+              @if (filteredAttendance().length < attendance().length) { de {{ attendance().length }} }
+              registro(s)
+            </span>
+            <span class="result-count" style="margin-left:auto; color:#10b981;">
+              {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
+            </span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:110px; text-align:center;">Presença</th>
+                  @for (col of attendanceCols(); track col) {
+                    <th>{{ col }}</th>
+                  }
+                  <th>Obs.</th>
+                  <th>Marcado em</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of filteredAttendance(); track r.id) {
+                  <tr [style]="r.attended ? 'background:#f0fdf4;' : ''">
+                    <td style="text-align:center;">
+                      <button
+                        (click)="toggleAttendance(r)"
+                        [disabled]="markingId() === r.id"
+                        [style]="r.attended
+                          ? 'background:#10b981;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;min-width:90px;'
+                          : 'background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;min-width:90px;'">
+                        @if (markingId() === r.id) { ... }
+                        @else if (r.attended) { ✓ Presente }
+                        @else { Ausente }
+                      </button>
+                    </td>
+                    @for (col of attendanceCols(); track col) {
+                      <td>{{ r.rowData[col] || '-' }}</td>
+                    }
+                    <td>
+                      <input
+                        type="text"
+                        [value]="r.notes ?? ''"
+                        (blur)="saveNote(r, $any($event.target).value)"
+                        placeholder="Observação..."
+                        style="border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;width:140px;font-family:inherit;outline:none;"
+                        onfocus="this.style.borderColor='#6366f1'"
+                        onblur="this.style.borderColor='#e2e8f0'"
+                      />
+                    </td>
+                    <td class="text-muted" style="font-size:12px; white-space:nowrap;">
+                      {{ r.attendedAt ? (r.attendedAt | date:'dd/MM HH:mm') : '—' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
     }
 
   }

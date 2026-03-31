@@ -1,3 +1,28 @@
+// ── Tabs ──────────────────────────────────────────────────────
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover { color: #1e293b; background: rgba(255,255,255,.6); }
+
+  &--active {
+    background: #fff;
+    color: #1e293b;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+}
+
 // ── Filters Card ──────────────────────────────────────────────
 .filters-card {
   background: var(--surface);
