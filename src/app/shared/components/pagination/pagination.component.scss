@@ -1,6 +1,4 @@
-:host {
-  display: block;
-}
+:host { display: block; }
 
 .pagination-wrapper {
   display: flex;
@@ -8,67 +6,73 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid #334155;
-  margin-top: 12px;
+  padding: 14px 18px;
+  border-top: 1px solid #1C2E4A;
+  background: rgba(10,16,32,0.4);
 }
 
 .pagination-info {
-  font-size: 12px;
-  color: #64748b;
+  font-size: 11px;
+  color: #5D789F;
   white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-// Override Bootstrap pagination para tema escuro
 .pagination {
   margin: 0;
+  display: flex;
   gap: 4px;
+  list-style: none;
+  padding: 0;
 
   .page-item {
-
     .page-link {
       background: transparent;
-      border: 1px solid #334155;
-      color: #94a3b8;
-      border-radius: 8px !important;
-      min-width: 34px;
-      height: 34px;
+      border: 1px solid #1C2E4A;
+      color: #5D789F;
+      border-radius: 7px !important;
+      min-width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
       padding: 0 10px;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: all 0.15s;
       line-height: 1;
+      cursor: pointer;
 
       &:hover {
-        background: #334155;
-        border-color: #475569;
-        color: #e2e8f0;
+        background: #122038;
+        border-color: #264060;
+        color: #D8E4F8;
       }
 
       &:focus {
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        box-shadow: 0 0 0 3px rgba(77,143,255,0.2);
         outline: none;
       }
     }
 
     &.active .page-link {
-      background: #3b82f6;
-      border-color: #3b82f6;
+      background: #4D8FFF;
+      border-color: #4D8FFF;
       color: #fff;
-      font-weight: 600;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(77,143,255,0.3);
 
       &:hover {
-        background: #2563eb;
-        border-color: #2563eb;
+        background: #2B6AE8;
+        border-color: #2B6AE8;
       }
     }
 
     &.disabled .page-link {
       background: transparent;
-      border-color: #1e293b;
-      color: #334155;
+      border-color: #1A2840;
+      color: #2B3F5C;
       cursor: not-allowed;
       pointer-events: none;
     }
