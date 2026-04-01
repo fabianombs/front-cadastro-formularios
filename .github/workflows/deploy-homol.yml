@@ -84,7 +84,7 @@ jobs:
 
       - name: Open PR to master (if not exists)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           EXISTING=$(gh pr list --head develop --base master --state open --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
