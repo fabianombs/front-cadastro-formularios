@@ -11,9 +11,8 @@ describe('TemplateSubmissionComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TemplateSubmissionComponent ]
-    })
-    .compileComponents();
+      declarations: [TemplateSubmissionComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

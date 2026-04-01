@@ -1,13 +1,11 @@
 <div class="dashboard">
-
   <div class="dashboard-header">
     <div>
       <h1>Dashboard</h1>
       <p>Visão geral de formulários, agendamentos e listas de presença</p>
     </div>
     <button class="btn-export" (click)="exportDashboard()">&#11015; Exportar</button>
-     <button class="btn-export" (click)="showAll()">Mostrar todos</button>
-
+    <button class="btn-export" (click)="showAll()">Mostrar todos</button>
   </div>
 
   @if (loadingData) {
@@ -31,13 +29,13 @@
           @if (card.type === 'agendamento') {
             <span class="small">Agendamentos: {{ card.agendamentos }}</span>
             <span class="small">Confirmados: {{ card.confirmados }}</span>
-            <span class="small">Taxa: {{ card.presencaPercent | number:'1.0-0' }}%</span>
+            <span class="small">Taxa: {{ card.presencaPercent | number: '1.0-0' }}%</span>
           }
 
           @if (card.type === 'lista-presenca') {
             <span class="small">Total: {{ card.presencaTotal }}</span>
             <span class="small">Presentes: {{ card.presencaPresente }}</span>
-            <span class="small">Presença: {{ card.presencaPercent | number:'1.0-0' }}%</span>
+            <span class="small">Presença: {{ card.presencaPercent | number: '1.0-0' }}%</span>
           }
         </div>
       }
@@ -59,13 +57,13 @@
         @if (card.type === 'agendamento') {
           <span class="small">Agendamentos: {{ card.agendamentos }}</span>
           <span class="small">Confirmados: {{ card.confirmados }}</span>
-          <span class="small">Taxa: {{ card.presencaPercent | number:'1.0-0' }}%</span>
+          <span class="small">Taxa: {{ card.presencaPercent | number: '1.0-0' }}%</span>
         }
 
         @if (card.type === 'lista-presenca') {
           <span class="small">Total: {{ card.presencaTotal }}</span>
           <span class="small">Presentes: {{ card.presencaPresente }}</span>
-          <span class="small">Presença: {{ card.presencaPercent | number:'1.0-0' }}%</span>
+          <span class="small">Presença: {{ card.presencaPercent | number: '1.0-0' }}%</span>
         }
       </div>
     </div>
@@ -91,10 +89,18 @@
             <tr (click)="selectTemplate(t)" [class.active]="selected()?.id === t.id">
               <td>{{ t.clientName || '—' }}</td>
               <td>{{ t.name }}</td>
-              <td><span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span></td>
+              <td>
+                <span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span>
+              </td>
               <td>{{ t.submissionCount || '—' }}</td>
-              <td>{{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}</td>
-              <td>{{ inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed }}</td>
+              <td>
+                {{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}
+              </td>
+              <td>
+                {{
+                  inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed
+                }}
+              </td>
               <td>
                 <div class="progress">
                   <div class="bar" [style.width.%]="attendancePercent(t)"></div>
@@ -117,12 +123,13 @@
   @if (!loadingData && templates.length) {
     <div class="chart-container">
       @if (selected(); as sel) {
-        <h3>{{ sel.name }} <span class="type-badge {{ inferType(sel) }}">{{ inferType(sel) }}</span></h3>
+        <h3>
+          {{ sel.name }} <span class="type-badge {{ inferType(sel) }}">{{ inferType(sel) }}</span>
+        </h3>
       } @else {
         <h3>Resumo Geral</h3>
       }
       <canvas #chartCanvas></canvas>
     </div>
   }
-
 </div>

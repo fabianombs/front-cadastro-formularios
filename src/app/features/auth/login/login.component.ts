@@ -8,10 +8,9 @@ import { Router, RouterLink } from '@angular/router';
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-
   loading = signal(false);
   error = signal<string | null>(null);
 
@@ -21,12 +20,12 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
   ) {
     // ✅ Agora fb já existe
     this.form = this.fb.group({
       username: ['', Validators.required],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
     });
   }
 
@@ -44,15 +43,15 @@ export class LoginComponent {
       error: () => {
         this.error.set('Credenciais inválidas');
         this.loading.set(false);
-      }
+      },
     });
   }
 
   onMouseMove(event: MouseEvent) {
-  const x = event.clientX + 'px';
-  const y = event.clientY + 'px';
+    const x = event.clientX + 'px';
+    const y = event.clientY + 'px';
 
-  document.documentElement.style.setProperty('--x', x);
-  document.documentElement.style.setProperty('--y', y);
-}
+    document.documentElement.style.setProperty('--x', x);
+    document.documentElement.style.setProperty('--y', y);
+  }
 }

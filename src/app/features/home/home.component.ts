@@ -1,12 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, signal, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  signal,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import {
-  Chart, ChartConfiguration,
-  BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend
+  Chart,
+  ChartConfiguration,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
 } from 'chart.js';
-import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../core/services/dashboard.service';
-import { PaginationComponent, SpringPage } from '../../shared/components/pagination/pagination.component';
+import {
+  DashboardService,
+  DashboardSummary,
+  TemplateStatResponse,
+} from '../../core/services/dashboard.service';
+import {
+  PaginationComponent,
+  SpringPage,
+} from '../../shared/components/pagination/pagination.component';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -28,10 +49,9 @@ export interface KpiCard {
   selector: 'app-home',
   imports: [CommonModule, PaginationComponent],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit, OnDestroy {
-
   private _chartCanvas?: ElementRef<HTMLCanvasElement>;
 
   @ViewChild('chartCanvas')
@@ -58,7 +78,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private dashboardService: DashboardService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -68,7 +88,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Busca todos os templates de uma vez para calcular os KPI cards globais
   loadGlobalStats(): void {
-    this.dashboardService.getSummary(0, 99999)
+    this.dashboardService
+      .getSummary(0, 99999)
       .pipe(takeUntil(this.destroy$))
       .subscribe({ next: (data) => this.allTemplatesGlobal.set(data.templates) });
   }
@@ -81,19 +102,25 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadData(page = this.pagination.page): void {
     this.loadingData = true;
-    this.dashboardService.getSummary(page, this.pagination.size)
+    this.dashboardService
+      .getSummary(page, this.pagination.size)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           this.summary = data;
           this.templates = data.templates;
-          this.pagination = { page: data.page, size: data.size, totalElements: data.totalElements, totalPages: data.totalPages };
+          this.pagination = {
+            page: data.page,
+            size: data.size,
+            totalElements: data.totalElements,
+            totalPages: data.totalPages,
+          };
           this.loadingData = false;
           this.cdr.detectChanges();
         },
         error: () => {
           this.loadingData = false;
-        }
+        },
       });
   }
 
@@ -136,7 +163,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   kpiCards(): KpiCard[] {
     // Usa allTemplatesGlobal para que os totais não mudem com a paginação da tabela
-    const byType = (type: KpiType) => this.allTemplatesGlobal().filter(t => this.inferType(t) === type);
+    const byType = (type: KpiType) =>
+      this.allTemplatesGlobal().filter((t) => this.inferType(t) === type);
 
     const formulario = byType('formulario');
     const agendamento = byType('agendamento');
@@ -158,7 +186,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         confirmados: 0,
         presencaTotal: 0,
         presencaPresente: 0,
-        presencaPercent: 0
+        presencaPercent: 0,
       },
       {
         type: 'agendamento',
@@ -169,7 +197,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         confirmados: totalAgendConf,
         presencaTotal: 0,
         presencaPresente: 0,
-        presencaPercent: totalAgendTotal ? (totalAgendConf / totalAgendTotal) * 100 : 0
+        presencaPercent: totalAgendTotal ? (totalAgendConf / totalAgendTotal) * 100 : 0,
       },
       {
         type: 'lista-presenca',
@@ -180,8 +208,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         confirmados: 0,
         presencaTotal: totalPresTotal,
         presencaPresente: totalPresPres,
-        presencaPercent: totalPresTotal ? (totalPresPres / totalPresTotal) * 100 : 0
-      }
+        presencaPercent: totalPresTotal ? (totalPresPres / totalPresTotal) * 100 : 0,
+      },
     ];
   }
 
@@ -196,7 +224,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       confirmados: t.appointmentConfirmed,
       presencaTotal: t.attendanceTotal ?? 0,
       presencaPresente: t.attendancePresent ?? 0,
-      presencaPercent: this.attendancePercent(t)
+      presencaPercent: this.attendancePercent(t),
     };
   }
 
@@ -216,27 +244,34 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     const labels = sel
       ? ['Submissões', 'Agendamentos', 'Confirmados', 'Presença (%)']
-      : cards.map(c => c.label);
+      : cards.map((c) => c.label);
 
     const data = sel
-      ? [sel.submissionCount, sel.appointmentTotal, sel.appointmentConfirmed, this.attendancePercent(sel)]
-      : cards.map(c => c.totalTemplates);
+      ? [
+          sel.submissionCount,
+          sel.appointmentTotal,
+          sel.appointmentConfirmed,
+          this.attendancePercent(sel),
+        ]
+      : cards.map((c) => c.totalTemplates);
 
     const config: ChartConfiguration = {
       type: 'bar',
       data: {
         labels,
-        datasets: [{
-          label: sel ? sel.name : 'Templates por tipo',
-          data,
-          backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b']
-        }]
+        datasets: [
+          {
+            label: sel ? sel.name : 'Templates por tipo',
+            data,
+            backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b'],
+          },
+        ],
       },
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
+        scales: { y: { beginAtZero: true } },
+      },
     };
 
     this.chart = new Chart(ctx, config);

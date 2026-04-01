@@ -22,10 +22,9 @@ export interface CreateClientRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ClientService {
-
   private http = inject(HttpClient);
   private api = `${environment.apiUrl}/clients`;
 

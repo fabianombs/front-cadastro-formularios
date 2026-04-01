@@ -1,21 +1,29 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { FormTemplateService, FormTemplate, AppointmentResponse, FormSubmission, AttendanceRecord } from '../../core/services/form-template.service';
+import {
+  FormTemplateService,
+  FormTemplate,
+  AppointmentResponse,
+  FormSubmission,
+  AttendanceRecord,
+} from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 import { forkJoin, EMPTY, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { DatePipe, CommonModule } from '@angular/common';
-import { PaginationComponent, SpringPage } from '../../shared/components/pagination/pagination.component';
+import {
+  PaginationComponent,
+  SpringPage,
+} from '../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-forms-all',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, PaginationComponent],
   templateUrl: './forms-all.component.html',
-  styleUrls: ['./forms-all.component.scss']
+  styleUrls: ['./forms-all.component.scss'],
 })
 export class FormsAllComponent implements OnInit {
-
   private service = inject(FormTemplateService);
   private auth = inject(AuthService);
 
@@ -36,9 +44,7 @@ export class FormsAllComponent implements OnInit {
   // Setado após verificar registros de presença (hasAttendance pode ser false mesmo com registros)
   globalAttendanceCount = signal(0);
 
-  globalScheduleCount = computed(() =>
-    this.globalTemplates().filter(t => t.hasSchedule).length
-  );
+  globalScheduleCount = computed(() => this.globalTemplates().filter((t) => t.hasSchedule).length);
 
   // Formulários puros: não são agenda nem presença
   // O valor é derivado após globalAttendanceCount ser setado
@@ -47,7 +53,7 @@ export class FormsAllComponent implements OnInit {
   presentesMap = computed(() => {
     const result: { [id: number]: number } = {};
     for (const [id, records] of Object.entries(this.attendanceMap())) {
-      result[+id] = records.filter(r => r.attended).length;
+      result[+id] = records.filter((r) => r.attended).length;
     }
     return result;
   });
@@ -56,7 +62,7 @@ export class FormsAllComponent implements OnInit {
     page: this.page(),
     size: this.size,
     totalElements: this.totalElements(),
-    totalPages: this.totalPages()
+    totalPages: this.totalPages(),
   }));
 
   ngOnInit(): void {
@@ -69,49 +75,48 @@ export class FormsAllComponent implements OnInit {
   // pois hasAttendance pode estar false mesmo com registros importados.
   loadGlobalTemplates(): void {
     const role = this.auth.role();
-    const request$ = role === 'ROLE_ADMIN'
-      ? this.service.getAllTemplates(0, 99999)
-      : this.service.getMyTemplates(0, 99999);
+    const request$ =
+      role === 'ROLE_ADMIN'
+        ? this.service.getAllTemplates(0, 99999)
+        : this.service.getMyTemplates(0, 99999);
 
-    request$.pipe(
-      switchMap(pageRes => {
-        const templates = pageRes.content;
-        this.globalTemplates.set(templates);
+    request$
+      .pipe(
+        switchMap((pageRes) => {
+          const templates = pageRes.content;
+          this.globalTemplates.set(templates);
 
-        const toCheck = templates.filter(t => !t.hasSchedule && !t.hasAttendance);
-        if (toCheck.length === 0) {
-          const attCount = templates.filter(t => !t.hasSchedule && t.hasAttendance).length;
+          const toCheck = templates.filter((t) => !t.hasSchedule && !t.hasAttendance);
+          if (toCheck.length === 0) {
+            const attCount = templates.filter((t) => !t.hasSchedule && t.hasAttendance).length;
+            this.globalAttendanceCount.set(attCount);
+            const formCount = templates.filter((t) => !t.hasSchedule && !t.hasAttendance).length;
+            this.globalFormCount.set(formCount);
+            return EMPTY;
+          }
+
+          return forkJoin(
+            toCheck.map((t) =>
+              this.service.getAttendance(t.id, 0, 1).pipe(map((page) => page.content.length > 0)),
+            ),
+          ).pipe(map((hasRecords) => ({ templates, hasRecords })));
+        }),
+      )
+      .subscribe({
+        next: ({ templates, hasRecords }) => {
+          const toCheck = templates.filter((t) => !t.hasSchedule && !t.hasAttendance);
+          const withRecordsIds = new Set(toCheck.filter((_, i) => hasRecords[i]).map((t) => t.id));
+          const attCount = templates.filter(
+            (t) => !t.hasSchedule && (t.hasAttendance || withRecordsIds.has(t.id)),
+          ).length;
           this.globalAttendanceCount.set(attCount);
-          const formCount = templates.filter(t => !t.hasSchedule && !t.hasAttendance).length;
+
+          const formCount = templates.filter(
+            (t) => !t.hasSchedule && !t.hasAttendance && !withRecordsIds.has(t.id),
+          ).length;
           this.globalFormCount.set(formCount);
-          return EMPTY;
-        }
-
-        return forkJoin(
-          toCheck.map(t =>
-            this.service.getAttendance(t.id, 0, 1).pipe(
-              map(page => page.content.length > 0)
-            )
-          )
-        ).pipe(map(hasRecords => ({ templates, hasRecords })));
-      })
-    ).subscribe({
-      next: ({ templates, hasRecords }) => {
-        const toCheck = templates.filter(t => !t.hasSchedule && !t.hasAttendance);
-        const withRecordsIds = new Set(
-          toCheck.filter((_, i) => hasRecords[i]).map(t => t.id)
-        );
-        const attCount = templates.filter(t =>
-          !t.hasSchedule && (t.hasAttendance || withRecordsIds.has(t.id))
-        ).length;
-        this.globalAttendanceCount.set(attCount);
-
-        const formCount = templates.filter(t =>
-          !t.hasSchedule && !t.hasAttendance && !withRecordsIds.has(t.id)
-        ).length;
-        this.globalFormCount.set(formCount);
-      }
-    });
+        },
+      });
   }
 
   loadTemplates(): void {
@@ -119,70 +124,77 @@ export class FormsAllComponent implements OnInit {
 
     const role = this.auth.role();
 
-    const request$ = role === 'ROLE_ADMIN'
-      ? this.service.getAllTemplates(this.page(), this.size)
-      : this.service.getMyTemplates(this.page(), this.size);
+    const request$ =
+      role === 'ROLE_ADMIN'
+        ? this.service.getAllTemplates(this.page(), this.size)
+        : this.service.getMyTemplates(this.page(), this.size);
 
-    request$.pipe(
-      switchMap(pageRes => {
-        const templates = pageRes.content;
-        this.templates.set(templates);
-        this.totalPages.set(pageRes.totalPages);
-        this.totalElements.set(pageRes.totalElements);
+    request$
+      .pipe(
+        switchMap((pageRes) => {
+          const templates = pageRes.content;
+          this.templates.set(templates);
+          this.totalPages.set(pageRes.totalPages);
+          this.totalElements.set(pageRes.totalElements);
 
-        if (templates.length === 0) {
-          this.loading.set(false);
-          return EMPTY;
-        }
-
-        // Busca apenas os dados necessários para cada tipo de card
-        const calls = templates.map(t => {
-          if (t.hasSchedule) {
-            return forkJoin({
-              appointments: this.service.getAppointmentsByTemplate(t.id, 0, 5).pipe(map(p => p.content)),
-              submissions: of<FormSubmission[]>([]),
-              attendance: of<AttendanceRecord[]>([])
-            });
+          if (templates.length === 0) {
+            this.loading.set(false);
+            return EMPTY;
           }
-          if (t.hasAttendance) {
+
+          // Busca apenas os dados necessários para cada tipo de card
+          const calls = templates.map((t) => {
+            if (t.hasSchedule) {
+              return forkJoin({
+                appointments: this.service
+                  .getAppointmentsByTemplate(t.id, 0, 5)
+                  .pipe(map((p) => p.content)),
+                submissions: of<FormSubmission[]>([]),
+                attendance: of<AttendanceRecord[]>([]),
+              });
+            }
+            if (t.hasAttendance) {
+              return forkJoin({
+                appointments: of<AppointmentResponse[]>([]),
+                submissions: of<FormSubmission[]>([]),
+                attendance: this.service.getAttendance(t.id, 0, 10).pipe(map((p) => p.content)),
+              });
+            }
+            // Carrega submissions e attendance para detectar presença como fallback
             return forkJoin({
               appointments: of<AppointmentResponse[]>([]),
-              submissions: of<FormSubmission[]>([]),
-              attendance: this.service.getAttendance(t.id, 0, 10).pipe(map(p => p.content))
+              submissions: this.service
+                .getSubmissionsByTemplate(t.id, 0, 5)
+                .pipe(map((p) => p.content)),
+              attendance: this.service.getAttendance(t.id, 0, 10).pipe(map((p) => p.content)),
             });
-          }
-          // Carrega submissions e attendance para detectar presença como fallback
-          return forkJoin({
-            appointments: of<AppointmentResponse[]>([]),
-            submissions: this.service.getSubmissionsByTemplate(t.id, 0, 5).pipe(map(p => p.content)),
-            attendance: this.service.getAttendance(t.id, 0, 10).pipe(map(p => p.content))
           });
-        });
 
-        return forkJoin(calls).pipe(map(results => ({ templates, results })));
-      })
-    ).subscribe({
-      next: ({ templates, results }) => {
-        const appMap: { [key: number]: AppointmentResponse[] } = {};
-        const subMap: { [key: number]: FormSubmission[] } = {};
-        const attMap: { [key: number]: AttendanceRecord[] } = {};
+          return forkJoin(calls).pipe(map((results) => ({ templates, results })));
+        }),
+      )
+      .subscribe({
+        next: ({ templates, results }) => {
+          const appMap: { [key: number]: AppointmentResponse[] } = {};
+          const subMap: { [key: number]: FormSubmission[] } = {};
+          const attMap: { [key: number]: AttendanceRecord[] } = {};
 
-        templates.forEach((t, index) => {
-          appMap[t.id] = results[index].appointments;
-          subMap[t.id] = results[index].submissions;
-          attMap[t.id] = results[index].attendance;
-        });
+          templates.forEach((t, index) => {
+            appMap[t.id] = results[index].appointments;
+            subMap[t.id] = results[index].submissions;
+            attMap[t.id] = results[index].attendance;
+          });
 
-        this.appointmentsMap.set(appMap);
-        this.submissionsMap.set(subMap);
-        this.attendanceMap.set(attMap);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao buscar dados:', err);
-        this.loading.set(false);
-      }
-    });
+          this.appointmentsMap.set(appMap);
+          this.submissionsMap.set(subMap);
+          this.attendanceMap.set(attMap);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.error('Erro ao buscar dados:', err);
+          this.loading.set(false);
+        },
+      });
   }
 
   goToPage(n: number): void {

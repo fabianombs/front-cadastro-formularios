@@ -1,5 +1,4 @@
 <div class="page fd-page">
-
   @if (loading()) {
     <div class="loading-center"><div class="spinner"></div></div>
   }
@@ -9,7 +8,11 @@
     <div class="card fd-success">
       <div class="fd-success-icon">✅</div>
       <h2 class="fd-success-title">
-        @if (template()?.hasSchedule) { Agendamento confirmado! } @else { Enviado com sucesso! }
+        @if (template()?.hasSchedule) {
+          Agendamento confirmado!
+        } @else {
+          Enviado com sucesso!
+        }
       </h2>
       <p class="fd-success-sub">
         @if (template()?.hasSchedule) {
@@ -39,21 +42,22 @@
     <div class="card">
       <div class="fd-section-header">
         <span class="fd-section-title">
-          @if (template()?.hasSchedule) { Agendamento } @else { Dados do formulário }
+          @if (template()?.hasSchedule) {
+            Agendamento
+          } @else {
+            Dados do formulário
+          }
         </span>
         <span class="badge badge-blue">{{ template()?.clientName }}</span>
       </div>
       <div class="fd-section-body">
-
         <form [formGroup]="form" (ngSubmit)="submit()">
-
           <!-- SEÇÃO DE AGENDAMENTO -->
           @if (template()?.hasSchedule) {
             <div class="fd-schedule-block">
-
               <p class="fd-block-label">Selecione data e horário</p>
 
-              <div class="field" style="max-width: 240px;">
+              <div class="field" style="max-width: 240px">
                 <label>Data do atendimento <span class="fd-required">*</span></label>
                 <input
                   type="date"
@@ -79,16 +83,23 @@
                         [class.fd-slot-selected]="selectedSlot() === slot.time"
                         [class.fd-slot-taken]="!slot.available"
                         (click)="selectSlot(slot)"
-                        [disabled]="!slot.available">
+                        [disabled]="!slot.available"
+                      >
                         {{ formatTime(slot.time) }}
-                        @if (!slot.available) { <span class="fd-slot-tag">Ocupado</span> }
+                        @if (!slot.available) {
+                          <span class="fd-slot-tag">Ocupado</span>
+                        }
                       </button>
                     }
                   </div>
 
                   @if (selectedSlot()) {
                     <div class="fd-selected-slot">
-                      Horário selecionado: <strong>{{ selectedDate() | date:'dd/MM/yyyy' }} às {{ formatTime(selectedSlot()) }}</strong>
+                      Horário selecionado:
+                      <strong
+                        >{{ selectedDate() | date: 'dd/MM/yyyy' }} às
+                        {{ formatTime(selectedSlot()) }}</strong
+                      >
                     </div>
                   }
                 </div>
@@ -97,7 +108,6 @@
               @if (!loadingSlots() && selectedDate() && availableSlots().length === 0) {
                 <div class="fd-no-slots">Nenhum horário disponível para esta data.</div>
               }
-
             </div>
           }
 
@@ -111,7 +121,9 @@
               <div class="field">
                 <label>
                   {{ fg.value.label }}
-                  @if (fg.value.required) { <span class="fd-required">*</span> }
+                  @if (fg.value.required) {
+                    <span class="fd-required">*</span>
+                  }
                 </label>
                 <input
                   [type]="fg.value.type"
@@ -129,14 +141,15 @@
           <div class="fd-form-footer">
             <a routerLink="/" class="btn-outline">Cancelar</a>
             <button type="submit" class="btn-primary">
-              @if (template()?.hasSchedule) { Confirmar agendamento } @else { Enviar resposta }
+              @if (template()?.hasSchedule) {
+                Confirmar agendamento
+              } @else {
+                Enviar resposta
+              }
             </button>
           </div>
-
         </form>
-
       </div>
     </div>
   }
-
 </div>

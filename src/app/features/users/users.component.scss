@@ -1,4 +1,6 @@
-.table-wrapper { overflow-x: auto; }
+.table-wrapper {
+  overflow-x: auto;
+}
 
 .user-cell {
   display: flex;
@@ -9,7 +11,7 @@
 .user-avatar-sm {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, #8B67F8, #4D8FFF);
+  background: linear-gradient(135deg, #8b67f8, #4d8fff);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -19,40 +21,47 @@
   font-weight: 700;
   font-family: 'Syne', sans-serif;
   flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(139,103,248,0.2);
+  box-shadow: 0 0 8px rgba(139, 103, 248, 0.2);
 }
 
-.fw-500 { font-weight: 500; }
+.fw-500 {
+  font-weight: 500;
+}
 
 .inline-input {
   width: 100%;
   padding: 7px 11px;
-  border: 1px solid #4D8FFF;
+  border: 1px solid #4d8fff;
   border-radius: 7px;
   font-size: 13px;
   font-family: 'DM Sans', sans-serif;
   outline: none;
-  background: #0A1020;
-  color: #D8E4F8;
-  box-shadow: 0 0 0 3px rgba(77,143,255,0.12);
+  background: #0a1020;
+  color: #d8e4f8;
+  box-shadow: 0 0 0 3px rgba(77, 143, 255, 0.12);
   transition: box-shadow 0.2s;
 
-  &:focus { box-shadow: 0 0 0 4px rgba(77,143,255,0.2); }
+  &:focus {
+    box-shadow: 0 0 0 4px rgba(77, 143, 255, 0.2);
+  }
 }
 
 .inline-select {
   padding: 7px 11px;
-  border: 1px solid #4D8FFF;
+  border: 1px solid #4d8fff;
   border-radius: 7px;
   font-size: 13px;
   font-family: 'DM Sans', sans-serif;
   outline: none;
-  background: #0A1020;
-  color: #D8E4F8;
-  box-shadow: 0 0 0 3px rgba(77,143,255,0.12);
+  background: #0a1020;
+  color: #d8e4f8;
+  box-shadow: 0 0 0 3px rgba(77, 143, 255, 0.12);
   cursor: pointer;
 
-  option { background: #0D1627; color: #D8E4F8; }
+  option {
+    background: #0d1627;
+    color: #d8e4f8;
+  }
 }
 
 .row-actions {

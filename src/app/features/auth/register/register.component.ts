@@ -8,29 +8,30 @@ import { Router, RouterLink } from '@angular/router';
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
-
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
-
 
   loading = signal(false);
   success = signal(false);
   error = signal<string | null>(null);
 
   // ✅ FORM CRIADO CORRETAMENTE
-  form = this.fb.group({
-    name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
-    username: ['', Validators.required],
-    password: ['', Validators.required],
-    confirmPassword: ['', Validators.required]
-  }, {
-    validators: this.passwordMatchValidator
-  });
+  form = this.fb.group(
+    {
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      username: ['', Validators.required],
+      password: ['', Validators.required],
+      confirmPassword: ['', Validators.required],
+    },
+    {
+      validators: this.passwordMatchValidator,
+    },
+  );
 
   submit() {
     if (this.form.invalid) return;
@@ -49,7 +50,7 @@ export class RegisterComponent {
         this.error.set('Erro ao cadastrar usuário');
         this.loading.set(false);
         this.error.set('Erro ao cadastrar usuário');
-      }
+      },
     });
   }
 

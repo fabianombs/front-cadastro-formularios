@@ -1,5 +1,4 @@
 <div class="auth-wrapper" (mousemove)="onMouseMove($event)">
-
   <!-- Visual Side -->
   <div class="auth-visual">
     <div class="visual-overlay"></div>
@@ -10,8 +9,10 @@
     </div>
 
     <div class="visual-content">
-      <h1 class="visual-headline">Crie sua conta<br>e comece agora.</h1>
-      <p class="visual-sub">Leva menos de 1 minuto. Acesso completo a todos os recursos da plataforma.</p>
+      <h1 class="visual-headline">Crie sua conta<br />e comece agora.</h1>
+      <p class="visual-sub">
+        Leva menos de 1 minuto. Acesso completo a todos os recursos da plataforma.
+      </p>
       <ul class="visual-list">
         <li><span class="check">✓</span> Acesso rápido e seguro</li>
         <li><span class="check">✓</span> Gestão completa de clientes</li>
@@ -23,7 +24,6 @@
   <!-- Form Side -->
   <div class="auth-form">
     <div class="form-card">
-
       <div class="form-logo">
         <div class="logo-icon">F</div>
         <span>FormsPro</span>
@@ -43,53 +43,56 @@
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()">
-
         <div class="fields-row">
           <div class="input-group">
-            <input type="text" formControlName="name" required autocomplete="name">
+            <input type="text" formControlName="name" required autocomplete="name" />
             <label>Nome completo</label>
           </div>
           <div class="input-group">
-            <input type="email" formControlName="email" required autocomplete="email">
+            <input type="email" formControlName="email" required autocomplete="email" />
             <label>Email</label>
           </div>
         </div>
 
         <div class="input-group">
-          <input type="text" formControlName="username" required autocomplete="username">
+          <input type="text" formControlName="username" required autocomplete="username" />
           <label>Username</label>
         </div>
 
         <div class="fields-row">
           <div class="input-group">
-            <input type="password" formControlName="password" required autocomplete="new-password">
+            <input
+              type="password"
+              formControlName="password"
+              required
+              autocomplete="new-password"
+            />
             <label>Senha</label>
           </div>
           <div class="input-group">
-            <input type="password" formControlName="confirmPassword" required autocomplete="new-password">
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              required
+              autocomplete="new-password"
+            />
             <label>Confirmar senha</label>
           </div>
         </div>
 
-        <button
-          type="submit"
-          class="btn-register"
-          [disabled]="form.invalid || loading()">
+        <button type="submit" class="btn-register" [disabled]="form.invalid || loading()">
           @if (loading()) {
             <span class="loader"></span> Criando...
           } @else {
             Criar conta
           }
         </button>
-
       </form>
 
       <div class="form-footer">
         Já tem conta?
         <a routerLink="/login">Entrar agora</a>
       </div>
-
     </div>
   </div>
-
 </div>

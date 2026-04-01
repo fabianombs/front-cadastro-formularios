@@ -1,16 +1,13 @@
 <div class="page">
-
   @if (loading) {
     <div class="loading-center"><div class="spinner"></div></div>
   }
 
   @if (!loading) {
-
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- VIEW MODE                                                  -->
     <!-- ══════════════════════════════════════════════════════════ -->
     @if (slug && template) {
-
       <div class="page-header">
         <div>
           <h1 class="page-title">{{ template.name }}</h1>
@@ -20,25 +17,36 @@
       </div>
 
       <!-- Link público -->
-      <div class="card" style="margin-bottom: 16px; padding: 16px 20px;">
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 4px;">Link público para preenchimento</p>
-        <a [routerLink]="formLink" style="font-size: 14px; font-weight: 600; color: #3b82f6;">
+      <div class="card" style="margin-bottom: 16px; padding: 16px 20px">
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 4px">
+          Link público para preenchimento
+        </p>
+        <a [routerLink]="formLink" style="font-size: 14px; font-weight: 600; color: #3b82f6">
           {{ formLink }}
         </a>
       </div>
 
       <!-- Resumo agenda -->
       @if (template.hasSchedule && template.scheduleConfig) {
-        <div class="card" style="margin-bottom: 16px; padding: 16px 20px; border-left: 4px solid #6366f1;">
-          <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0 0 8px;">Configuração de agenda</p>
-          <div style="display: flex; gap: 24px; flex-wrap: wrap;">
-            <span style="font-size: 13px; color: #475569;">
-              Horário: <strong>{{ template.scheduleConfig.startTime.substring(0,5) }} – {{ template.scheduleConfig.endTime.substring(0,5) }}</strong>
+        <div
+          class="card"
+          style="margin-bottom: 16px; padding: 16px 20px; border-left: 4px solid #6366f1"
+        >
+          <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0 0 8px">
+            Configuração de agenda
+          </p>
+          <div style="display: flex; gap: 24px; flex-wrap: wrap">
+            <span style="font-size: 13px; color: #475569">
+              Horário:
+              <strong
+                >{{ template.scheduleConfig.startTime.substring(0, 5) }} –
+                {{ template.scheduleConfig.endTime.substring(0, 5) }}</strong
+              >
             </span>
-            <span style="font-size: 13px; color: #475569;">
+            <span style="font-size: 13px; color: #475569">
               Duração: <strong>{{ template.scheduleConfig.slotDurationMinutes }} min</strong>
             </span>
-            <span style="font-size: 13px; color: #475569;">
+            <span style="font-size: 13px; color: #475569">
               Agenda até: <strong>{{ template.scheduleConfig.maxDaysAhead }} dias à frente</strong>
             </span>
           </div>
@@ -47,40 +55,113 @@
 
       <!-- Lista de presença (view) -->
       @if (importingAttendance) {
-        <div class="card" style="margin-bottom:16px; padding:24px; text-align:center; color:#64748b; font-size:13px;">
-          <div class="spinner" style="margin: 0 auto 8px;"></div>
+        <div
+          class="card"
+          style="
+            margin-bottom: 16px;
+            padding: 24px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+          "
+        >
+          <div class="spinner" style="margin: 0 auto 8px"></div>
           Importando lista de presença...
         </div>
       }
 
       @if (!importingAttendance && attendanceRecords.length > 0) {
-        <div class="card" style="margin-bottom: 16px; border-left: 4px solid #10b981;">
-          <div style="padding: 14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:10px;">
+        <div class="card" style="margin-bottom: 16px; border-left: 4px solid #10b981">
+          <div
+            style="
+              padding: 14px 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 1px solid #e2e8f0;
+              flex-wrap: wrap;
+              gap: 10px;
+            "
+          >
             <div>
-              <p style="font-size:14px; font-weight:700; color:#065f46; margin:0;">
+              <p style="font-size: 14px; font-weight: 700; color: #065f46; margin: 0">
                 Lista de presença
-                <span style="background:#d1fae5; color:#065f46; border-radius:99px; padding:2px 10px; font-size:11px; margin-left:8px;">{{ attendanceRecords.length }} registros</span>
+                <span
+                  style="
+                    background: #d1fae5;
+                    color: #065f46;
+                    border-radius: 99px;
+                    padding: 2px 10px;
+                    font-size: 11px;
+                    margin-left: 8px;
+                  "
+                  >{{ attendanceRecords.length }} registros</span
+                >
               </p>
-              <p style="font-size:12px; color:#94a3b8; margin:3px 0 0;">Gerencie e marque presenças em "Ver respostas"</p>
+              <p style="font-size: 12px; color: #94a3b8; margin: 3px 0 0">
+                Gerencie e marque presenças em "Ver respostas"
+              </p>
             </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button type="button" class="btn-outline" style="font-size:12px; padding:6px 12px;" (click)="exportAttendance()">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button
+                type="button"
+                class="btn-outline"
+                style="font-size: 12px; padding: 6px 12px"
+                (click)="exportAttendance()"
+              >
                 ⬇ Exportar Excel
               </button>
-              <label style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; color:#334155;"
-                onmouseover="this.style.borderColor='#10b981'; this.style.color='#065f46';"
-                onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
+              <label
+                style="
+                  cursor: pointer;
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  background: #f1f5f9;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 8px;
+                  padding: 6px 12px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #334155;
+                "
+                onmouseover="
+                  this.style.borderColor = '#10b981';
+                  this.style.color = '#065f46';
+                "
+                onmouseout="
+                  this.style.borderColor = '#e2e8f0';
+                  this.style.color = '#334155';
+                "
+              >
                 🔄 Reimportar planilha
-                <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" (change)="onAttendanceFileChange($event)" />
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  style="display: none"
+                  (change)="onAttendanceFileChange($event)"
+                />
               </label>
             </div>
           </div>
-          <div style="overflow-x:auto; max-height:260px; overflow-y:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-              <thead style="position:sticky; top:0; background:#f8fafc; z-index:1;">
+          <div style="overflow-x: auto; max-height: 260px; overflow-y: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+              <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1">
                 <tr>
                   @for (col of attendanceCols; track col) {
-                    <th style="padding:8px 14px; text-align:left; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; white-space:nowrap;">
+                    <th
+                      style="
+                        padding: 8px 14px;
+                        text-align: left;
+                        font-size: 11px;
+                        font-weight: 700;
+                        color: #64748b;
+                        text-transform: uppercase;
+                        letter-spacing: 0.04em;
+                        border-bottom: 1px solid #e2e8f0;
+                        white-space: nowrap;
+                      "
+                    >
                       {{ col }}
                     </th>
                   }
@@ -88,9 +169,11 @@
               </thead>
               <tbody>
                 @for (r of attendanceRecords; track r.id) {
-                  <tr style="border-bottom:1px solid #f1f5f9;">
+                  <tr style="border-bottom: 1px solid #f1f5f9">
                     @for (col of attendanceCols; track col) {
-                      <td style="padding:8px 14px; color:#334155; white-space:nowrap;">{{ r.rowData[col] || '-' }}</td>
+                      <td style="padding: 8px 14px; color: #334155; white-space: nowrap">
+                        {{ r.rowData[col] || '-' }}
+                      </td>
                     }
                   </tr>
                 }
@@ -102,10 +185,10 @@
 
       <!-- Campos do formulário -->
       <div class="card">
-        <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
-          <h2 style="font-size: 15px;">Campos do formulário</h2>
+        <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0">
+          <h2 style="font-size: 15px">Campos do formulário</h2>
         </div>
-        <div style="padding: 8px 0;">
+        <div style="padding: 8px 0">
           @for (f of template.fields; track f.id) {
             <div class="field-row">
               <div class="field-row-info">
@@ -125,7 +208,6 @@
     <!-- CREATE MODE                                                -->
     <!-- ══════════════════════════════════════════════════════════ -->
     @if (!slug) {
-
       <div class="page-header">
         <div>
           <h1 class="page-title">Criar formulário</h1>
@@ -135,14 +217,12 @@
 
       <form [formGroup]="templateForm" (ngSubmit)="submit()">
         <div class="form-grid">
-
           <!-- Coluna esquerda: configuração geral -->
           <div class="form-section card">
             <div class="section-header">
               <h2 class="section-title">Configuração geral</h2>
             </div>
             <div class="section-body">
-
               <div class="field">
                 <label>Cliente <span class="required">*</span></label>
                 <select formControlName="clientId">
@@ -155,64 +235,158 @@
 
               <div class="field">
                 <label>Nome do template <span class="required">*</span></label>
-                <input type="text" formControlName="name" placeholder="Ex: Formulário de atendimento">
+                <input
+                  type="text"
+                  formControlName="name"
+                  placeholder="Ex: Formulário de atendimento"
+                />
               </div>
 
               <!-- Toggle: agenda -->
-              <div class="field" style="margin-top: 8px;">
-                <label class="checkbox-label" style="gap:10px; font-size:14px; cursor:pointer;">
-                  <input type="checkbox" formControlName="hasSchedule" style="width:16px; height:16px; cursor:pointer;">
+              <div class="field" style="margin-top: 8px">
+                <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="hasSchedule"
+                    style="width: 16px; height: 16px; cursor: pointer"
+                  />
                   <span>Habilitar agendamento por horário</span>
                 </label>
-                <small style="display:block; margin-top:4px; color:#94a3b8; font-size:12px; padding-left:26px;">
+                <small
+                  style="
+                    display: block;
+                    margin-top: 4px;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    padding-left: 26px;
+                  "
+                >
                   Permite definir um range de horários com slots por atendimento
                 </small>
               </div>
 
               <!-- Toggle: lista de presença -->
-              <div class="field" style="margin-top: 4px;">
-                <label class="checkbox-label" style="gap:10px; font-size:14px; cursor:pointer;">
-                  <input type="checkbox" formControlName="hasAttendance" style="width:16px; height:16px; cursor:pointer;">
+              <div class="field" style="margin-top: 4px">
+                <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="hasAttendance"
+                    style="width: 16px; height: 16px; cursor: pointer"
+                  />
                   <span>Habilitar lista de presença</span>
                 </label>
-                <small style="display:block; margin-top:4px; color:#94a3b8; font-size:12px; padding-left:26px;">
+                <small
+                  style="
+                    display: block;
+                    margin-top: 4px;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    padding-left: 26px;
+                  "
+                >
                   Importe uma planilha Excel com os participantes para controle de presença
                 </small>
               </div>
 
               <!-- Upload da planilha (aparece ao habilitar) -->
               @if (hasAttendance) {
-                <div style="margin-top: 12px; padding: 14px 16px; background:#f0fdf4; border:1px dashed #6ee7b7; border-radius:10px;">
-
+                <div
+                  style="
+                    margin-top: 12px;
+                    padding: 14px 16px;
+                    background: #f0fdf4;
+                    border: 1px dashed #6ee7b7;
+                    border-radius: 10px;
+                  "
+                >
                   @if (!pendingAttendanceFileName) {
-                    <label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px 0;">
-                      <span style="font-size:28px;">📂</span>
-                      <span style="font-size:13px; font-weight:600; color:#065f46;">Clique para selecionar a planilha</span>
-                      <span style="font-size:11px; color:#94a3b8;">Formatos aceitos: .xlsx, .xls, .csv</span>
-                      <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" (change)="onPendingFileChange($event)" />
+                    <label
+                      style="
+                        cursor: pointer;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 0;
+                      "
+                    >
+                      <span style="font-size: 28px">📂</span>
+                      <span style="font-size: 13px; font-weight: 600; color: #065f46"
+                        >Clique para selecionar a planilha</span
+                      >
+                      <span style="font-size: 11px; color: #94a3b8"
+                        >Formatos aceitos: .xlsx, .xls, .csv</span
+                      >
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        style="display: none"
+                        (change)="onPendingFileChange($event)"
+                      />
                     </label>
                   }
 
                   @if (parsingFile) {
-                    <div style="text-align:center; color:#64748b; font-size:13px; padding:8px 0;">
+                    <div
+                      style="text-align: center; color: #64748b; font-size: 13px; padding: 8px 0"
+                    >
                       Lendo arquivo...
                     </div>
                   }
 
                   @if (pendingAttendanceFileName && !parsingFile) {
                     <div>
-                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                        <div style="font-size:13px; color:#065f46;">
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          margin-bottom: 10px;
+                          flex-wrap: wrap;
+                          gap: 8px;
+                        "
+                      >
+                        <div style="font-size: 13px; color: #065f46">
                           <strong>{{ pendingAttendanceFileName }}</strong>
-                          <span style="margin-left:8px; color:#64748b;">{{ pendingAttendanceRows.length }} registros encontrados</span>
+                          <span style="margin-left: 8px; color: #64748b"
+                            >{{ pendingAttendanceRows.length }} registros encontrados</span
+                          >
                         </div>
-                        <div style="display:flex; gap:6px;">
-                          <label style="cursor:pointer; font-size:11px; font-weight:600; color:#64748b; background:#fff; border:1px solid #e2e8f0; padding:4px 10px; border-radius:6px;">
+                        <div style="display: flex; gap: 6px">
+                          <label
+                            style="
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 600;
+                              color: #64748b;
+                              background: #fff;
+                              border: 1px solid #e2e8f0;
+                              padding: 4px 10px;
+                              border-radius: 6px;
+                            "
+                          >
                             Trocar arquivo
-                            <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" (change)="onPendingFileChange($event)" />
+                            <input
+                              type="file"
+                              accept=".xlsx,.xls,.csv"
+                              style="display: none"
+                              (change)="onPendingFileChange($event)"
+                            />
                           </label>
-                          <button type="button" (click)="clearPendingFile()"
-                            style="font-size:11px; font-weight:600; color:#ef4444; background:none; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; cursor:pointer;">
+                          <button
+                            type="button"
+                            (click)="clearPendingFile()"
+                            style="
+                              font-size: 11px;
+                              font-weight: 600;
+                              color: #ef4444;
+                              background: none;
+                              border: 1px solid #fca5a5;
+                              padding: 4px 10px;
+                              border-radius: 6px;
+                              cursor: pointer;
+                            "
+                          >
                             Remover
                           </button>
                         </div>
@@ -220,12 +394,39 @@
 
                       <!-- Preview das primeiras linhas -->
                       @if (pendingAttendanceCols.length > 0) {
-                        <div style="overflow-x:auto; max-height:180px; overflow-y:auto; border-radius:6px; border:1px solid #d1fae5;">
-                          <table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff;">
-                            <thead style="position:sticky; top:0; background:#ecfdf5;">
+                        <div
+                          style="
+                            overflow-x: auto;
+                            max-height: 180px;
+                            overflow-y: auto;
+                            border-radius: 6px;
+                            border: 1px solid #d1fae5;
+                          "
+                        >
+                          <table
+                            style="
+                              width: 100%;
+                              border-collapse: collapse;
+                              font-size: 12px;
+                              background: #fff;
+                            "
+                          >
+                            <thead style="position: sticky; top: 0; background: #ecfdf5">
                               <tr>
                                 @for (col of pendingAttendanceCols; track col) {
-                                  <th style="padding:6px 10px; text-align:left; font-weight:700; font-size:10px; color:#065f46; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #d1fae5; white-space:nowrap;">
+                                  <th
+                                    style="
+                                      padding: 6px 10px;
+                                      text-align: left;
+                                      font-weight: 700;
+                                      font-size: 10px;
+                                      color: #065f46;
+                                      text-transform: uppercase;
+                                      letter-spacing: 0.04em;
+                                      border-bottom: 1px solid #d1fae5;
+                                      white-space: nowrap;
+                                    "
+                                  >
                                     {{ col }}
                                   </th>
                                 }
@@ -233,16 +434,28 @@
                             </thead>
                             <tbody>
                               @for (row of pendingAttendanceRows.slice(0, 5); track $index) {
-                                <tr style="border-bottom:1px solid #f0fdf4;">
+                                <tr style="border-bottom: 1px solid #f0fdf4">
                                   @for (col of pendingAttendanceCols; track col) {
-                                    <td style="padding:5px 10px; color:#334155; white-space:nowrap;">{{ row[col] || '-' }}</td>
+                                    <td
+                                      style="padding: 5px 10px; color: #334155; white-space: nowrap"
+                                    >
+                                      {{ row[col] || '-' }}
+                                    </td>
                                   }
                                 </tr>
                               }
                               @if (pendingAttendanceRows.length > 5) {
                                 <tr>
-                                  <td [attr.colspan]="pendingAttendanceCols.length"
-                                    style="padding:6px 10px; text-align:center; font-size:11px; color:#94a3b8; font-style:italic;">
+                                  <td
+                                    [attr.colspan]="pendingAttendanceCols.length"
+                                    style="
+                                      padding: 6px 10px;
+                                      text-align: center;
+                                      font-size: 11px;
+                                      color: #94a3b8;
+                                      font-style: italic;
+                                    "
+                                  >
                                     + {{ pendingAttendanceRows.length - 5 }} registros adicionais...
                                   </td>
                                 </tr>
@@ -253,27 +466,32 @@
                       }
                     </div>
                   }
-
                 </div>
               }
-
             </div>
           </div>
 
           <!-- Coluna direita: campos -->
           <div class="form-section card">
-            <div class="section-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div
+              class="section-header"
+              style="display: flex; justify-content: space-between; align-items: center"
+            >
               <h2 class="section-title">Campos do formulário</h2>
-              <button type="button" class="btn-outline" style="font-size:12px; padding:5px 12px;" (click)="addField()">
+              <button
+                type="button"
+                class="btn-outline"
+                style="font-size: 12px; padding: 5px 12px"
+                (click)="addField()"
+              >
                 + Adicionar campo
               </button>
             </div>
             <div class="section-body">
-
               @if (fields.length === 0) {
-                <div class="empty-state" style="padding: 32px 16px;">
-                  <div class="empty-icon" style="font-size:28px;">📝</div>
-                  <p style="font-size:13px;">Nenhum campo adicionado</p>
+                <div class="empty-state" style="padding: 32px 16px">
+                  <div class="empty-icon" style="font-size: 28px">📝</div>
+                  <p style="font-size: 13px">Nenhum campo adicionado</p>
                   <small>Clique em "Adicionar campo" para começar</small>
                 </div>
               }
@@ -283,17 +501,26 @@
                   <div [formGroupName]="$index" class="field-item">
                     <div class="field-item-header">
                       <span class="field-item-number">Campo {{ $index + 1 }}</span>
-                      <button type="button" class="btn-danger" style="padding:4px 10px; font-size:11px;" (click)="removeField($index)">
+                      <button
+                        type="button"
+                        class="btn-danger"
+                        style="padding: 4px 10px; font-size: 11px"
+                        (click)="removeField($index)"
+                      >
                         Remover
                       </button>
                     </div>
                     <div class="field-item-body">
-                      <div class="field" style="margin-bottom:12px;">
+                      <div class="field" style="margin-bottom: 12px">
                         <label>Label</label>
-                        <input type="text" formControlName="label" placeholder="Ex: Nome completo">
+                        <input
+                          type="text"
+                          formControlName="label"
+                          placeholder="Ex: Nome completo"
+                        />
                       </div>
-                      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <div class="field" style="margin-bottom:0;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                        <div class="field" style="margin-bottom: 0">
                           <label>Tipo</label>
                           <select formControlName="type">
                             <option value="text">Texto</option>
@@ -302,10 +529,10 @@
                             <option value="date">Data</option>
                           </select>
                         </div>
-                        <div class="field" style="margin-bottom:0;">
+                        <div class="field" style="margin-bottom: 0">
                           <label>&nbsp;</label>
                           <label class="checkbox-label">
-                            <input type="checkbox" formControlName="required">
+                            <input type="checkbox" formControlName="required" />
                             <span>Obrigatório</span>
                           </label>
                         </div>
@@ -314,50 +541,71 @@
                   </div>
                 }
               </div>
-
             </div>
           </div>
-
         </div>
 
         <!-- Seção de configuração de agenda -->
         @if (hasSchedule) {
-          <div class="card" style="margin-top: 16px;" formGroupName="scheduleConfig">
-            <div class="section-header" style="border-left: 4px solid #6366f1; padding-left: 16px;">
-              <h2 class="section-title" style="color: #6366f1;">Configuração de agenda</h2>
-              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0;">
+          <div class="card" style="margin-top: 16px" formGroupName="scheduleConfig">
+            <div class="section-header" style="border-left: 4px solid #6366f1; padding-left: 16px">
+              <h2 class="section-title" style="color: #6366f1">Configuração de agenda</h2>
+              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0">
                 Define o range de horários e a duração de cada atendimento
               </p>
             </div>
             <div class="section-body">
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px;">
-                <div class="field" style="margin-bottom: 0;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px">
+                <div class="field" style="margin-bottom: 0">
                   <label>Horário inicial <span class="required">*</span></label>
-                  <input type="time" formControlName="startTime">
+                  <input type="time" formControlName="startTime" />
                 </div>
-                <div class="field" style="margin-bottom: 0;">
+                <div class="field" style="margin-bottom: 0">
                   <label>Horário final <span class="required">*</span></label>
-                  <input type="time" formControlName="endTime">
+                  <input type="time" formControlName="endTime" />
                 </div>
-                <div class="field" style="margin-bottom: 0;">
+                <div class="field" style="margin-bottom: 0">
                   <label>Duração por slot (min) <span class="required">*</span></label>
-                  <input type="number" formControlName="slotDurationMinutes" min="15" max="480" placeholder="60">
+                  <input
+                    type="number"
+                    formControlName="slotDurationMinutes"
+                    min="15"
+                    max="480"
+                    placeholder="60"
+                  />
                 </div>
-                <div class="field" style="margin-bottom: 0;">
+                <div class="field" style="margin-bottom: 0">
                   <label>Máx. dias à frente <span class="required">*</span></label>
-                  <input type="number" formControlName="maxDaysAhead" min="1" max="365" placeholder="30">
+                  <input
+                    type="number"
+                    formControlName="maxDaysAhead"
+                    min="1"
+                    max="365"
+                    placeholder="30"
+                  />
                 </div>
               </div>
 
               @if (previewSlots.length > 0) {
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                  <p style="font-size: 13px; color: #475569; margin: 0 0 10px;">
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0">
+                  <p style="font-size: 13px; color: #475569; margin: 0 0 10px">
                     Preview dos horários gerados
-                    <span style="font-weight: 600; color: #6366f1;">({{ previewSlots.length }} slots por dia)</span>
+                    <span style="font-weight: 600; color: #6366f1"
+                      >({{ previewSlots.length }} slots por dia)</span
+                    >
                   </p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px">
                     @for (slot of previewSlots; track slot) {
-                      <span style="background: #ede9fe; color: #5b21b6; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                      <span
+                        style="
+                          background: #ede9fe;
+                          color: #5b21b6;
+                          padding: 4px 10px;
+                          border-radius: 20px;
+                          font-size: 12px;
+                          font-weight: 600;
+                        "
+                      >
                         {{ slot }}
                       </span>
                     }
@@ -374,10 +622,7 @@
             Criar template
           </button>
         </div>
-
       </form>
     }
-
   }
-
 </div>

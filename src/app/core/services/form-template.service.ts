@@ -13,7 +13,7 @@ export interface FormField {
 }
 
 export interface ScheduleConfig {
-  startTime: string;   // "HH:mm:ss"
+  startTime: string; // "HH:mm:ss"
   endTime: string;
   slotDurationMinutes: number;
   maxDaysAhead: number;
@@ -52,19 +52,19 @@ export interface CreateFormSubmissionRequest {
 // ===== AGENDAMENTO =====
 
 export interface SlotInfo {
-  time: string;      // "HH:mm:ss"
+  time: string; // "HH:mm:ss"
   available: boolean;
 }
 
 export interface AvailableSlotsResponse {
-  date: string;      // "YYYY-MM-DD"
+  date: string; // "YYYY-MM-DD"
   slots: SlotInfo[];
 }
 
 export interface BookAppointmentRequest {
   templateId: number;
-  slotDate: string;         // "YYYY-MM-DD"
-  slotTime: string;         // "HH:mm:ss"
+  slotDate: string; // "YYYY-MM-DD"
+  slotTime: string; // "HH:mm:ss"
   bookedByName: string;
   bookedByContact: string;
   extraValues: { [key: string]: string };
@@ -109,7 +109,6 @@ export interface AppointmentResponse {
 
 @Injectable({ providedIn: 'root' })
 export class FormTemplateService {
-
   private apiUrl = `${environment.apiUrl}/form-templates`;
   private submissionsUrl = `${environment.apiUrl}/form-submissions`;
   private appointmentsUrl = `${environment.apiUrl}/appointments`;
@@ -128,9 +127,9 @@ export class FormTemplateService {
   }
 
   getMyTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {
-    return this.http.get<PageResponse<FormTemplate>>(`${this.apiUrl}/my-templates?page=${page}&size=${size}`).pipe(
-      tap(res => console.log("TEMPLATES DO USUÁRIO:", res))
-    );
+    return this.http
+      .get<PageResponse<FormTemplate>>(`${this.apiUrl}/my-templates?page=${page}&size=${size}`)
+      .pipe(tap((res) => console.log('TEMPLATES DO USUÁRIO:', res)));
   }
 
   getTemplateBySlug(slug: string): Observable<FormTemplate> {
@@ -143,9 +142,13 @@ export class FormTemplateService {
     return this.http.post<FormSubmission>(this.submissionsUrl, payload);
   }
 
-  getSubmissionsByTemplate(templateId: number, page = 0, size = 500): Observable<PageResponse<FormSubmission>> {
+  getSubmissionsByTemplate(
+    templateId: number,
+    page = 0,
+    size = 500,
+  ): Observable<PageResponse<FormSubmission>> {
     return this.http.get<PageResponse<FormSubmission>>(
-      `${this.submissionsUrl}/template/${templateId}?page=${page}&size=${size}`
+      `${this.submissionsUrl}/template/${templateId}?page=${page}&size=${size}`,
     );
   }
 
@@ -157,13 +160,17 @@ export class FormTemplateService {
 
   getAvailableSlots(templateId: number, date: string): Observable<AvailableSlotsResponse> {
     return this.http.get<AvailableSlotsResponse>(
-      `${this.appointmentsUrl}/template/${templateId}/slots?date=${date}`
+      `${this.appointmentsUrl}/template/${templateId}/slots?date=${date}`,
     );
   }
 
-  getAvailableSlotsRange(templateId: number, from: string, to: string): Observable<AvailableSlotsResponse[]> {
+  getAvailableSlotsRange(
+    templateId: number,
+    from: string,
+    to: string,
+  ): Observable<AvailableSlotsResponse[]> {
     return this.http.get<AvailableSlotsResponse[]>(
-      `${this.appointmentsUrl}/template/${templateId}/slots/range?from=${from}&to=${to}`
+      `${this.appointmentsUrl}/template/${templateId}/slots/range?from=${from}&to=${to}`,
     );
   }
 
@@ -172,43 +179,57 @@ export class FormTemplateService {
   }
 
   cancelAppointment(appointmentId: number): Observable<AppointmentResponse> {
-    return this.http.patch<AppointmentResponse>(`${this.appointmentsUrl}/${appointmentId}/cancel`, {});
+    return this.http.patch<AppointmentResponse>(
+      `${this.appointmentsUrl}/${appointmentId}/cancel`,
+      {},
+    );
   }
 
   deleteSubmission(submissionId: number): Observable<void> {
     return this.http.delete<void>(`${this.submissionsUrl}/${submissionId}`);
   }
 
-  getAppointmentsByTemplate(templateId: number, page = 0, size = 500): Observable<PageResponse<AppointmentResponse>> {
+  getAppointmentsByTemplate(
+    templateId: number,
+    page = 0,
+    size = 500,
+  ): Observable<PageResponse<AppointmentResponse>> {
     return this.http.get<PageResponse<AppointmentResponse>>(
-      `${this.appointmentsUrl}/template/${templateId}?page=${page}&size=${size}`
+      `${this.appointmentsUrl}/template/${templateId}?page=${page}&size=${size}`,
     );
   }
 
   // ================= ATTENDANCE =================
 
-  importAttendance(templateId: number, payload: ImportAttendanceRequest): Observable<AttendanceRecord[]> {
+  importAttendance(
+    templateId: number,
+    payload: ImportAttendanceRequest,
+  ): Observable<AttendanceRecord[]> {
     return this.http.post<AttendanceRecord[]>(
-      `${this.attendanceUrl}/template/${templateId}/import`, payload
+      `${this.attendanceUrl}/template/${templateId}/import`,
+      payload,
     );
   }
 
-  getAttendance(templateId: number, page = 0, size = 500): Observable<PageResponse<AttendanceRecord>> {
+  getAttendance(
+    templateId: number,
+    page = 0,
+    size = 500,
+  ): Observable<PageResponse<AttendanceRecord>> {
     return this.http.get<PageResponse<AttendanceRecord>>(
-      `${this.attendanceUrl}/template/${templateId}?page=${page}&size=${size}`
+      `${this.attendanceUrl}/template/${templateId}?page=${page}&size=${size}`,
     );
   }
 
   markAttendance(recordId: number, payload: MarkAttendanceRequest): Observable<AttendanceRecord> {
-    return this.http.patch<AttendanceRecord>(
-      `${this.attendanceUrl}/${recordId}/mark`, payload
-    );
+    return this.http.patch<AttendanceRecord>(`${this.attendanceUrl}/${recordId}/mark`, payload);
   }
 
-  updateAttendanceRowData(recordId: number, rowData: { [key: string]: string }): Observable<AttendanceRecord> {
-    return this.http.patch<AttendanceRecord>(
-      `${this.attendanceUrl}/${recordId}/data`, rowData
-    );
+  updateAttendanceRowData(
+    recordId: number,
+    rowData: { [key: string]: string },
+  ): Observable<AttendanceRecord> {
+    return this.http.patch<AttendanceRecord>(`${this.attendanceUrl}/${recordId}/data`, rowData);
   }
 
   deleteAttendanceRecord(recordId: number): Observable<void> {

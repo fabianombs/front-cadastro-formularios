@@ -1,4 +1,6 @@
-.table-wrapper { overflow-x: auto; }
+.table-wrapper {
+  overflow-x: auto;
+}
 
 .client-name-cell {
   display: flex;
@@ -9,7 +11,7 @@
 .client-avatar {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, #4D8FFF, #8B67F8);
+  background: linear-gradient(135deg, #4d8fff, #8b67f8);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -19,8 +21,12 @@
   font-weight: 700;
   font-family: 'Syne', sans-serif;
   flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(77,143,255,0.2);
+  box-shadow: 0 0 8px rgba(77, 143, 255, 0.2);
 }
 
-.fw-500 { font-weight: 500; }
-.text-muted { color: #5D789F !important; }
+.fw-500 {
+  font-weight: 500;
+}
+.text-muted {
+  color: #5d789f !important;
+}

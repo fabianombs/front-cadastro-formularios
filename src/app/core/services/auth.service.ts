@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
   // 🔥 Fonte da verdade
   private _token = signal<string | null>(localStorage.getItem('token'));
 
@@ -31,7 +30,10 @@ export class AuthService {
 
   private readonly apiUrl = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
   // ==========================
   // 🔐 LOGIN

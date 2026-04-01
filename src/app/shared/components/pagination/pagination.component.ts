@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 /** Subconjunto dos metadados que o Spring Page retorna no JSON */
 export interface SpringPage {
-  page: number;          // 0-based
+  page: number; // 0-based
   size: number;
   totalElements: number;
   totalPages: number;
@@ -14,7 +14,7 @@ export interface SpringPage {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pagination.component.html',
-  styleUrls: ['./pagination.component.scss']
+  styleUrls: ['./pagination.component.scss'],
 })
 export class PaginationComponent {
   @Input({ required: true }) pagination!: SpringPage;

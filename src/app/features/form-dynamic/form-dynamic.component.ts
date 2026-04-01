@@ -1,6 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormControl,
+} from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormTemplateService,
@@ -8,7 +14,7 @@ import {
   FormField,
   AvailableSlotsResponse,
   SlotInfo,
-  BookAppointmentRequest
+  BookAppointmentRequest,
 } from '../../core/services/form-template.service';
 
 @Component({
@@ -16,10 +22,9 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './form-dynamic.component.html',
-  styleUrls: ['./form-dynamic.component.scss']
+  styleUrls: ['./form-dynamic.component.scss'],
 })
 export class FormDynamicComponent implements OnInit {
-
   public template = signal<FormTemplate | null>(null);
   public loading = signal<boolean>(false);
   public submitted = signal<boolean>(false);
@@ -48,7 +53,7 @@ export class FormDynamicComponent implements OnInit {
     private route: ActivatedRoute,
     private service: FormTemplateService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({});
   }
@@ -67,19 +72,19 @@ export class FormDynamicComponent implements OnInit {
         error: () => {
           alert('Erro ao carregar o formulário');
           this.loading.set(false);
-        }
+        },
       });
     }
   }
 
   private buildForm(fields: FormField[]) {
-    const fgArray: FormGroup[] = fields.map(f =>
+    const fgArray: FormGroup[] = fields.map((f) =>
       this.fb.group({
         label: [f.label],
         type: [f.type],
         value: ['', f.required ? Validators.required : []],
-        required: [f.required ?? false]
-      })
+        required: [f.required ?? false],
+      }),
     );
 
     this.formFields.set(fgArray);
@@ -117,7 +122,7 @@ export class FormDynamicComponent implements OnInit {
       error: () => {
         alert('Erro ao carregar horários disponíveis');
         this.loadingSlots.set(false);
-      }
+      },
     });
   }
 
@@ -161,7 +166,7 @@ export class FormDynamicComponent implements OnInit {
         this.submitted.set(true);
         this.form.reset();
       },
-      error: () => alert('Erro ao enviar formulário')
+      error: () => alert('Erro ao enviar formulário'),
     });
   }
 
@@ -194,7 +199,7 @@ export class FormDynamicComponent implements OnInit {
       slotTime: this.selectedSlot(),
       bookedByName,
       bookedByContact,
-      extraValues
+      extraValues,
     };
 
     this.service.bookAppointment(payload).subscribe({
@@ -208,7 +213,7 @@ export class FormDynamicComponent implements OnInit {
       error: (err) => {
         const msg = err.error?.message ?? 'Erro ao realizar agendamento';
         alert(msg);
-      }
+      },
     });
   }
 

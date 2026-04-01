@@ -16,10 +16,9 @@ export interface UpdateUserRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-
   private http = inject(HttpClient);
   private api = `${environment.apiUrl}/users`;
 

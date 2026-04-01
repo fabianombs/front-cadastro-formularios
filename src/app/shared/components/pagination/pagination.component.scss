@@ -1,4 +1,6 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
 .pagination-wrapper {
   display: flex;
@@ -7,13 +9,13 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 14px 18px;
-  border-top: 1px solid #1C2E4A;
-  background: rgba(10,16,32,0.4);
+  border-top: 1px solid #1c2e4a;
+  background: rgba(10, 16, 32, 0.4);
 }
 
 .pagination-info {
   font-size: 11px;
-  color: #5D789F;
+  color: #5d789f;
   white-space: nowrap;
   font-family: 'JetBrains Mono', monospace;
 }
@@ -28,8 +30,8 @@
   .page-item {
     .page-link {
       background: transparent;
-      border: 1px solid #1C2E4A;
-      color: #5D789F;
+      border: 1px solid #1c2e4a;
+      color: #5d789f;
       border-radius: 7px !important;
       min-width: 32px;
       height: 32px;
@@ -47,32 +49,32 @@
       &:hover {
         background: #122038;
         border-color: #264060;
-        color: #D8E4F8;
+        color: #d8e4f8;
       }
 
       &:focus {
-        box-shadow: 0 0 0 3px rgba(77,143,255,0.2);
+        box-shadow: 0 0 0 3px rgba(77, 143, 255, 0.2);
         outline: none;
       }
     }
 
     &.active .page-link {
-      background: #4D8FFF;
-      border-color: #4D8FFF;
+      background: #4d8fff;
+      border-color: #4d8fff;
       color: #fff;
       font-weight: 700;
-      box-shadow: 0 0 12px rgba(77,143,255,0.3);
+      box-shadow: 0 0 12px rgba(77, 143, 255, 0.3);
 
       &:hover {
-        background: #2B6AE8;
-        border-color: #2B6AE8;
+        background: #2b6ae8;
+        border-color: #2b6ae8;
       }
     }
 
     &.disabled .page-link {
       background: transparent;
-      border-color: #1A2840;
-      color: #2B3F5C;
+      border-color: #1a2840;
+      color: #2b3f5c;
       cursor: not-allowed;
       pointer-events: none;
     }

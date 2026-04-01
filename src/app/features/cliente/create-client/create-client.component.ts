@@ -16,10 +16,9 @@ export interface CreateClientRequest {
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './create-client.component.html'
+  templateUrl: './create-client.component.html',
 })
 export class CreateClientComponent {
-
   private service = inject(ClientService);
   private router = inject(Router);
 
@@ -31,13 +30,13 @@ export class CreateClientComponent {
     phone: '',
     company: '',
     notes: '',
-    username: ''
+    username: '',
   });
 
   errors = signal({
     name: '',
     email: '',
-    username: ''
+    username: '',
   });
 
   // ==========================
@@ -49,19 +48,16 @@ export class CreateClientComponent {
     this.errors.set({
       name: f.name ? '' : 'Nome é obrigatório',
       email: /\S+@\S+\.\S+/.test(f.email) ? '' : 'Email inválido',
-      username: f.username ? '' : 'Username é obrigatório'
+      username: f.username ? '' : 'Username é obrigatório',
     });
 
-    return !this.errors().name &&
-      !this.errors().email &&
-      !this.errors().username;
+    return !this.errors().name && !this.errors().email && !this.errors().username;
   }
 
   // ==========================
   // Submit
   // ==========================
   submit() {
-
     if (!this.validate()) return;
 
     this.loading.set(true);
@@ -74,7 +70,7 @@ export class CreateClientComponent {
       error: () => {
         alert('Erro ao criar cliente');
         this.loading.set(false);
-      }
+      },
     });
   }
 
