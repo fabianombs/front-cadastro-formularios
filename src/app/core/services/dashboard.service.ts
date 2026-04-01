@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface TemplateStatResponse {
@@ -12,8 +12,8 @@ export interface TemplateStatResponse {
   attendanceTotal: number;
   attendancePresent: number;
   type?: 'formulario' | 'agendamento' | 'lista-presenca';
-  hasSchedule?: boolean;           // se o template tem agendamento
-  appointmentCancelled?: number;   // quantidade de agendamentos cancelados
+  hasSchedule?: boolean;
+  appointmentCancelled?: number;
 }
 
 export interface DashboardSummary {
@@ -26,6 +26,11 @@ export interface DashboardSummary {
   totalAttendanceRecords: number;
   presentAttendanceRecords: number;
   templates: TemplateStatResponse[];
+  // metadados de paginação do Spring Page
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,7 +40,10 @@ export class DashboardService {
 
   constructor(private http: HttpClient) { }
 
-  getSummary(): Observable<DashboardSummary> {
-    return this.http.get<DashboardSummary>(this.base);
+  getSummary(page = 0, size = 10): Observable<DashboardSummary> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+    return this.http.get<DashboardSummary>(this.base, { params });
   }
 }

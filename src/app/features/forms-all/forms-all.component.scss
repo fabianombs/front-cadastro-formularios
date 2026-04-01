@@ -4,9 +4,17 @@
   gap: 16px;
 }
 
+// ── Card base com CSS custom properties ──────────────────────────────────────
+
 .template-card {
+  --tc-accent:          #3b82f6;
+  --tc-accent-dark:     #1d4ed8;
+  --tc-accent-light:    #eff6ff;
+  --tc-accent-gradient: linear-gradient(135deg, #3b82f6, #6366f1);
+  --tc-border:          #e2e8f0;
+
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--tc-border);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
@@ -19,7 +27,27 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     transform: translateY(-1px);
   }
+
+  // ── Agendamento: violeta ──────────────────────────────────────────────────
+  &.tc-appointment {
+    --tc-accent:          #7c3aed;
+    --tc-accent-dark:     #5b21b6;
+    --tc-accent-light:    #f5f3ff;
+    --tc-accent-gradient: linear-gradient(135deg, #7c3aed, #a855f7);
+    --tc-border:          #ddd6fe;
+  }
+
+  // ── Presença: esmeralda ───────────────────────────────────────────────────
+  &.tc-attendance {
+    --tc-accent:          #059669;
+    --tc-accent-dark:     #047857;
+    --tc-accent-light:    #ecfdf5;
+    --tc-accent-gradient: linear-gradient(135deg, #059669, #10b981);
+    --tc-border:          #a7f3d0;
+  }
 }
+
+// ── Header ────────────────────────────────────────────────────────────────────
 
 .tc-header {
   display: flex;
@@ -30,7 +58,7 @@
 .tc-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  background: var(--tc-accent-gradient);
   color: white;
   border-radius: 10px;
   display: flex;
@@ -57,10 +85,11 @@
   text-overflow: ellipsis;
 }
 
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
 .tc-stats {
   display: flex;
   align-items: center;
-  gap: 0;
   background: #f8fafc;
   border-radius: 8px;
   padding: 12px 16px;
@@ -94,6 +123,8 @@
   margin: 0 16px;
 }
 
+// ── Actions ───────────────────────────────────────────────────────────────────
+
 .tc-actions {
   display: flex;
   gap: 8px;
@@ -105,7 +136,7 @@
   align-items: center;
   justify-content: center;
   padding: 8px 12px;
-  background: #3b82f6;
+  background: var(--tc-accent);
   color: white;
   border-radius: 6px;
   font-size: 12px;
@@ -113,7 +144,7 @@
   text-decoration: none;
   transition: background 0.2s;
 
-  &:hover { background: #1d4ed8; color: white; }
+  &:hover { background: var(--tc-accent-dark); color: white; }
 }
 
 .tc-btn-outline {
@@ -131,8 +162,14 @@
   text-decoration: none;
   transition: all 0.2s;
 
-  &:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+  &:hover {
+    border-color: var(--tc-accent);
+    color: var(--tc-accent);
+    background: var(--tc-accent-light);
+  }
 }
+
+// ── Recent list ───────────────────────────────────────────────────────────────
 
 .tc-recent {
   border-top: 1px solid #f1f5f9;
@@ -163,7 +200,7 @@
 .tc-sub-id {
   font-size: 12px;
   font-weight: 600;
-  color: #3b82f6;
+  color: var(--tc-accent);
 }
 
 .tc-sub-date {

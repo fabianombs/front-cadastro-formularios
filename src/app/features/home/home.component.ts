@@ -1,129 +1,195 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Chart, ChartConfiguration, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, signal, ChangeDetectorRef } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
+import {
+  Chart, ChartConfiguration,
+  BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend
+} from 'chart.js';
+import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../core/services/dashboard.service';
+import { PaginationComponent, SpringPage } from '../../shared/components/pagination/pagination.component';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-interface TemplateStatResponse {
-  id: number;
-  name: string;
-  type: 'formulario' | 'agendamento' | 'lista-presenca';
-  clientName: string;
-  submissionCount: number;
-  appointmentTotal: number;
-  appointmentConfirmed: number;
-}
+type KpiType = 'formulario' | 'agendamento' | 'lista-presenca';
 
-interface KpiSummary {
-  [key: string]: {
-    totalTemplates: number;
-    totalSubmissions: number;
-    confirmedAppointments: number;
-    attendancePercent: number;
-  };
+export interface KpiCard {
+  type: KpiType;
+  label: string;
+  totalTemplates: number;
+  submissoes: number;
+  agendamentos: number;
+  confirmados: number;
+  presencaTotal: number;
+  presencaPresente: number;
+  presencaPercent: number;
 }
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, PaginationComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
-  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+  private _chartCanvas?: ElementRef<HTMLCanvasElement>;
+
+  @ViewChild('chartCanvas')
+  set chartCanvas(el: ElementRef<HTMLCanvasElement>) {
+    this._chartCanvas = el;
+    if (el) {
+      this.renderChart();
+    }
+  }
+
   templates: TemplateStatResponse[] = [];
-  selectedTemplate: TemplateStatResponse | null = null;
-  chart: Chart | null = null;
+  summary: DashboardSummary | null = null;
   loadingData = false;
 
-  constructor() { }
+  readonly pageSize = 5;
+  pagination: SpringPage = { page: 0, size: this.pageSize, totalElements: 0, totalPages: 0 };
+
+  private _selected = signal<TemplateStatResponse | null>(null);
+  private chart: Chart | null = null;
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private dashboardService: DashboardService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  loadData() {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.chart?.destroy();
+  }
+
+  loadData(page = this.pagination.page): void {
     this.loadingData = true;
-
-    setTimeout(() => {
-      // Dados reais simulados (exemplo presenca-motorola)
-      this.templates = [
-        { id: 1, name: 'motorola-forms', type: 'formulario', clientName: 'Motorola', submissionCount: 2, appointmentTotal: 0, appointmentConfirmed: 0 },
-        { id: 2, name: 'agendamento-motorola', type: 'agendamento', clientName: 'Motorola', submissionCount: 0, appointmentTotal: 2, appointmentConfirmed: 1 },
-        { id: 3, name: 'presenca-motorola', type: 'lista-presenca', clientName: 'Motorola', submissionCount: 0, appointmentTotal: 16, appointmentConfirmed: 7 },
-        { id: 4, name: 'natura-lista-presenca', type: 'lista-presenca', clientName: 'Natura', submissionCount: 0, appointmentTotal: 0, appointmentConfirmed: 0 },
-        { id: 5, name: 'teste', type: 'formulario', clientName: 'Natura', submissionCount: 0, appointmentTotal: 0, appointmentConfirmed: 0 }
-      ];
-      this.loadingData = false;
-      this.renderChart();
-    }, 500);
+    this.dashboardService.getSummary(page, this.pagination.size)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.summary = data;
+          this.templates = data.templates;
+          this.pagination = { page: data.page, size: data.size, totalElements: data.totalElements, totalPages: data.totalPages };
+          this.loadingData = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loadingData = false;
+        }
+      });
   }
 
-  selectTemplate(t: TemplateStatResponse) {
-    this.selectedTemplate = t;
+  onPageChange(page: number): void {
+    this._selected.set(null);
+    this.loadData(page);
+  }
+
+  selected(): TemplateStatResponse | null {
+    return this._selected();
+  }
+
+  selectTemplate(t: TemplateStatResponse): void {
+    this._selected.set(t);
     this.renderChart();
   }
 
-  selected() {
-    return this.selectedTemplate;
-  }
-
-  showAll() {
-    this.selectedTemplate = null;
+  showAll(): void {
+    this._selected.set(null);
     this.renderChart();
   }
 
-  loading() {
-    return this.loadingData;
+  // Infere o tipo do template a partir dos campos do backend
+  inferType(t: TemplateStatResponse): KpiType {
+    if (t.hasSchedule) return 'agendamento';
+    if ((t.attendanceTotal ?? 0) > 0) return 'lista-presenca';
+    return 'formulario';
   }
 
-  attendancePercent(t: TemplateStatResponse) {
-    if (t.appointmentTotal === 0) return 0;
-    return (t.appointmentConfirmed / t.appointmentTotal) * 100;
+  attendancePercent(t: TemplateStatResponse): number {
+    const type = this.inferType(t);
+    if (type === 'agendamento') {
+      return t.appointmentTotal ? (t.appointmentConfirmed / t.appointmentTotal) * 100 : 0;
+    }
+    if (type === 'lista-presenca') {
+      return t.attendanceTotal ? (t.attendancePresent / t.attendanceTotal) * 100 : 0;
+    }
+    return 0;
   }
 
-  kpiSummary(): KpiSummary {
-    const summary: KpiSummary = {};
+  kpiCards(): KpiCard[] {
+    const byType = (type: KpiType) => this.templates.filter(t => this.inferType(t) === type);
 
-    ['formulario','agendamento','lista-presenca'].forEach(type => {
-      const filtered = this.templates.filter(t => t.type === type);
-      const totalSubmissions = filtered.reduce((acc, t) => acc + t.submissionCount, 0);
-      const confirmedAppointments = filtered.reduce((acc, t) => acc + t.appointmentConfirmed, 0);
-      const attendancePercent = filtered.length
-        ? filtered.reduce((acc, t) => acc + this.attendancePercent(t), 0) / filtered.length
-        : 0;
+    const formulario = byType('formulario');
+    const agendamento = byType('agendamento');
+    const presenca = byType('lista-presenca');
 
-      summary[type] = {
-        totalTemplates: filtered.length,
-        totalSubmissions,
-        confirmedAppointments,
-        attendancePercent
-      };
-    });
+    const totalFormSubs = formulario.reduce((acc, t) => acc + t.submissionCount, 0);
+    const totalAgendTotal = agendamento.reduce((acc, t) => acc + t.appointmentTotal, 0);
+    const totalAgendConf = agendamento.reduce((acc, t) => acc + t.appointmentConfirmed, 0);
+    const totalPresTotal = presenca.reduce((acc, t) => acc + (t.attendanceTotal ?? 0), 0);
+    const totalPresPres = presenca.reduce((acc, t) => acc + (t.attendancePresent ?? 0), 0);
 
-    return summary;
-  }
-
-  selectedKpi(): KpiSummary {
-    const sel = this.selected();
-    const kpi = this.kpiSummary();
-    if (!sel) return kpi;
-
-    const type = sel.type;
-    return {
-      [type]: {
-        totalTemplates: 1,
-        totalSubmissions: sel.submissionCount,
-        confirmedAppointments: sel.appointmentConfirmed,
-        attendancePercent: this.attendancePercent(sel)
+    return [
+      {
+        type: 'formulario',
+        label: 'Formulários',
+        totalTemplates: formulario.length,
+        submissoes: totalFormSubs,
+        agendamentos: 0,
+        confirmados: 0,
+        presencaTotal: 0,
+        presencaPresente: 0,
+        presencaPercent: 0
+      },
+      {
+        type: 'agendamento',
+        label: 'Agendamentos',
+        totalTemplates: agendamento.length,
+        submissoes: 0,
+        agendamentos: totalAgendTotal,
+        confirmados: totalAgendConf,
+        presencaTotal: 0,
+        presencaPresente: 0,
+        presencaPercent: totalAgendTotal ? (totalAgendConf / totalAgendTotal) * 100 : 0
+      },
+      {
+        type: 'lista-presenca',
+        label: 'Lista de Presença',
+        totalTemplates: presenca.length,
+        submissoes: 0,
+        agendamentos: 0,
+        confirmados: 0,
+        presencaTotal: totalPresTotal,
+        presencaPresente: totalPresPres,
+        presencaPercent: totalPresTotal ? (totalPresPres / totalPresTotal) * 100 : 0
       }
+    ];
+  }
+
+  templateCard(t: TemplateStatResponse): KpiCard {
+    const type = this.inferType(t);
+    return {
+      type,
+      label: t.name,
+      totalTemplates: 1,
+      submissoes: t.submissionCount,
+      agendamentos: t.appointmentTotal,
+      confirmados: t.appointmentConfirmed,
+      presencaTotal: t.attendanceTotal ?? 0,
+      presencaPresente: t.attendancePresent ?? 0,
+      presencaPercent: this.attendancePercent(t)
     };
   }
 
-  renderChart() {
-    const canvas = this.chartCanvas?.nativeElement;
+  renderChart(): void {
+    const canvas = this._chartCanvas?.nativeElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -134,39 +200,37 @@ export class HomeComponent implements OnInit {
     }
 
     const sel = this.selected();
-    const kpi = this.kpiSummary();
+    const cards = this.kpiCards();
 
-    const labels = sel ? ['Submissões', 'Confirmados', 'Presença'] : ['Formulários','Agendamentos','Presença'];
+    const labels = sel
+      ? ['Submissões', 'Agendamentos', 'Confirmados', 'Presença (%)']
+      : cards.map(c => c.label);
+
     const data = sel
-      ? [sel.submissionCount, sel.appointmentConfirmed, this.attendancePercent(sel)]
-      : [kpi['formulario'].totalTemplates, kpi['agendamento'].totalTemplates, kpi['lista-presenca'].totalTemplates];
+      ? [sel.submissionCount, sel.appointmentTotal, sel.appointmentConfirmed, this.attendancePercent(sel)]
+      : cards.map(c => c.totalTemplates);
 
     const config: ChartConfiguration = {
       type: 'bar',
       data: {
         labels,
         datasets: [{
-          label: sel ? sel.name : 'Resumo Geral',
+          label: sel ? sel.name : 'Templates por tipo',
           data,
-          backgroundColor: ['#3498db', '#2ecc71', '#e67e22']
+          backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b']
         }]
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: { beginAtZero: true }
-        }
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
       }
     };
 
     this.chart = new Chart(ctx, config);
   }
 
-  exportDashboard() {
+  exportDashboard(): void {
     alert('Função de exportar ainda não implementada.');
   }
-
 }

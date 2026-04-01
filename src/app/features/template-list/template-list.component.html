@@ -22,9 +22,11 @@
 
   @if (!loading()) {
 
-  <!-- ══ TABS ═══════════════════════════════════════════════ -->
+  <!-- ══ TABS + PAGE SIZE ══════════════════════════════════ -->
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+
   <div
-    style="display:flex; gap:2px; margin-bottom:20px; background:#f1f5f9; border-radius:10px; padding:4px; width:fit-content; flex-wrap:wrap;">
+    style="display:flex; gap:2px; background:#f1f5f9; border-radius:10px; padding:4px; flex-wrap:wrap;">
 
     @if (template()!.hasSchedule) {
     <button (click)="activeTab.set('appointments')"
@@ -32,7 +34,7 @@
       Agendamentos
       <span
         [style]="activeTab()==='appointments' ? 'background:#6366f1;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
-        {{ appointmentStats().total }}
+        {{ apptTotalElements() }}
       </span>
     </button>
     }
@@ -42,20 +44,34 @@
       Respostas
       <span
         [style]="activeTab()==='submissions' ? 'background:#3b82f6;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
-        {{ submissions().length }}
+        {{ subTotalElements() }}
       </span>
     </button>
 
-    @if (attendance().length > 0) {
+    @if (attTotalElements() > 0 || attendance().length > 0) {
     <button (click)="activeTab.set('attendance')"
       [class]="activeTab()==='attendance' ? 'tab-btn tab-btn--active' : 'tab-btn'">
       Lista de Presença
       <span
         [style]="activeTab()==='attendance' ? 'background:#10b981;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;' : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'">
-        {{ attendanceStats().total }}
+        {{ attTotalElements() }}
       </span>
     </button>
     }
+
+  </div>
+
+  <!-- Select de itens por página -->
+  <div style="display:flex; align-items:center; gap:8px;">
+    <label style="font-size:12px; color:#64748b; white-space:nowrap;">Itens por página</label>
+    <select class="page-size-select"
+      [ngModel]="pageSize()"
+      (ngModelChange)="changePageSize(+$event)">
+      @for (opt of pageSizeOptions; track opt) {
+        <option [value]="opt">{{ opt }}</option>
+      }
+    </select>
+  </div>
 
   </div>
 
@@ -156,9 +172,8 @@
   <div class="card" style="overflow:hidden;">
     <div class="table-info">
       <span class="result-count">
-        {{ filteredAppointments().length }}
-        @if (filteredAppointments().length < appointments().length) { de {{ appointments().length }} } agendamento(s)
-          </span>
+        {{ filteredAppointments().length }} de {{ apptTotalElements() }} agendamento(s)
+      </span>
           @if (sortColumn()) {
           <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() ===
             'asc' ? '↑' : '↓' }}</span>
@@ -224,6 +239,7 @@
       </table>
     </div>
   </div>
+  <app-pagination [pagination]="apptPagination()" (pageChange)="goToApptPage($event)" />
   }
   }
 
@@ -315,8 +331,8 @@
   <div class="card" style="overflow:hidden;">
     <div class="table-info">
       <span class="result-count">
-        {{ filteredSubmissions().length }}
-        @if (filteredSubmissions().length < submissions().length) { de {{ submissions().length }} } resposta(s) </span>
+        {{ filteredSubmissions().length }} de {{ subTotalElements() }} resposta(s)
+      </span>
           @if (sortColumn()) {
           <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong> {{ sortDirection() ===
             'asc' ? '↑' : '↓' }}</span>
@@ -358,6 +374,7 @@
       </table>
     </div>
   </div>
+  <app-pagination [pagination]="subPagination()" (pageChange)="goToSubPage($event)" />
   }
   }
 
@@ -410,12 +427,10 @@
   } @else {
   <div class="card" style="overflow:hidden;">
     <div class="table-info">
-      <span class="result-count">
-        {{ filteredAttendance().length }}
-        @if (filteredAttendance().length < attendance().length) { de {{ attendance().length }} } registro(s) </span>
-          <span class="result-count" style="margin-left:auto; color:#10b981;">
-            {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
-          </span>
+      <span class="result-count">{{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)</span>
+      <span class="result-count" style="margin-left:auto; color:#10b981;">
+        {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
+      </span>
     </div>
     <div style="overflow-x:auto;">
       <table class="data-table">
@@ -460,6 +475,7 @@
       </table>
     </div>
   </div>
+  <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
   }
   }
 

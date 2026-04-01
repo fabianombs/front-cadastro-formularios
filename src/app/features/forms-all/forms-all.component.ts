@@ -2,14 +2,15 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormTemplateService, FormTemplate, AppointmentResponse, FormSubmission, AttendanceRecord } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { forkJoin, EMPTY, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { DatePipe, CommonModule } from '@angular/common';
+import { PaginationComponent, SpringPage } from '../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-forms-all',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe],
+  imports: [CommonModule, RouterLink, DatePipe, PaginationComponent],
   templateUrl: './forms-all.component.html',
   styleUrls: ['./forms-all.component.scss']
 })
@@ -37,6 +38,21 @@ export class FormsAllComponent implements OnInit {
     Object.values(this.appointmentsMap()).filter(list => list.length > 0).length
   );
 
+  presentesMap = computed(() => {
+    const result: { [id: number]: number } = {};
+    for (const [id, records] of Object.entries(this.attendanceMap())) {
+      result[+id] = records.filter(r => r.attended).length;
+    }
+    return result;
+  });
+
+  templatesPagination = computed<SpringPage>(() => ({
+    page: this.page(),
+    size: this.size,
+    totalElements: this.totalElements(),
+    totalPages: this.totalPages()
+  }));
+
   ngOnInit(): void {
     this.loadTemplates();
   }
@@ -50,8 +66,8 @@ export class FormsAllComponent implements OnInit {
       ? this.service.getAllTemplates(this.page(), this.size)
       : this.service.getMyTemplates(this.page(), this.size);
 
-    request$.subscribe({
-      next: (pageRes) => {
+    request$.pipe(
+      switchMap(pageRes => {
         const templates = pageRes.content;
         this.templates.set(templates);
         this.totalPages.set(pageRes.totalPages);
@@ -59,59 +75,61 @@ export class FormsAllComponent implements OnInit {
 
         if (templates.length === 0) {
           this.loading.set(false);
-          return;
+          return EMPTY;
         }
 
-        // Busca appointments, submissions e attendance para preview no card
-        const calls = templates.map(t =>
-          forkJoin({
-            appointments: this.service.getAppointmentsByTemplate(t.id, 0, 5).pipe(map(p => p.content)),
+        // Busca apenas os dados necessários para cada tipo de card
+        const calls = templates.map(t => {
+          if (t.hasSchedule) {
+            return forkJoin({
+              appointments: this.service.getAppointmentsByTemplate(t.id, 0, 5).pipe(map(p => p.content)),
+              submissions: of<FormSubmission[]>([]),
+              attendance: of<AttendanceRecord[]>([])
+            });
+          }
+          if (t.hasAttendance) {
+            return forkJoin({
+              appointments: of<AppointmentResponse[]>([]),
+              submissions: of<FormSubmission[]>([]),
+              attendance: this.service.getAttendance(t.id, 0, 10).pipe(map(p => p.content))
+            });
+          }
+          // Carrega submissions e attendance para detectar presença como fallback
+          return forkJoin({
+            appointments: of<AppointmentResponse[]>([]),
             submissions: this.service.getSubmissionsByTemplate(t.id, 0, 5).pipe(map(p => p.content)),
             attendance: this.service.getAttendance(t.id, 0, 10).pipe(map(p => p.content))
-          })
-        );
-
-        forkJoin(calls).subscribe({
-          next: (results) => {
-            const appMap: { [key: number]: AppointmentResponse[] } = {};
-            const subMap: { [key: number]: FormSubmission[] } = {};
-            const attMap: { [key: number]: AttendanceRecord[] } = {};
-
-            templates.forEach((t, index) => {
-              appMap[t.id] = results[index].appointments;
-              subMap[t.id] = results[index].submissions;
-              attMap[t.id] = results[index].attendance;
-            });
-
-            this.appointmentsMap.set(appMap);
-            this.submissionsMap.set(subMap);
-            this.attendanceMap.set(attMap);
-            this.loading.set(false);
-          },
-          error: (err) => {
-            console.error('Erro ao buscar dados:', err);
-            this.loading.set(false);
-          }
+          });
         });
+
+        return forkJoin(calls).pipe(map(results => ({ templates, results })));
+      })
+    ).subscribe({
+      next: ({ templates, results }) => {
+        const appMap: { [key: number]: AppointmentResponse[] } = {};
+        const subMap: { [key: number]: FormSubmission[] } = {};
+        const attMap: { [key: number]: AttendanceRecord[] } = {};
+
+        templates.forEach((t, index) => {
+          appMap[t.id] = results[index].appointments;
+          subMap[t.id] = results[index].submissions;
+          attMap[t.id] = results[index].attendance;
+        });
+
+        this.appointmentsMap.set(appMap);
+        this.submissionsMap.set(subMap);
+        this.attendanceMap.set(attMap);
+        this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erro ao buscar templates:', err);
+        console.error('Erro ao buscar dados:', err);
         this.loading.set(false);
       }
     });
   }
 
-  nextPage() {
-    if (this.page() < this.totalPages() - 1) {
-      this.page.update(p => p + 1);
-      this.loadTemplates();
-    }
-  }
-
-  prevPage() {
-    if (this.page() > 0) {
-      this.page.update(p => p - 1);
-      this.loadTemplates();
-    }
+  goToPage(n: number): void {
+    this.page.set(n);
+    this.loadTemplates();
   }
 }

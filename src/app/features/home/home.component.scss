@@ -15,10 +15,12 @@
   h1 {
     font-size: 26px;
     font-weight: 600;
+    margin: 0;
   }
 
   p {
     color: #94a3b8;
+    margin: 4px 0 0;
   }
 }
 
@@ -29,11 +31,11 @@
   border-radius: 10px;
   color: white;
   cursor: pointer;
-  transition: 0.2s;
-}
+  transition: background 0.2s;
 
-.btn-export:hover {
-  background: #2563eb;
+  &:hover {
+    background: #2563eb;
+  }
 }
 
 /* LOADING */
@@ -47,7 +49,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid #334155;
-  border-top: 4px solid #3b82f6;
+  border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -68,32 +70,42 @@
   padding: 20px;
   border-radius: 16px;
   background: #1e293b;
-  transition: 0.3s;
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 
-  span {
+  > span:first-child {
     font-size: 28px;
     font-weight: bold;
   }
 
   p {
     color: #94a3b8;
+    margin: 0;
+  }
+
+  .small {
+    font-size: 12px;
+    color: #64748b;
   }
 
   &:hover {
     transform: translateY(-4px);
   }
-}
 
-.kpi-card.blue { border-left: 4px solid #3b82f6; }
-.kpi-card.green { border-left: 4px solid #22c55e; }
-.kpi-card.orange { border-left: 4px solid #f59e0b; }
-.kpi-card.purple { border-left: 4px solid #8b5cf6; }
+  &.blue, &.formulario       { border-left: 4px solid #3b82f6; }
+  &.green, &.agendamento     { border-left: 4px solid #22c55e; }
+  &.orange, &.lista-presenca { border-left: 4px solid #f59e0b; }
+}
 
 /* TABLE */
 .table-container {
   background: #1e293b;
   border-radius: 16px;
   padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 24px;
 }
 
 .dashboard-table {
@@ -105,32 +117,65 @@
     padding: 12px;
     color: #94a3b8;
     font-size: 12px;
+    text-transform: uppercase;
   }
 
   td {
-    padding: 14px;
+    padding: 14px 12px;
     border-top: 1px solid #334155;
   }
 
   tbody tr {
     cursor: pointer;
-    transition: 0.2s;
-  }
+    transition: background 0.2s;
 
-  tbody tr:hover {
-    background: #334155;
-  }
+    &:hover {
+      background: #334155;
+    }
 
-  tbody tr.active {
-    background: #1d4ed8;
+    &.active {
+      background: #1d4ed8;
+    }
   }
 }
 
-/* BADGE */
-.badge.success {
-  background: #16a34a;
-  padding: 4px 10px;
+
+/* TABLE FOOTER */
+.table-footer {
+  margin-top: 4px;
+}
+
+.btn-clear-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid #334155;
   border-radius: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 8px;
+
+  &:hover {
+    background: #334155;
+    color: #e2e8f0;
+  }
+}
+
+/* TYPE BADGE */
+.type-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+
+  &.formulario       { background: #1e3a5f; color: #93c5fd; }
+  &.agendamento      { background: #14532d; color: #86efac; }
+  &.lista-presenca   { background: #451a03; color: #fcd34d; }
 }
 
 /* PROGRESS */
@@ -139,6 +184,7 @@
   height: 6px;
   background: #334155;
   border-radius: 6px;
+  overflow: hidden;
 
   .bar {
     height: 100%;
@@ -153,544 +199,15 @@
   background: #1e293b;
   padding: 20px;
   border-radius: 16px;
-}
 
-.header-buttons {
-  display: flex;
-  gap: 8px;
-
-  .btn-show-all {
-    background: #6b7280;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-}
-
-.dashboard {
-  padding: 24px;
-  font-family: Arial, sans-serif;
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 { margin: 0; font-size: 28px; }
-    p { margin: 0; color: #666; }
-
-    .header-buttons {
-      display: flex;
-      gap: 8px;
-
-      .btn-export {
-        background: #4f46e5;
-        color: #fff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-
-      .btn-show-all {
-        background: #6b7280;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-    }
+  h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    color: #e2e8f0;
   }
 
-  .loading {
-    display: flex;
-    justify-content: center;
-    margin: 40px 0;
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #ddd;
-      border-top-color: #4f46e5;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-
-    .kpi-card {
-      background: #f4f4f4;
-      padding: 16px;
-      border-radius: 8px;
-      text-align: center;
-
-      span { font-size: 22px; font-weight: bold; display: block; }
-      p { margin: 4px 0 0; color: #555; }
-
-      &.blue { background: #e0e7ff; }
-      &.purple { background: #ede9fe; }
-      &.green { background: #dcfce7; }
-      &.orange { background: #fff7ed; }
-    }
-  }
-
-  .table-container {
-    overflow-x: auto;
-    margin-bottom: 28px;
-
-    .dashboard-table {
-      width: 100%;
-      border-collapse: collapse;
-
-      th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-
-      tr.active { background: #f0f0ff; }
-
-      .badge.success {
-        background: #4ade80;
-        padding: 4px 8px;
-        border-radius: 12px;
-        color: #fff;
-      }
-
-      .progress {
-        width: 100%;
-        height: 8px;
-        background: #eee;
-        border-radius: 4px;
-
-        .bar {
-          height: 100%;
-          background: #4f46e5;
-          border-radius: 4px;
-        }
-      }
-    }
-  }
-
-  .chart-container {
-    margin-top: 20px;
-    canvas { width: 100% !important; max-height: 300px; }
-  }
-}
-
-.dashboard {
-  padding: 24px;
-  font-family: Arial, sans-serif;
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 { margin: 0; font-size: 28px; }
-    p { margin: 0; color: #666; }
-
-    .header-buttons {
-      display: flex;
-      gap: 8px;
-
-      .btn-export { background: #4f46e5; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-      .btn-show-all { background: #6b7280; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-    }
-  }
-
-  .loading { display: flex; justify-content: center; margin: 40px 0;
-    .spinner { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; }
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; margin-bottom: 28px;
-    .kpi-card { background: #f4f4f4; padding: 16px; border-radius: 8px; text-align: center;
-      span { font-size: 22px; font-weight: bold; display: block; }
-      p { margin: 4px 0 0; color: #555; }
-      &.blue { background: #e0e7ff; }
-      &.purple { background: #ede9fe; }
-      &.green { background: #dcfce7; }
-      &.orange { background: #fff7ed; }
-    }
-  }
-
-  .table-container { overflow-x: auto; margin-bottom: 28px;
-    .dashboard-table { width: 100%; border-collapse: collapse;
-      th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-      tr.active { background: #f0f0ff; }
-      .badge.success { background: #4ade80; padding: 4px 8px; border-radius: 12px; color: #fff; }
-      .progress { width: 100%; height: 8px; background: #eee; border-radius: 4px;
-        .bar { height: 100%; background: #4f46e5; border-radius: 4px; }
-      }
-    }
-  }
-
-  .chart-container { margin-top: 20px; canvas { width: 100% !important; max-height: 400px; } }
-}
-
-.dashboard {
-  padding: 24px;
-  font-family: Arial, sans-serif;
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    p {
-      margin: 4px 0 0 0;
-      color: #666;
-    }
-
-    .btn-export {
-      padding: 8px 16px;
-      background-color: #4f46e5;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      &:hover {
-        background-color: #4338ca;
-      }
-    }
-  }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    margin: 40px 0;
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 5px solid #eee;
-      border-top-color: #4f46e5;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-
-    .kpi-card {
-      background-color: #f3f3f3;
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-      cursor: default;
-
-      span {
-        display: block;
-        font-size: 24px;
-        font-weight: bold;
-      }
-
-      p {
-        margin: 4px 0;
-        font-size: 14px;
-        color: #555;
-      }
-
-      .small {
-        display: block;
-        font-size: 12px;
-        color: #777;
-      }
-
-      &.blue { background-color: #e0e7ff; }
-      &.green { background-color: #dcfce7; }
-      &.orange { background-color: #ffedd5; }
-    }
-  }
-
-  .table-container {
-    margin-bottom: 28px;
-    overflow-x: auto;
-
-    .dashboard-table {
-      width: 100%;
-      border-collapse: collapse;
-
-      th, td {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-
-      th {
-        background-color: #f3f3f3;
-      }
-
-      tr.active {
-        background-color: #f0f5ff;
-      }
-
-      .badge.success {
-        background-color: #10b981;
-        color: white;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-
-      .progress {
-        background-color: #eee;
-        height: 10px;
-        border-radius: 6px;
-        overflow: hidden;
-
-        .bar {
-          background-color: #3b82f6;
-          height: 100%;
-          width: 0%;
-        }
-      }
-    }
-
-    .show-all {
-      margin-top: 12px;
-      text-align: right;
-
-      button {
-        padding: 6px 12px;
-        border: none;
-        border-radius: 6px;
-        background-color: #4f46e5;
-        color: #fff;
-        cursor: pointer;
-
-        &:hover {
-          background-color: #4338ca;
-        }
-      }
-    }
-  }
-
-  .chart-container {
-    margin-top: 24px;
-
-    h3 {
-      margin-bottom: 12px;
-    }
-
-    canvas {
-      width: 100% !important;
-      max-height: 400px;
-    }
-  }
-}
-
-.dashboard {
-  padding: 24px;
-  font-family: Arial, sans-serif;
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 { margin: 0; font-size: 28px; }
-    p { margin: 4px 0 0 0; color: #666; }
-
-    .btn-export {
-      padding: 8px 16px;
-      background-color: #4f46e5;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      &:hover { background-color: #4338ca; }
-    }
-  }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    margin: 40px 0;
-
-    .spinner {
-      width: 40px; height: 40px;
-      border: 5px solid #eee;
-      border-top-color: #4f46e5;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-  }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-
-    .kpi-card {
-      padding: 16px; border-radius: 8px; text-align: center;
-      span { display: block; font-size: 24px; font-weight: bold; }
-      p { margin: 4px 0; font-size: 14px; color: #555; }
-      .small { display: block; font-size: 12px; color: #777; }
-
-      &.blue { background-color: #e0e7ff; }
-      &.green { background-color: #dcfce7; }
-      &.orange { background-color: #ffedd5; }
-    }
-  }
-
-  .table-container { overflow-x: auto; margin-bottom: 28px;
-    .dashboard-table { width: 100%; border-collapse: collapse;
-      th, td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; }
-      th { background-color: #f3f3f3; }
-      tr.active { background-color: #f0f5ff; }
-      .progress { background-color: #eee; height: 10px; border-radius: 6px; overflow: hidden;
-        .bar { background-color: #3b82f6; height: 100%; width: 0%; }
-      }
-    }
-    .show-all { text-align: right; margin-top: 12px;
-      button { padding: 6px 12px; border: none; border-radius: 6px; background-color: #4f46e5; color: #fff; cursor: pointer;
-        &:hover { background-color: #4338ca; }
-      }
-    }
-  }
-
-  .chart-container { margin-top: 24px;
-    h3 { margin-bottom: 12px; }
-    canvas { width: 100% !important; max-height: 400px; }
-  }
-}
-
-
-.dashboard {
-  padding: 16px;
-  font-family: Arial, sans-serif;
-
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 { margin: 0; }
-    p { margin: 4px 0 0; font-size: 0.9rem; color: #555; }
-
-    .btn-export {
-      background: #3498db;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-  }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80px;
-
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 4px solid #ddd;
-      border-top-color: #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-
-    .kpi-card {
-      padding: 16px;
-      border-radius: 8px;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-
-      &.blue { background-color: #3498db; }
-      &.green { background-color: #2ecc71; }
-      &.orange { background-color: #e67e22; }
-
-      span { font-weight: bold; font-size: 1.2rem; }
-      .small { font-size: 0.8rem; }
-    }
-  }
-
-  .dashboard-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    tr.active { background-color: #f0f8ff; cursor: pointer; }
-    tr:hover { background-color: #fafafa; cursor: pointer; }
-
-    .progress {
-      width: 100%;
-      background: #eee;
-      height: 12px;
-      border-radius: 6px;
-      overflow: hidden;
-
-      .bar {
-        height: 100%;
-        background-color: #2ecc71;
-      }
-    }
-  }
-
-  .chart-container {
-    margin-top: 32px;
-  }
-
-  .show-all {
-    text-align: right;
-    button {
-      padding: 6px 12px;
-      border: none;
-      background: #3498db;
-      color: #fff;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+  canvas {
+    width: 100% !important;
+    max-height: 400px;
   }
 }
