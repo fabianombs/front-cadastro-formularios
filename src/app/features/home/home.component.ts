@@ -46,6 +46,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   summary: DashboardSummary | null = null;
   loadingData = false;
 
+  // Carregado uma vez, independente da paginação — usado nos KPI cards
+  private allTemplatesGlobal = signal<TemplateStatResponse[]>([]);
+
   readonly pageSize = 5;
   pagination: SpringPage = { page: 0, size: this.pageSize, totalElements: 0, totalPages: 0 };
 
@@ -59,7 +62,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadGlobalStats();
     this.loadData();
+  }
+
+  // Busca todos os templates de uma vez para calcular os KPI cards globais
+  loadGlobalStats(): void {
+    this.dashboardService.getSummary(0, 99999)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (data) => this.allTemplatesGlobal.set(data.templates) });
   }
 
   ngOnDestroy(): void {
@@ -124,7 +135,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   kpiCards(): KpiCard[] {
-    const byType = (type: KpiType) => this.templates.filter(t => this.inferType(t) === type);
+    // Usa allTemplatesGlobal para que os totais não mudem com a paginação da tabela
+    const byType = (type: KpiType) => this.allTemplatesGlobal().filter(t => this.inferType(t) === type);
 
     const formulario = byType('formulario');
     const agendamento = byType('agendamento');
