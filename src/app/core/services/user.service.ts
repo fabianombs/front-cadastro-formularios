@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
+import { environment } from '../../../environments/environment';
 
 export interface User {
   id: number;
@@ -15,12 +16,11 @@ export interface UpdateUserRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-
   private http = inject(HttpClient);
-  private api = 'http://localhost:8080/users';
+  private api = `${environment.apiUrl}/users`;
 
   findAll(page = 0, size = 10): Observable<PageResponse<User>> {
     return this.http.get<PageResponse<User>>(`${this.api}?page=${page}&size=${size}`);

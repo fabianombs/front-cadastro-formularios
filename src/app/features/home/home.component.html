@@ -1,83 +1,135 @@
-<div class="page">
-
-  <div class="page-header">
+<div class="dashboard">
+  <div class="dashboard-header">
     <div>
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Bem-vindo à plataforma FormsPro</p>
+      <h1>Dashboard</h1>
+      <p>Visão geral de formulários, agendamentos e listas de presença</p>
     </div>
+    <button class="btn-export" (click)="exportDashboard()">&#11015; Exportar</button>
+    <button class="btn-export" (click)="showAll()">Mostrar todos</button>
   </div>
 
-  @if (loading()) {
-    <div class="loading-center"><div class="spinner"></div></div>
-  }
-
-  @if (!loading() && summary()) {
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.totalTemplates }}</span>
-        <span class="stat-label">Formulários</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.totalClients }}</span>
-        <span class="stat-label">Clientes</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.totalSubmissions }}</span>
-        <span class="stat-label">Submissões</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.confirmedAppointments }}</span>
-        <span class="stat-label">Agend. confirmados</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.cancelledAppointments }}</span>
-        <span class="stat-label">Agend. cancelados</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ summary()!.presentAttendanceRecords }} / {{ summary()!.totalAttendanceRecords }}</span>
-        <span class="stat-label">Presença</span>
-      </div>
+  @if (loadingData) {
+    <div class="loading">
+      <div class="spinner"></div>
     </div>
   }
 
-  <div class="home-grid">
+  <!-- KPI: 3 cards por tipo (visão geral) -->
+  @if (!loadingData && templates.length && !selected()) {
+    <div class="kpi-grid">
+      @for (card of kpiCards(); track card.type) {
+        <div class="kpi-card" [ngClass]="card.type">
+          <span class="kpi-total">{{ card.totalTemplates }}</span>
+          <p class="kpi-label">{{ card.label }}</p>
 
-    <a routerLink="/forms-all" class="home-card">
-      <div class="home-card-icon" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">📋</div>
-      <div class="home-card-content">
-        <h3>Formulários</h3>
-        <p>Visualize e gerencie todos os formulários e respostas</p>
+          @if (card.type === 'formulario') {
+            <span class="small">Submissões: {{ card.submissoes }}</span>
+          }
+
+          @if (card.type === 'agendamento') {
+            <span class="small">Agendamentos: {{ card.agendamentos }}</span>
+            <span class="small">Confirmados: {{ card.confirmados }}</span>
+            <span class="small">Taxa: {{ card.presencaPercent | number: '1.0-0' }}%</span>
+          }
+
+          @if (card.type === 'lista-presenca') {
+            <span class="small">Total: {{ card.presencaTotal }}</span>
+            <span class="small">Presentes: {{ card.presencaPresente }}</span>
+            <span class="small">Presença: {{ card.presencaPercent | number: '1.0-0' }}%</span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- KPI: card do template selecionado -->
+  @if (!loadingData && selected(); as sel) {
+    <div class="kpi-grid">
+      @let card = templateCard(sel);
+      <div class="kpi-card" [ngClass]="card.type">
+        <span class="kpi-total">{{ card.label }}</span>
+        <p class="kpi-label">{{ card.type }}</p>
+
+        @if (card.type === 'formulario') {
+          <span class="small">Submissões: {{ card.submissoes }}</span>
+        }
+
+        @if (card.type === 'agendamento') {
+          <span class="small">Agendamentos: {{ card.agendamentos }}</span>
+          <span class="small">Confirmados: {{ card.confirmados }}</span>
+          <span class="small">Taxa: {{ card.presencaPercent | number: '1.0-0' }}%</span>
+        }
+
+        @if (card.type === 'lista-presenca') {
+          <span class="small">Total: {{ card.presencaTotal }}</span>
+          <span class="small">Presentes: {{ card.presencaPresente }}</span>
+          <span class="small">Presença: {{ card.presencaPercent | number: '1.0-0' }}%</span>
+        }
       </div>
-      <span class="home-card-arrow">→</span>
-    </a>
+    </div>
+  }
 
-    <a routerLink="/form-builder" class="home-card">
-      <div class="home-card-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">✏️</div>
-      <div class="home-card-content">
-        <h3>Criar formulário</h3>
-        <p>Configure um novo template de formulário para um cliente</p>
+  <!-- TABELA -->
+  @if (!loadingData && templates.length) {
+    <div class="table-container">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Submissões</th>
+            <th>Total</th>
+            <th>Confirmados / Presentes</th>
+            <th>Presença</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of templates; track t.id) {
+            <tr (click)="selectTemplate(t)" [class.active]="selected()?.id === t.id">
+              <td>{{ t.clientName || '—' }}</td>
+              <td>{{ t.name }}</td>
+              <td>
+                <span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span>
+              </td>
+              <td>{{ t.submissionCount || '—' }}</td>
+              <td>
+                {{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}
+              </td>
+              <td>
+                {{
+                  inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed
+                }}
+              </td>
+              <td>
+                <div class="progress">
+                  <div class="bar" [style.width.%]="attendancePercent(t)"></div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="table-footer">
+        @if (selected()) {
+          <button class="btn-clear-filter" (click)="showAll()">&#10005; Limpar seleção</button>
+        }
+        <app-pagination [pagination]="pagination" (pageChange)="onPageChange($event)" />
       </div>
-      <span class="home-card-arrow">→</span>
-    </a>
+    </div>
+  }
 
-    <a routerLink="/clients" class="home-card">
-      <div class="home-card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">👥</div>
-      <div class="home-card-content">
-        <h3>Clientes</h3>
-        <p>Gerencie os clientes cadastrados na plataforma</p>
-      </div>
-      <span class="home-card-arrow">→</span>
-    </a>
-
-    <a routerLink="/users" class="home-card">
-      <div class="home-card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🔑</div>
-      <div class="home-card-content">
-        <h3>Usuários</h3>
-        <p>Controle de acesso e permissões dos usuários</p>
-      </div>
-      <span class="home-card-arrow">→</span>
-    </a>
-
-  </div>
-
+  <!-- GRÁFICO -->
+  @if (!loadingData && templates.length) {
+    <div class="chart-container">
+      @if (selected(); as sel) {
+        <h3>
+          {{ sel.name }} <span class="type-badge {{ inferType(sel) }}">{{ inferType(sel) }}</span>
+        </h3>
+      } @else {
+        <h3>Resumo Geral</h3>
+      }
+      <canvas #chartCanvas></canvas>
+    </div>
+  }
 </div>

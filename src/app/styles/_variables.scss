@@ -1,12 +1,12 @@
 // 🎨 Paleta profissional (SaaS padrão moderno)
-$primary: #1e3a5f;     // Navy Blue
-$secondary: #64748b;   // Slate Gray
+$primary: #1e3a5f; // Navy Blue
+$secondary: #64748b; // Slate Gray
 $success: #22c55e;
 $danger: #ef4444;
 $warning: #f59e0b;
-$info: #4f46e5;        // Indigo
+$info: #4f46e5; // Indigo
 
 $border-radius: 12px;
 $box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 
-@import "bootstrap/scss/bootstrap";
+@import 'bootstrap/scss/bootstrap';

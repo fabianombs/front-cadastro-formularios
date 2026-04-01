@@ -11,9 +11,8 @@ describe('FormDynamicComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FormDynamicComponent ]
-    })
-    .compileComponents();
+      declarations: [FormDynamicComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,19 +1,20 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface TemplateStatResponse {
   id: number;
   name: string;
-  slug: string;
-  clientName: string | null;
-  hasSchedule: boolean;
+  clientName?: string;
   submissionCount: number;
   appointmentTotal: number;
   appointmentConfirmed: number;
-  appointmentCancelled: number;
   attendanceTotal: number;
   attendancePresent: number;
+  type?: 'formulario' | 'agendamento' | 'lista-presenca';
+  hasSchedule?: boolean;
+  appointmentCancelled?: number;
 }
 
 export interface DashboardSummary {
@@ -26,16 +27,21 @@ export interface DashboardSummary {
   totalAttendanceRecords: number;
   presentAttendanceRecords: number;
   templates: TemplateStatResponse[];
+  // metadados de paginação do Spring Page
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
-
-  private readonly base = 'http://localhost:8080/dashboard';
+  private readonly base = `${environment.apiUrl}/dashboard`;
 
   constructor(private http: HttpClient) {}
 
-  getSummary(): Observable<DashboardSummary> {
-    return this.http.get<DashboardSummary>(this.base);
+  getSummary(page = 0, size = 10): Observable<DashboardSummary> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<DashboardSummary>(this.base, { params });
   }
 }

@@ -5,7 +5,7 @@ import {
   FormTemplateService,
   FormTemplate,
   CreateFormTemplateRequest,
-  AttendanceRecord
+  AttendanceRecord,
 } from '../../core/services/form-template.service';
 import { ClientService, Client } from '../../core/services/client.service';
 import { ExportService } from '../../core/services/export.service';
@@ -18,10 +18,9 @@ import { map } from 'rxjs/operators';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './create-form-template.component.html',
-  styleUrls: ['./create-form-template.component.scss']
+  styleUrls: ['./create-form-template.component.scss'],
 })
 export class CreateTemplateComponent implements OnInit {
-
   public templateForm: FormGroup;
   public clients: Client[] = [];
 
@@ -46,7 +45,7 @@ export class CreateTemplateComponent implements OnInit {
     private clientService: ClientService,
     private exportService: ExportService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.templateForm = this.fb.group({
       name: ['', Validators.required],
@@ -58,8 +57,8 @@ export class CreateTemplateComponent implements OnInit {
         startTime: ['08:00'],
         endTime: ['17:00'],
         slotDurationMinutes: [60, [Validators.min(15), Validators.max(480)]],
-        maxDaysAhead: [30, [Validators.min(1), Validators.max(365)]]
-      })
+        maxDaysAhead: [30, [Validators.min(1), Validators.max(365)]],
+      }),
     });
   }
 
@@ -93,7 +92,9 @@ export class CreateTemplateComponent implements OnInit {
     let totalStart = sh * 60 + sm;
     const totalEnd = eh * 60 + em;
     while (totalStart + duration <= totalEnd) {
-      const h = Math.floor(totalStart / 60).toString().padStart(2, '0');
+      const h = Math.floor(totalStart / 60)
+        .toString()
+        .padStart(2, '0');
       const m = (totalStart % 60).toString().padStart(2, '0');
       slots.push(`${h}:${m}`);
       totalStart += duration;
@@ -106,7 +107,7 @@ export class CreateTemplateComponent implements OnInit {
 
     this.route.params
       .pipe(
-        switchMap(params => {
+        switchMap((params) => {
           const slugParam = params['slug'];
           if (slugParam) {
             this.slug = slugParam;
@@ -114,7 +115,7 @@ export class CreateTemplateComponent implements OnInit {
             return this.templateService.getTemplateBySlug(slugParam);
           }
           return of(null);
-        })
+        }),
       )
       .subscribe({
         next: (res: FormTemplate | null) => {
@@ -125,16 +126,20 @@ export class CreateTemplateComponent implements OnInit {
           }
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
   addField() {
-    this.fields.push(this.fb.group({
-      label: ['', Validators.required],
-      type: ['text', Validators.required],
-      required: [false]
-    }));
+    this.fields.push(
+      this.fb.group({
+        label: ['', Validators.required],
+        type: ['text', Validators.required],
+        required: [false],
+      }),
+    );
   }
 
   removeField(i: number) {
@@ -143,8 +148,11 @@ export class CreateTemplateComponent implements OnInit {
 
   loadClients() {
     this.clientService.findAll(0, 100).subscribe({
-      next: res => { this.clients = res.content; this.cdr.detectChanges(); },
-      error: () => console.error('Erro ao carregar clientes')
+      next: (res) => {
+        this.clients = res.content;
+        this.cdr.detectChanges();
+      },
+      error: () => console.error('Erro ao carregar clientes'),
     });
   }
 
@@ -157,20 +165,23 @@ export class CreateTemplateComponent implements OnInit {
     this.parsingFile = true;
     this.pendingAttendanceFileName = file.name;
 
-    this.exportService.readExcelFile(file).then(rows => {
-      this.pendingAttendanceRows = rows;
-      const keys = new Set<string>();
-      rows.forEach(r => Object.keys(r).forEach(k => keys.add(k)));
-      this.pendingAttendanceCols = Array.from(keys);
-      this.parsingFile = false;
-      this.cdr.detectChanges();
-    }).catch(() => {
-      alert('Arquivo inválido. Use .xlsx ou .xls');
-      this.pendingAttendanceFileName = '';
-      this.pendingAttendanceRows = [];
-      this.pendingAttendanceCols = [];
-      this.parsingFile = false;
-    });
+    this.exportService
+      .readExcelFile(file)
+      .then((rows) => {
+        this.pendingAttendanceRows = rows;
+        const keys = new Set<string>();
+        rows.forEach((r) => Object.keys(r).forEach((k) => keys.add(k)));
+        this.pendingAttendanceCols = Array.from(keys);
+        this.parsingFile = false;
+        this.cdr.detectChanges();
+      })
+      .catch(() => {
+        alert('Arquivo inválido. Use .xlsx ou .xls');
+        this.pendingAttendanceFileName = '';
+        this.pendingAttendanceRows = [];
+        this.pendingAttendanceCols = [];
+        this.parsingFile = false;
+      });
 
     input.value = '';
   }
@@ -190,12 +201,14 @@ export class CreateTemplateComponent implements OnInit {
       name: formValue.name,
       clientId: formValue.clientId,
       fields: formValue.fields,
-      scheduleConfig: formValue.hasSchedule ? {
-        startTime: formValue.scheduleConfig.startTime + ':00',
-        endTime: formValue.scheduleConfig.endTime + ':00',
-        slotDurationMinutes: formValue.scheduleConfig.slotDurationMinutes,
-        maxDaysAhead: formValue.scheduleConfig.maxDaysAhead
-      } : null
+      scheduleConfig: formValue.hasSchedule
+        ? {
+            startTime: formValue.scheduleConfig.startTime + ':00',
+            endTime: formValue.scheduleConfig.endTime + ':00',
+            slotDurationMinutes: formValue.scheduleConfig.slotDurationMinutes,
+            maxDaysAhead: formValue.scheduleConfig.maxDaysAhead,
+          }
+        : null,
     };
 
     this.templateService.createTemplate(payload.clientId, payload).subscribe({
@@ -207,22 +220,26 @@ export class CreateTemplateComponent implements OnInit {
         // Se tem lista pendente, importa logo após criar
         if (formValue.hasAttendance && this.pendingAttendanceRows.length > 0) {
           this.importingAttendance = true;
-          this.templateService.importAttendance(res.id, { rows: this.pendingAttendanceRows }).subscribe({
-            next: (records) => {
-              this.setAttendanceRecords(records);
-              this.importingAttendance = false;
-              this.cdr.detectChanges();
-            },
-            error: () => {
-              alert('Template criado, mas houve erro ao importar a lista de presença.');
-              this.importingAttendance = false;
-            }
-          });
+          this.templateService
+            .importAttendance(res.id, { rows: this.pendingAttendanceRows })
+            .subscribe({
+              next: (records) => {
+                this.setAttendanceRecords(records);
+                this.importingAttendance = false;
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                alert('Template criado, mas houve erro ao importar a lista de presença.');
+                this.importingAttendance = false;
+              },
+            });
         }
       },
       error: (err) => {
-        alert(`Erro ao criar template (${err.status}): ${err.error?.message ?? 'Verifique o console'}`);
-      }
+        alert(
+          `Erro ao criar template (${err.status}): ${err.error?.message ?? 'Verifique o console'}`,
+        );
+      },
     });
   }
 
@@ -230,7 +247,7 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.patchValue({
       name: template.name,
       clientId: (template as any).clientId ?? null,
-      hasSchedule: template.hasSchedule
+      hasSchedule: template.hasSchedule,
     });
 
     if (template.hasSchedule && template.scheduleConfig) {
@@ -238,17 +255,19 @@ export class CreateTemplateComponent implements OnInit {
         startTime: template.scheduleConfig.startTime.substring(0, 5),
         endTime: template.scheduleConfig.endTime.substring(0, 5),
         slotDurationMinutes: template.scheduleConfig.slotDurationMinutes,
-        maxDaysAhead: template.scheduleConfig.maxDaysAhead
+        maxDaysAhead: template.scheduleConfig.maxDaysAhead,
       });
     }
 
     this.fields.clear();
-    template.fields.forEach(f => {
-      this.fields.push(this.fb.group({
-        label: [f.label, Validators.required],
-        type: [f.type, Validators.required],
-        required: [f.required ?? false]
-      }));
+    template.fields.forEach((f) => {
+      this.fields.push(
+        this.fb.group({
+          label: [f.label, Validators.required],
+          type: [f.type, Validators.required],
+          required: [f.required ?? false],
+        }),
+      );
     });
 
     this.cdr.detectChanges();
@@ -256,10 +275,13 @@ export class CreateTemplateComponent implements OnInit {
 
   // ── Attendance (view mode) ─────────────────────────────────────
   loadAttendance(templateId: number) {
-    this.templateService.getAttendance(templateId).pipe(map(p => p.content)).subscribe({
-      next: (records) => this.setAttendanceRecords(records),
-      error: () => {}
-    });
+    this.templateService
+      .getAttendance(templateId)
+      .pipe(map((p) => p.content))
+      .subscribe({
+        next: (records) => this.setAttendanceRecords(records),
+        error: () => {},
+      });
   }
 
   onAttendanceFileChange(event: Event) {
@@ -268,22 +290,25 @@ export class CreateTemplateComponent implements OnInit {
     if (!file || !this.template) return;
 
     this.importingAttendance = true;
-    this.exportService.readExcelFile(file).then(rows => {
-      this.templateService.importAttendance(this.template!.id, { rows }).subscribe({
-        next: (records) => {
-          this.setAttendanceRecords(records);
-          this.importingAttendance = false;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          alert('Erro ao importar planilha.');
-          this.importingAttendance = false;
-        }
+    this.exportService
+      .readExcelFile(file)
+      .then((rows) => {
+        this.templateService.importAttendance(this.template!.id, { rows }).subscribe({
+          next: (records) => {
+            this.setAttendanceRecords(records);
+            this.importingAttendance = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            alert('Erro ao importar planilha.');
+            this.importingAttendance = false;
+          },
+        });
+      })
+      .catch(() => {
+        alert('Arquivo inválido. Use .xlsx ou .xls');
+        this.importingAttendance = false;
       });
-    }).catch(() => {
-      alert('Arquivo inválido. Use .xlsx ou .xls');
-      this.importingAttendance = false;
-    });
 
     input.value = '';
   }
@@ -291,7 +316,7 @@ export class CreateTemplateComponent implements OnInit {
   private setAttendanceRecords(records: AttendanceRecord[]) {
     this.attendanceRecords = records;
     const keys = new Set<string>();
-    records.forEach(r => Object.keys(r.rowData || {}).forEach(k => keys.add(k)));
+    records.forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
     this.attendanceCols = Array.from(keys);
     this.cdr.detectChanges();
   }

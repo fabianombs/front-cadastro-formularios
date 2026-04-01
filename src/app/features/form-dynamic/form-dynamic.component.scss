@@ -1,17 +1,185 @@
-.section-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
+.fd-page {
+  max-width: 640px;
+}
+
+/* ── Section header ── */
+.fd-section-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #1c2e4a;
+  background: #0a1020;
+  border-radius: 12px 12px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
-.section-title {
+.fd-section-title {
+  font-family: 'Syne', sans-serif;
   font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: #d8e4f8;
+  letter-spacing: -0.01em;
 }
 
-.section-body {
-  padding: 20px;
+.fd-section-body {
+  padding: 24px 22px;
+}
+
+/* ── Schedule block ── */
+.fd-schedule-block {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #1c2e4a;
+}
+
+.fd-block-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #5d789f;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px;
+}
+
+.fd-required {
+  color: #ff4f6a;
+  margin-left: 2px;
+}
+
+/* ── Slots ── */
+.fd-slots-loading {
+  padding: 16px;
+  text-align: center;
+  color: #5d789f;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.fd-slots-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5d789f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.fd-slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fd-slot-btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.18s;
+  border: 1px solid #1c2e4a;
+  background: #0d1627;
+  color: #d8e4f8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover:not(:disabled) {
+    border-color: #4d8fff;
+    background: rgba(77, 143, 255, 0.1);
+    color: #4d8fff;
+    transform: translateY(-1px);
+  }
+
+  &.fd-slot-selected {
+    background: #4d8fff;
+    border-color: #4d8fff;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(77, 143, 255, 0.35);
+  }
+
+  &.fd-slot-taken {
+    background: transparent;
+    border-color: #1c2e4a;
+    color: #2b3f5c;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+}
+
+.fd-slot-tag {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.fd-selected-slot {
+  margin-top: 14px;
+  padding: 11px 16px;
+  background: rgba(139, 103, 248, 0.1);
+  border: 1px solid rgba(139, 103, 248, 0.25);
+  border-radius: 9px;
+  font-size: 13px;
+  color: #ae90ff;
+  font-family: 'DM Sans', sans-serif;
+
+  strong {
+    color: #c4adff;
+    font-weight: 700;
+  }
+}
+
+.fd-no-slots {
+  padding: 14px 18px;
+  background: rgba(255, 79, 106, 0.08);
+  border: 1px solid rgba(255, 79, 106, 0.2);
+  border-radius: 9px;
+  font-size: 13px;
+  color: #ff7a8e;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Form Footer ── */
+.fd-form-footer {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #1c2e4a;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ── Success screen ── */
+.fd-success {
+  text-align: center;
+  padding: 56px 32px;
+}
+
+.fd-success-icon {
+  font-size: 52px;
+  margin-bottom: 20px;
+  display: block;
+  filter: drop-shadow(0 0 16px rgba(16, 201, 138, 0.4));
+}
+
+.fd-success-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #d8e4f8;
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+}
+
+.fd-success-sub {
+  font-size: 14px;
+  color: #5d789f;
+  margin: 0 0 28px;
+  font-family: 'DM Sans', sans-serif;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
 }

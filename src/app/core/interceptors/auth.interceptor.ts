@@ -5,7 +5,6 @@ import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-
   const auth = inject(AuthService);
   const router = inject(Router);
 
@@ -13,19 +12,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const newReq = token
     ? req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
+        setHeaders: { Authorization: `Bearer ${token}` },
       })
     : req;
 
   return next(newReq).pipe(
-    catchError(err => {
-
+    catchError((err) => {
       if (err.status === 401 || err.status === 403) {
         auth.logout();
         router.navigate(['/login']);
       }
 
       return throwError(() => err);
-    })
+    }),
   );
 };

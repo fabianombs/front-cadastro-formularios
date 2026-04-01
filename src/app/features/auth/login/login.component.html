@@ -1,72 +1,70 @@
 <div class="auth-wrapper" (mousemove)="onMouseMove($event)">
-
-  <!-- 🎨 LADO VISUAL -->
+  <!-- Visual Side -->
   <div class="auth-visual">
-    <div class="overlay"></div>
+    <div class="visual-overlay"></div>
 
-    <div class="content">
-      <h1>Bem-vindo de volta 👋</h1>
-      <p>Acesse sua conta para continuar</p>
+    <div class="visual-brand">
+      <div class="brand-dot">F</div>
+      <span>FormsPro</span>
+    </div>
+
+    <div class="visual-content">
+      <h1 class="visual-headline">Gerencie<br />seus formulários<br />com precisão.</h1>
+      <p class="visual-sub">
+        Acesse sua conta e tenha controle total sobre agendamentos, presenças e respostas.
+      </p>
+      <div class="visual-tags">
+        <span class="vtag">Formulários dinâmicos</span>
+        <span class="vtag">Agendamentos</span>
+        <span class="vtag">Lista de presença</span>
+      </div>
     </div>
   </div>
 
-  <!-- 🔐 FORM -->
+  <!-- Form Side -->
   <div class="auth-form">
+    <div class="form-card">
+      <div class="form-logo">
+        <div class="logo-icon">F</div>
+        <span>FormsPro</span>
+      </div>
 
-    <div class="card">
-
-      <h2>Login</h2>
+      <h2 class="form-title">Bem-vindo de volta</h2>
+      <p class="form-subtitle">Entre com suas credenciais para continuar</p>
 
       @if (error()) {
-        <div class="error">
-          {{ error() }}
-        </div>
+        <div class="error-msg"><span>⚠</span> {{ error() }}</div>
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()">
-
-        <!-- USERNAME -->
         <div class="input-group">
-          <input
-            type="text"
-            formControlName="username"
-            required
-          >
+          <input type="text" formControlName="username" required autocomplete="username" />
           <label>Username</label>
         </div>
 
-        <!-- PASSWORD -->
         <div class="input-group">
           <input
             type="password"
             formControlName="password"
             required
-          >
+            autocomplete="current-password"
+          />
           <label>Senha</label>
         </div>
 
-        <!-- BUTTON -->
-        <button
-          type="submit"
-          class="btn-login"
-          [disabled]="form.invalid || loading()"
-        >
+        <button type="submit" class="btn-login" [disabled]="form.invalid || loading()">
           @if (loading()) {
-            <span class="loader"></span>
+            <span class="loader"></span> Entrando...
           } @else {
-            Entrar
+            Entrar na plataforma
           }
         </button>
-
       </form>
 
-      <div class="footer">
-        <span>Não tem conta?</span>
+      <div class="form-footer">
+        Não tem conta?
         <a routerLink="/register">Criar agora</a>
       </div>
-
     </div>
-
   </div>
-
 </div>

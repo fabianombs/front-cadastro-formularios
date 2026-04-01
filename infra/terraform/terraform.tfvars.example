@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# COMO USAR:
+#   1. Copie este arquivo: cp terraform.tfvars.example terraform.tfvars
+#   2. Preencha os valores abaixo
+#   3. NUNCA commite o terraform.tfvars (já está no .gitignore)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ↓ Nome base de todos os recursos criados na AWS (buckets, IAM user, etc.)
+project_name = "app-forms-clients"
+
+# ↓ Região AWS onde os buckets S3 serão criados
+#   Sugestão para Brasil: sa-east-1 (São Paulo)
+#   Coloque o mesmo valor no secret AWS_REGION do GitHub
+aws_region = "sa-east-1"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOMÍNIOS CUSTOMIZADOS (opcional)
+# Deixe "" para usar o domínio padrão do CloudFront (*.cloudfront.net)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ↓ Domínio de homologação (ex: "homol.meudominio.com")
+homol_domain = ""
+
+# ↓ Domínio de produção (ex: "app.meudominio.com")
+prod_domain = ""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CERTIFICADO SSL (ACM) — necessário apenas se usar domínios customizados acima
+#
+# ATENÇÃO: o certificado DEVE ser criado na região us-east-1 (requisito AWS
+# para CloudFront), independente da região dos seus buckets S3.
+#
+# Como obter:
+#   1. Acesse AWS Console → Certificate Manager → região us-east-1
+#   2. Solicite um certificado público para seus domínios
+#   3. Valide via DNS (recomendado)
+#   4. Copie o ARN do certificado validado aqui
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ↓ ARN do certificado ACM (ex: "arn:aws:acm:us-east-1:123456789012:certificate/abc-123")
+acm_certificate_arn = ""

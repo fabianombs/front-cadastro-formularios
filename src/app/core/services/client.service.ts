@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
+import { environment } from '../../../environments/environment';
 
 export interface Client {
   id: number;
@@ -21,12 +22,11 @@ export interface CreateClientRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ClientService {
-
   private http = inject(HttpClient);
-  private api = 'http://localhost:8080/clients';
+  private api = `${environment.apiUrl}/clients`;
 
   create(data: CreateClientRequest): Observable<Client> {
     return this.http.post<Client>(this.api, data);

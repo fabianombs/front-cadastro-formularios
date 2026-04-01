@@ -7,10 +7,9 @@ import { FormsModule } from '@angular/forms';
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './users.component.html'
+  templateUrl: './users.component.html',
 })
 export class UsersComponent implements OnInit {
-
   private userService = inject(UserService);
   private authService = inject(AuthService);
 
@@ -39,20 +38,20 @@ export class UsersComponent implements OnInit {
         this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
   nextPage() {
     if (this.page() < this.totalPages() - 1) {
-      this.page.update(p => p + 1);
+      this.page.update((p) => p + 1);
       this.loadUsers();
     }
   }
 
   prevPage() {
     if (this.page() > 0) {
-      this.page.update(p => p - 1);
+      this.page.update((p) => p - 1);
       this.loadUsers();
     }
   }
@@ -73,13 +72,15 @@ export class UsersComponent implements OnInit {
   saveEdit(id: number) {
     const data = this.editedUser();
 
-    this.userService.update(id, {
-      username: data.username!,
-      role: data.role!
-    }).subscribe(() => {
-      this.editingUserId.set(null);
-      this.loadUsers();
-    });
+    this.userService
+      .update(id, {
+        username: data.username!,
+        role: data.role!,
+      })
+      .subscribe(() => {
+        this.editingUserId.set(null);
+        this.loadUsers();
+      });
   }
 
   deleteUser(id: number) {
