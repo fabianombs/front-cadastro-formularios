@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
+import { environment } from '../../../environments/environment';
 
 export interface FormField {
   label: string;
@@ -109,9 +110,10 @@ export interface AppointmentResponse {
 @Injectable({ providedIn: 'root' })
 export class FormTemplateService {
 
-  private apiUrl = 'http://localhost:8080/form-templates';
-  private submissionsUrl = 'http://localhost:8080/form-submissions';
-  private appointmentsUrl = 'http://localhost:8080/appointments';
+  private apiUrl = `${environment.apiUrl}/form-templates`;
+  private submissionsUrl = `${environment.apiUrl}/form-submissions`;
+  private appointmentsUrl = `${environment.apiUrl}/appointments`;
+  private attendanceUrl = `${environment.apiUrl}/attendance`;
 
   constructor(private http: HttpClient) {}
 
@@ -187,29 +189,29 @@ export class FormTemplateService {
 
   importAttendance(templateId: number, payload: ImportAttendanceRequest): Observable<AttendanceRecord[]> {
     return this.http.post<AttendanceRecord[]>(
-      `http://localhost:8080/attendance/template/${templateId}/import`, payload
+      `${this.attendanceUrl}/template/${templateId}/import`, payload
     );
   }
 
   getAttendance(templateId: number, page = 0, size = 500): Observable<PageResponse<AttendanceRecord>> {
     return this.http.get<PageResponse<AttendanceRecord>>(
-      `http://localhost:8080/attendance/template/${templateId}?page=${page}&size=${size}`
+      `${this.attendanceUrl}/template/${templateId}?page=${page}&size=${size}`
     );
   }
 
   markAttendance(recordId: number, payload: MarkAttendanceRequest): Observable<AttendanceRecord> {
     return this.http.patch<AttendanceRecord>(
-      `http://localhost:8080/attendance/${recordId}/mark`, payload
+      `${this.attendanceUrl}/${recordId}/mark`, payload
     );
   }
 
   updateAttendanceRowData(recordId: number, rowData: { [key: string]: string }): Observable<AttendanceRecord> {
     return this.http.patch<AttendanceRecord>(
-      `http://localhost:8080/attendance/${recordId}/data`, rowData
+      `${this.attendanceUrl}/${recordId}/data`, rowData
     );
   }
 
   deleteAttendanceRecord(recordId: number): Observable<void> {
-    return this.http.delete<void>(`http://localhost:8080/attendance/${recordId}`);
+    return this.http.delete<void>(`${this.attendanceUrl}/${recordId}`);
   }
 }

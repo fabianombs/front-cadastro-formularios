@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { JwtPayload } from '../models/jwt.model';
 import { AuthResponse } from '../models/auth.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -28,26 +29,22 @@ export class AuthService {
   // 🔥 ROLE (DERIVADO)
   role = computed(() => this.user()?.role ?? null);
 
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
+
   constructor(private http: HttpClient, private router: Router) { }
 
   // ==========================
   // 🔐 LOGIN
   // ==========================
   login(payload: { username: string; password: string }) {
-    return this.http.post<AuthResponse>(
-      'http://localhost:8080/auth/login',
-      payload
-    );
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, payload);
   }
 
   // ==========================
   // 📝 REGISTER
   // ==========================
   register(payload: any) {
-    return this.http.post(
-      'http://localhost:8080/auth/register',
-      payload
-    );
+    return this.http.post(`${this.apiUrl}/register`, payload);
   }
 
   // ==========================
