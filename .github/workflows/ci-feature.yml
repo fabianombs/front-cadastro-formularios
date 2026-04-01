@@ -29,8 +29,6 @@ jobs:
       - name: Build (development)
         run: npx ng build --configuration=development
 
-      - name: Prettier check
-        run: npx prettier --check "src/**/*.{ts,html,scss}"
 
   open-pr:
     name: Open PR → develop

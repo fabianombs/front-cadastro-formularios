@@ -1,4 +1,4 @@
-name: Deploy — Homologação (develop)
+name: CI — Homologação (develop)
 
 on:
   push:
@@ -9,20 +9,9 @@ permissions:
   contents: read
   pull-requests: write
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SECRETS AWS — configure em: GitHub → Settings → Secrets and variables →
-#               Actions → New repository secret
-#
-#   AWS_ACCESS_KEY_ID       → terraform output github_actions_access_key_id
-#   AWS_SECRET_ACCESS_KEY   → terraform output -raw github_actions_secret_access_key
-#   AWS_REGION              → região onde criou os buckets (ex: sa-east-1)
-#   S3_BUCKET_HOMOL         → terraform output (ou nome manual: app-forms-clients-homol)
-#   CF_DISTRIBUTION_HOMOL   → terraform output homol_cloudfront_distribution_id
-# ─────────────────────────────────────────────────────────────────────────────
-
 jobs:
-  deploy-homol:
-    name: Build & Deploy to S3/CloudFront (homol)
+  build:
+    name: Build & Validate
     runs-on: ubuntu-latest
 
     steps:
@@ -37,46 +26,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (staging)
-        run: npx ng build --configuration=staging
+      - name: Build (production)
+        run: npx ng build --configuration=production
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          # ↓ AWS_ACCESS_KEY_ID — chave do IAM user gerado pelo Terraform
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # ↓ AWS_SECRET_ACCESS_KEY — secret do IAM user gerado pelo Terraform
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # ↓ AWS_REGION — ex: sa-east-1
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Sync to S3 (no-cache for all files)
-        run: |
-          # ↓ S3_BUCKET_HOMOL — nome do bucket homol (ex: app-forms-clients-homol)
-          aws s3 sync dist/app-forms-clients/browser/ s3://${{ secrets.S3_BUCKET_HOMOL }}/ \
-            --delete \
-            --cache-control "no-cache, no-store, must-revalidate"
-
-      - name: Set long-term cache for hashed assets
-        run: |
-          aws s3 cp s3://${{ secrets.S3_BUCKET_HOMOL }}/ s3://${{ secrets.S3_BUCKET_HOMOL }}/ \
-            --recursive \
-            --exclude "*" \
-            --include "*.js" \
-            --include "*.css" \
-            --metadata-directive REPLACE \
-            --cache-control "public, max-age=31536000, immutable"
-
-      - name: Invalidate CloudFront cache
-        run: |
-          # ↓ CF_DISTRIBUTION_HOMOL — ID da distribuição CloudFront homol
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CF_DISTRIBUTION_HOMOL }} \
-            --paths "/*"
 
   open-pr-to-master:
     name: Open PR → master
-    needs: deploy-homol
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -92,7 +48,7 @@ jobs:
           else
             gh pr create \
               --title "release: develop → master" \
-              --body "Homologação aprovada. Deploy de homol bem-sucedido — pronto para produção." \
+              --body "Build validado — pronto para deploy na Vercel." \
               --head develop \
               --base master
           fi

@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.app-footer {
+  background: rgba(6, 11, 24, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(28, 46, 74, 0.8);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copyright {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #3a5070;
+  letter-spacing: 0.02em;
+}
