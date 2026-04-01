@@ -35,7 +35,7 @@ export class TemplateListComponent implements OnInit {
   public  auth     = inject(AuthService);
 
   readonly pageSizeOptions = [2, 5, 10, 50];
-  pageSize = signal(5);
+  pageSize = signal(50);
 
   // ── Estado base ─────────────────────────────────────────────
   template    = signal<FormTemplate | null>(null);
