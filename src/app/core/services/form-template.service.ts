@@ -25,6 +25,7 @@ export interface FormTemplate {
   clientName: string;
   fields: FormField[];
   hasSchedule: boolean;
+  hasAttendance: boolean;
   scheduleConfig: ScheduleConfig | null;
 }
 

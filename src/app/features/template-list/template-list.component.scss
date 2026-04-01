@@ -1,3 +1,19 @@
+// ── Page size select ──────────────────────────────────────────
+.page-size-select {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #0f172a;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #3b82f6; }
+}
+
 // ── Tabs ──────────────────────────────────────────────────────
 .tab-btn {
   background: transparent;

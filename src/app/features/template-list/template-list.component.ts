@@ -11,7 +11,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ExportService } from '../../core/services/export.service';
 import { FormsModule } from '@angular/forms';
-import { map } from 'rxjs/operators';
+import { PaginationComponent, SpringPage } from '../../shared/components/pagination/pagination.component';
 
 interface FilterableField {
   col: string;
@@ -23,7 +23,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink],
+  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss'
 })
@@ -34,6 +34,9 @@ export class TemplateListComponent implements OnInit {
   private exporter = inject(ExportService);
   public  auth     = inject(AuthService);
 
+  readonly pageSizeOptions = [2, 5, 10, 50];
+  pageSize = signal(5);
+
   // ── Estado base ─────────────────────────────────────────────
   template    = signal<FormTemplate | null>(null);
   submissions = signal<FormSubmission[]>([]);
@@ -41,8 +44,42 @@ export class TemplateListComponent implements OnInit {
   appointments= signal<AppointmentResponse[]>([]);
   loading     = signal(true);
 
+  // ── Paginação por aba ────────────────────────────────────────
+  apptPage          = signal(0);
+  apptTotalPages    = signal(0);
+  apptTotalElements = signal(0);
+
+  subPage           = signal(0);
+  subTotalPages     = signal(0);
+  subTotalElements  = signal(0);
+
+  attPage           = signal(0);
+  attTotalPages     = signal(0);
+  attTotalElements  = signal(0);
+
+  apptPagination = computed<SpringPage>(() => ({
+    page: this.apptPage(),
+    size: this.pageSize(),
+    totalElements: this.apptTotalElements(),
+    totalPages: this.apptTotalPages()
+  }));
+
+  subPagination = computed<SpringPage>(() => ({
+    page: this.subPage(),
+    size: this.pageSize(),
+    totalElements: this.subTotalElements(),
+    totalPages: this.subTotalPages()
+  }));
+
+  attPagination = computed<SpringPage>(() => ({
+    page: this.attPage(),
+    size: this.pageSize(),
+    totalElements: this.attTotalElements(),
+    totalPages: this.attTotalPages()
+  }));
+
   // ── Aba ativa ────────────────────────────────────────────────
-  activeTab   = signal<'appointments' | 'submissions' | 'attendance'>('appointments');
+  activeTab   = signal<'appointments' | 'submissions' | 'attendance'>('submissions');
 
   // ── Filtros globais ─────────────────────────────────────────
   globalSearch    = signal('');
@@ -65,13 +102,11 @@ export class TemplateListComponent implements OnInit {
     return Array.from(keys);
   });
   attendanceStats = computed(() => ({
-    total    : this.attendance().length,
-    presente : this.attendance().filter(r => r.attended).length,
-    ausente  : this.attendance().filter(r => !r.attended).length,
+    total   : this.attTotalElements(),
+    presente: this.attendance().filter(r => r.attended).length,
+    ausente : this.attendance().filter(r => !r.attended).length,
   }));
   markingId       = signal<number | null>(null);
-
-  // Busca local dentro da aba presença
   attendanceSearch = signal('');
 
   // ─────────────────────────────────────────────────────────────
@@ -83,33 +118,88 @@ export class TemplateListComponent implements OnInit {
       next: (t) => {
         this.template.set(t);
 
-        this.service.getAppointmentsByTemplate(t.id, 0, 500).pipe(map(p => p.content)).subscribe({
-          next: (apps) => this.appointments.set(apps),
-          error: ()   => this.appointments.set([])
-        });
+        if (t.hasSchedule) this.activeTab.set('appointments');
+        else if (t.hasAttendance) this.activeTab.set('attendance');
+        else this.activeTab.set('submissions');
 
-        this.service.getAttendance(t.id, 0, 1000).pipe(map(p => p.content)).subscribe({
-          next: (recs) => {
-            this.attendance.set(recs);
-            // Define aba padrão após carregar tudo
-            if (t.hasSchedule) this.activeTab.set('appointments');
-            else if (recs.length > 0) this.activeTab.set('attendance');
-            else this.activeTab.set('submissions');
-          },
-          error: () => this.attendance.set([])
-        });
-
-        this.service.getSubmissionsByTemplate(t.id, 0, 500).pipe(map(p => p.content)).subscribe({
-          next: (subs) => {
-            this.submissions.set(subs);
-            this.buildColumns(subs);
-            this.loading.set(false);
-          },
-          error: () => this.loading.set(false)
-        });
+        this.loadAppointments();
+        this.loadAttendance();
+        this.loadSubmissions();
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  // ── Loaders por aba ──────────────────────────────────────────
+
+  private loadAppointments(): void {
+    const t = this.template();
+    if (!t) return;
+    this.service.getAppointmentsByTemplate(t.id, this.apptPage(), this.pageSize()).subscribe({
+      next: (page) => {
+        this.appointments.set(page.content);
+        this.apptTotalPages.set(page.totalPages);
+        this.apptTotalElements.set(page.totalElements);
+      },
+      error: () => this.appointments.set([])
+    });
+  }
+
+  private loadSubmissions(): void {
+    const t = this.template();
+    if (!t) return;
+    this.service.getSubmissionsByTemplate(t.id, this.subPage(), this.pageSize()).subscribe({
+      next: (page) => {
+        this.submissions.set(page.content);
+        this.buildColumns(page.content);
+        this.subTotalPages.set(page.totalPages);
+        this.subTotalElements.set(page.totalElements);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  private loadAttendance(): void {
+    const t = this.template();
+    if (!t) return;
+    this.service.getAttendance(t.id, this.attPage(), this.pageSize()).subscribe({
+      next: (page) => {
+        this.attendance.set(page.content);
+        this.attTotalPages.set(page.totalPages);
+        this.attTotalElements.set(page.totalElements);
+        // fallback: se hasAttendance não foi marcado mas há registros, muda aba
+        if (!this.template()?.hasSchedule && !this.template()?.hasAttendance && page.totalElements > 0) {
+          this.activeTab.set('attendance');
+        }
+      },
+      error: () => this.attendance.set([])
+    });
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize.set(size);
+    this.apptPage.set(0);
+    this.subPage.set(0);
+    this.attPage.set(0);
+    this.loadAppointments();
+    this.loadSubmissions();
+    this.loadAttendance();
+  }
+
+  goToApptPage(n: number): void {
+    this.apptPage.set(n);
+    this.loadAppointments();
+  }
+
+  goToSubPage(n: number): void {
+    this.subPage.set(n);
+    this.loadSubmissions();
+  }
+
+  goToAttPage(n: number): void {
+    this.attPage.set(n);
+    this.loadAttendance();
   }
 
   // ── Build colunas dinâmicas (submissions) ───────────────────
@@ -130,7 +220,7 @@ export class TemplateListComponent implements OnInit {
 
   // ── Stats agendamentos ───────────────────────────────────────
   appointmentStats = computed(() => ({
-    total    : this.appointments().length,
+    total    : this.apptTotalElements(),
     agendado : this.appointments().filter(a => a.status === 'AGENDADO').length,
     cancelado: this.appointments().filter(a => a.status === 'CANCELADO').length,
   }));

@@ -53,10 +53,12 @@
         @let apps = appointmentsMap()[t.id] || [];
         @let subs = submissionsMap()[t.id] || [];
         @let att = attendanceMap()[t.id] || [];
-        @let hasAppointments = apps.length > 0;
-        @let hasAttendance = !hasAppointments && att.length > 0;
 
-        <div class="template-card">
+        @let isAttendance = !t.hasSchedule && (t.hasAttendance || att.length > 0);
+
+        <div class="template-card"
+             [class.tc-appointment]="t.hasSchedule"
+             [class.tc-attendance]="isAttendance">
 
           <!-- HEADER -->
           <div class="tc-header">
@@ -67,57 +69,58 @@
             </div>
           </div>
 
-          <!-- STATS -->
-          <div class="tc-stats">
-            <div class="tc-stat">
-              <span class="tc-stat-value">
-                {{ hasAppointments ? apps.length : hasAttendance ? att.length : subs.length }}
-              </span>
-              <span class="tc-stat-label">
-                {{ hasAppointments ? 'Agendamentos' : hasAttendance ? 'Presença' : 'Respostas' }}
-              </span>
+          <!-- CARD: AGENDAMENTO -->
+          @if (t.hasSchedule) {
+
+            <div class="tc-stats">
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ apps.length }}</span>
+                <span class="tc-stat-label">Agendamentos</span>
+              </div>
+              <div class="tc-divider"></div>
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ t.fields.length }}</span>
+                <span class="tc-stat-label">Campos</span>
+              </div>
             </div>
 
-            <div class="tc-divider"></div>
-
-            <div class="tc-stat">
-              <span class="tc-stat-value">{{ t.fields.length }}</span>
-              <span class="tc-stat-label">Campos</span>
+            <div class="tc-actions">
+              <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Agendar</a>
+              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver agenda</a>
             </div>
-          </div>
 
-          <!-- ACTIONS -->
-          <div class="tc-actions">
-            <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">
-              Preencher
-            </a>
-
-            <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">
-              {{ hasAppointments ? 'Ver agenda' : hasAttendance ? 'Ver presença' : 'Ver respostas' }}
-            </a>
-          </div>
-
-          <!-- LISTA -->
-          <div class="tc-recent">
-
-            @if (hasAppointments) {
-
+            <div class="tc-recent">
               <p class="tc-recent-title">Últimos agendamentos</p>
-
               @for (a of apps.slice(0, 3); track a.id) {
                 <div class="tc-sub-row">
                   <span class="tc-sub-id">#{{ a.id }}</span>
-                  <span class="tc-sub-date">
-                    {{ a.slotDate | date:'dd/MM/yy' }} {{ a.slotTime }}
-                  </span>
+                  <span class="tc-sub-date">{{ a.slotDate | date:'dd/MM/yy' }} {{ a.slotTime }}</span>
                   <span class="tc-sub-date">{{ a.bookedByName }}</span>
                 </div>
               }
+            </div>
 
-            } @else if (hasAttendance) {
+          <!-- CARD: PRESENÇA -->
+          } @else if (isAttendance) {
 
+            <div class="tc-stats">
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ att.length }}</span>
+                <span class="tc-stat-label">Total</span>
+              </div>
+              <div class="tc-divider"></div>
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ presentesMap()[t.id] || 0 }}</span>
+                <span class="tc-stat-label">Presentes</span>
+              </div>
+            </div>
+
+            <div class="tc-actions">
+              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
+            </div>
+
+            <div class="tc-recent">
               <p class="tc-recent-title">Lista de presença</p>
-
               @for (r of att.slice(0, 3); track r.id) {
                 <div class="tc-sub-row">
                   <span class="tc-sub-id">#{{ r.id }}</span>
@@ -126,36 +129,46 @@
                   </span>
                 </div>
               }
+            </div>
 
-            } @else {
+          <!-- CARD: FORMULÁRIO -->
+          } @else {
 
+            <div class="tc-stats">
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ subs.length }}</span>
+                <span class="tc-stat-label">Respostas</span>
+              </div>
+              <div class="tc-divider"></div>
+              <div class="tc-stat">
+                <span class="tc-stat-value">{{ t.fields.length }}</span>
+                <span class="tc-stat-label">Campos</span>
+              </div>
+            </div>
+
+            <div class="tc-actions">
+              <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
+              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
+            </div>
+
+            <div class="tc-recent">
               <p class="tc-recent-title">Últimas respostas</p>
-
               @for (s of subs.slice(0, 3); track s.id) {
                 <div class="tc-sub-row">
                   <span class="tc-sub-id">#{{ s.id }}</span>
-                  <span class="tc-sub-date">
-                    {{ s.createdAt | date:'dd/MM/yy HH:mm' }}
-                  </span>
+                  <span class="tc-sub-date">{{ s.createdAt | date:'dd/MM/yy HH:mm' }}</span>
                 </div>
               }
+            </div>
 
-            }
-
-          </div>
+          }
 
         </div>
       }
     </div>
 
     <!-- Paginação -->
-    @if (totalPages() > 1) {
-      <div class="pagination">
-        <button class="btn-outline" [disabled]="page() === 0" (click)="prevPage()">← Anterior</button>
-        <span class="pagination-info">Página {{ page() + 1 }} de {{ totalPages() }} &nbsp;·&nbsp; {{ totalElements() }} formulários</span>
-        <button class="btn-outline" [disabled]="page() >= totalPages() - 1" (click)="nextPage()">Próxima →</button>
-      </div>
-    }
+    <app-pagination [pagination]="templatesPagination()" (pageChange)="goToPage($event)" />
 
   }
 

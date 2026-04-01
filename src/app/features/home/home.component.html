@@ -81,8 +81,8 @@
             <th>Nome</th>
             <th>Tipo</th>
             <th>Submissões</th>
-            <th>Agendamentos</th>
-            <th>Confirmados</th>
+            <th>Total</th>
+            <th>Confirmados / Presentes</th>
             <th>Presença</th>
           </tr>
         </thead>
@@ -92,9 +92,9 @@
               <td>{{ t.clientName || '—' }}</td>
               <td>{{ t.name }}</td>
               <td><span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span></td>
-              <td>{{ t.submissionCount }}</td>
-              <td>{{ t.appointmentTotal }}</td>
-              <td>{{ t.appointmentConfirmed }}</td>
+              <td>{{ t.submissionCount || '—' }}</td>
+              <td>{{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}</td>
+              <td>{{ inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed }}</td>
               <td>
                 <div class="progress">
                   <div class="bar" [style.width.%]="attendancePercent(t)"></div>
