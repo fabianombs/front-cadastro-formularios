@@ -11,9 +11,8 @@ describe('FormsAllComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FormsAllComponent ]
-    })
-    .compileComponents();
+      declarations: [FormsAllComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

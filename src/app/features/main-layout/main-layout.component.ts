@@ -6,11 +6,10 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 @Component({
   standalone: true,
   imports: [HeaderComponent, RouterOutlet],
-  templateUrl: './main-layout.component.html'
+  templateUrl: './main-layout.component.html',
 })
 export class MainLayoutComponent {
-
- auth = inject(AuthService);
+  auth = inject(AuthService);
 
   user = this.auth.user;
 

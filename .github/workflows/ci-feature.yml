@@ -1,0 +1,57 @@
+name: CI — Feature Branch
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ci:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (development)
+        run: npx ng build --configuration=development
+
+      - name: Prettier check
+        run: npx prettier --check "src/**/*.{ts,html,scss}"
+
+  open-pr:
+    name: Open PR → develop
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Open PR to develop (if not exists)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          EXISTING=$(gh pr list --head "$BRANCH" --base develop --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "PR #$EXISTING already exists for $BRANCH → develop. Skipping."
+          else
+            gh pr create \
+              --title "feat: $BRANCH → develop" \
+              --body "Automated PR from CI — branch \`$BRANCH\`." \
+              --head "$BRANCH" \
+              --base develop
+          fi

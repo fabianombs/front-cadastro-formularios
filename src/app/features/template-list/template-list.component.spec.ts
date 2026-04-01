@@ -11,9 +11,8 @@ describe('TemplateListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TemplateListComponent ]
-    })
-    .compileComponents();
+      declarations: [TemplateListComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

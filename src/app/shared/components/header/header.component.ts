@@ -15,7 +15,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: 'Clientes', path: '/clients', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
   { label: 'Criar Formulário', path: '/form-builder', roles: ['ROLE_ADMIN'] },
   { label: 'Formulários', path: '/forms-all', roles: ['ROLE_CLIENT'] },
-  { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN'] }
+  { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN'] },
 ];
 
 @Component({
@@ -23,7 +23,7 @@ const MENU_ITEMS: MenuItem[] = [
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent {
   auth = inject(AuthService);
@@ -34,14 +34,13 @@ export class HeaderComponent {
     const role = this.auth.role();
     if (!role) return [];
 
-    return MENU_ITEMS.filter(item => item.roles.includes(role))
-      .map(item => {
-        if (role === 'ROLE_CLIENT' && item.label === 'Formulários') {
-          // Em vez de mudar path para string com ?, usamos queryParams
-          return { ...item, path: '/forms-all', queryParams: { user: this.auth.user()?.sub } };
-        }
-        return { ...item, queryParams: {} };
-      });
+    return MENU_ITEMS.filter((item) => item.roles.includes(role)).map((item) => {
+      if (role === 'ROLE_CLIENT' && item.label === 'Formulários') {
+        // Em vez de mudar path para string com ?, usamos queryParams
+        return { ...item, path: '/forms-all', queryParams: { user: this.auth.user()?.sub } };
+      }
+      return { ...item, queryParams: {} };
+    });
   });
 
   // Computed para usuário

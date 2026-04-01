@@ -11,9 +11,8 @@ describe('CreateFormTemplateComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CreateFormTemplateComponent ]
-    })
-    .compileComponents();
+      declarations: [CreateFormTemplateComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

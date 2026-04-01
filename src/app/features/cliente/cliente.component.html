@@ -1,5 +1,4 @@
 <div class="page">
-
   <div class="page-header">
     <div>
       <h1 class="page-title">Clientes</h1>
@@ -35,14 +34,16 @@
                 <th>Telefone</th>
                 <th>Empresa</th>
                 @if (isAdmin()) {
-                  <th style="width: 80px;"></th>
+                  <th style="width: 80px"></th>
                 }
               </tr>
             </thead>
             <tbody>
               @for (client of clients(); track client.id) {
                 <tr>
-                  <td><span class="badge badge-gray">#{{ client.id }}</span></td>
+                  <td>
+                    <span class="badge badge-gray">#{{ client.id }}</span>
+                  </td>
                   <td>
                     <div class="client-name-cell">
                       <div class="client-avatar">{{ client.name.charAt(0).toUpperCase() }}</div>
@@ -72,13 +73,23 @@
         <!-- Paginação -->
         @if (totalPages() > 1) {
           <div class="pagination">
-            <button class="btn-outline" [disabled]="page() === 0" (click)="prevPage()">← Anterior</button>
-            <span class="pagination-info">Página {{ page() + 1 }} de {{ totalPages() }} &nbsp;·&nbsp; {{ totalElements() }} registros</span>
-            <button class="btn-outline" [disabled]="page() >= totalPages() - 1" (click)="nextPage()">Próxima →</button>
+            <button class="btn-outline" [disabled]="page() === 0" (click)="prevPage()">
+              ← Anterior
+            </button>
+            <span class="pagination-info"
+              >Página {{ page() + 1 }} de {{ totalPages() }} &nbsp;·&nbsp;
+              {{ totalElements() }} registros</span
+            >
+            <button
+              class="btn-outline"
+              [disabled]="page() >= totalPages() - 1"
+              (click)="nextPage()"
+            >
+              Próxima →
+            </button>
           </div>
         }
       </div>
     }
   }
-
 </div>

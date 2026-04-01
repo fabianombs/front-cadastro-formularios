@@ -1,5 +1,4 @@
-<div class="page" style="max-width: 680px;">
-
+<div class="page" style="max-width: 680px">
   <div class="page-header">
     <div>
       <h1 class="page-title">Novo cliente</h1>
@@ -13,13 +12,11 @@
       <h2 class="section-title">Dados do cliente</h2>
     </div>
     <div class="section-body">
-
       <form (ngSubmit)="submit()">
         <div class="fields-grid">
-
           <div class="field">
             <label>Nome completo <span class="required">*</span></label>
-            <input [(ngModel)]="form().name" name="name" placeholder="Ex: João Silva">
+            <input [(ngModel)]="form().name" name="name" placeholder="Ex: João Silva" />
             @if (errors().name) {
               <span class="field-error">{{ errors().name }}</span>
             }
@@ -27,7 +24,12 @@
 
           <div class="field">
             <label>Email <span class="required">*</span></label>
-            <input [(ngModel)]="form().email" name="email" type="email" placeholder="email@empresa.com">
+            <input
+              [(ngModel)]="form().email"
+              name="email"
+              type="email"
+              placeholder="email@empresa.com"
+            />
             @if (errors().email) {
               <span class="field-error">{{ errors().email }}</span>
             }
@@ -35,7 +37,7 @@
 
           <div class="field">
             <label>Username <span class="required">*</span></label>
-            <input [(ngModel)]="form().username" name="username" placeholder="nome.sobrenome">
+            <input [(ngModel)]="form().username" name="username" placeholder="nome.sobrenome" />
             @if (errors().username) {
               <span class="field-error">{{ errors().username }}</span>
             }
@@ -43,35 +45,36 @@
 
           <div class="field">
             <label>Telefone</label>
-            <input [(ngModel)]="form().phone" name="phone" placeholder="(11) 90000-0000">
+            <input [(ngModel)]="form().phone" name="phone" placeholder="(11) 90000-0000" />
           </div>
 
-          <div class="field" style="grid-column: 1 / -1;">
+          <div class="field" style="grid-column: 1 / -1">
             <label>Empresa</label>
-            <input [(ngModel)]="form().company" name="company" placeholder="Nome da empresa">
+            <input [(ngModel)]="form().company" name="company" placeholder="Nome da empresa" />
           </div>
 
-          <div class="field" style="grid-column: 1 / -1;">
+          <div class="field" style="grid-column: 1 / -1">
             <label>Observações</label>
-            <textarea [(ngModel)]="form().notes" name="notes" rows="3" placeholder="Informações adicionais..."></textarea>
+            <textarea
+              [(ngModel)]="form().notes"
+              name="notes"
+              rows="3"
+              placeholder="Informações adicionais..."
+            ></textarea>
           </div>
-
         </div>
 
         <div class="form-footer">
           <button type="submit" class="btn-primary" [disabled]="loading()">
             @if (loading()) {
-              <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div>
+              <div class="spinner" style="width: 16px; height: 16px; border-width: 2px"></div>
               Criando...
             } @else {
               Criar cliente
             }
           </button>
         </div>
-
       </form>
-
     </div>
   </div>
-
 </div>

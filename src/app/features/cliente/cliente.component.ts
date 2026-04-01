@@ -7,10 +7,9 @@ import { Router } from '@angular/router';
 @Component({
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './cliente.component.html'
+  templateUrl: './cliente.component.html',
 })
 export class ClienteComponent implements OnInit {
-
   private service = inject(ClientService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -37,20 +36,20 @@ export class ClienteComponent implements OnInit {
         this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
   nextPage() {
     if (this.page() < this.totalPages() - 1) {
-      this.page.update(p => p + 1);
+      this.page.update((p) => p + 1);
       this.loadClients();
     }
   }
 
   prevPage() {
     if (this.page() > 0) {
-      this.page.update(p => p - 1);
+      this.page.update((p) => p - 1);
       this.loadClients();
     }
   }

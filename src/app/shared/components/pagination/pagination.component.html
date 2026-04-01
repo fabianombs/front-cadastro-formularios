@@ -1,16 +1,19 @@
 @if (pagination.totalPages > 1) {
   <div class="pagination-wrapper">
-
     <span class="pagination-info">
-      Página {{ pagination.page + 1 }} de {{ pagination.totalPages }}
-      &middot; {{ pagination.totalElements }} registros
+      Página {{ pagination.page + 1 }} de {{ pagination.totalPages }} &middot;
+      {{ pagination.totalElements }} registros
     </span>
 
     <nav aria-label="Paginação">
       <ul class="pagination">
-
         <li class="page-item" [class.disabled]="!hasPrev">
-          <button class="page-link" (click)="goTo(pagination.page - 1)" [disabled]="!hasPrev" aria-label="Anterior">
+          <button
+            class="page-link"
+            (click)="goTo(pagination.page - 1)"
+            [disabled]="!hasPrev"
+            aria-label="Anterior"
+          >
             &#8249;
           </button>
         </li>
@@ -22,13 +25,16 @@
         }
 
         <li class="page-item" [class.disabled]="!hasNext">
-          <button class="page-link" (click)="goTo(pagination.page + 1)" [disabled]="!hasNext" aria-label="Próxima">
+          <button
+            class="page-link"
+            (click)="goTo(pagination.page + 1)"
+            [disabled]="!hasNext"
+            aria-label="Próxima"
+          >
             &#8250;
           </button>
         </li>
-
       </ul>
     </nav>
-
   </div>
 }
