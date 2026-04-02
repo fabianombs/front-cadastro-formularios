@@ -496,20 +496,41 @@
                 </div>
               }
 
-              <div formArrayName="fields">
+              <div
+                formArrayName="fields"
+                cdkDropList
+                [cdkDropListData]="fields.controls"
+                (cdkDropListDropped)="dropField($event)"
+                class="fields-drop-list"
+              >
                 @for (f of fields.controls; track $index) {
-                  <div [formGroupName]="$index" class="field-item">
+                  <div [formGroupName]="$index" class="field-item" cdkDrag>
                     <div class="field-item-header">
-                      <span class="field-item-number">Campo {{ $index + 1 }}</span>
-                      <button
-                        type="button"
-                        class="btn-danger"
-                        style="padding: 4px 10px; font-size: 11px"
-                        (click)="removeField($index)"
-                      >
-                        Remover
-                      </button>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <span class="drag-handle" cdkDragHandle title="Arrastar para reordenar">⠿</span>
+                        <span class="field-item-number">Campo {{ $index + 1 }}</span>
+                      </div>
+                      <div style="display: flex; gap: 6px; align-items: center">
+                        <button
+                          type="button"
+                          class="btn-span-toggle"
+                          [class.active]="f.get('colSpan')?.value === 1"
+                          (click)="toggleFieldSpan($index)"
+                          [title]="f.get('colSpan')?.value === 2 ? 'Clique para meia largura' : 'Clique para largura total'"
+                        >
+                          {{ f.get('colSpan')?.value === 2 ? '⬜ Full' : '▪▪ ½' }}
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-danger"
+                          style="padding: 4px 10px; font-size: 11px"
+                          (click)="removeField($index)"
+                        >
+                          Remover
+                        </button>
+                      </div>
                     </div>
+                    <div class="cdk-drag-placeholder-custom" *cdkDragPlaceholder></div>
                     <div class="field-item-body">
                       <div class="field" style="margin-bottom: 12px">
                         <label>Label</label>
@@ -519,7 +540,7 @@
                           placeholder="Ex: Nome completo"
                         />
                       </div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px">
                         <div class="field" style="margin-bottom: 0">
                           <label>Tipo</label>
                           <select formControlName="type">
@@ -528,6 +549,19 @@
                             <option value="number">Número</option>
                             <option value="date">Data</option>
                           </select>
+                        </div>
+                        <div class="field" style="margin-bottom: 0">
+                          <label>Cor do campo</label>
+                          <div style="display: flex; align-items: center; gap: 8px">
+                            <input
+                              type="color"
+                              formControlName="fieldColor"
+                              style="width: 36px; height: 36px; padding: 2px; border-radius: 6px; cursor: pointer; border: 1px solid #1c2e4a; background: #0a1020"
+                            />
+                            <span style="font-size: 11px; color: #5d789f; font-family: 'JetBrains Mono', monospace">
+                              {{ f.get('fieldColor')?.value || 'padrão' }}
+                            </span>
+                          </div>
                         </div>
                         <div class="field" style="margin-bottom: 0">
                           <label>&nbsp;</label>
@@ -543,6 +577,365 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Seção de aparência -->
+        <div class="card" style="margin-top: 16px">
+          <div class="ap-toggle" (click)="showAppearance = !showAppearance">
+            <div>
+              <h2 class="section-title">Aparência do formulário</h2>
+              <p class="ap-toggle-sub">Personalize cores, gradientes e imagens — tudo opcional</p>
+            </div>
+            <span class="ap-toggle-icon">{{ showAppearance ? '▲' : '▼' }}</span>
+          </div>
+
+          @if (showAppearance) {
+            <div class="ap-body" formGroupName="appearance">
+              <!-- Coluna esquerda: controles -->
+              <div class="ap-controls">
+
+                <!-- FUNDO -->
+                <p class="ap-section-label">Fundo</p>
+
+                <div class="ap-group">
+                  <p class="ap-hint">Presets de gradiente — clique para aplicar</p>
+                  <div class="ap-presets">
+                    @for (p of gradientPresets; track p.value) {
+                      <button
+                        type="button"
+                        class="ap-preset-swatch"
+                        [style.background]="p.value"
+                        [class.ap-preset-active]="templateForm.get('appearance.backgroundGradient')?.value === p.value"
+                        (click)="applyGradientPreset(p.value)"
+                        [title]="p.label"
+                      ></button>
+                    }
+                  </div>
+                </div>
+
+                <div class="ap-group">
+                  <label class="ap-label">Gradiente personalizado</label>
+                  <input
+                    class="ap-input"
+                    type="text"
+                    formControlName="backgroundGradient"
+                    placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                  />
+                </div>
+
+                <div class="ap-row">
+                  <div class="ap-group">
+                    <label class="ap-label">Cor sólida de fundo</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="backgroundColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.backgroundColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ap-group">
+                  <label class="ap-label">Imagem de fundo (URL)</label>
+                  <input
+                    class="ap-input"
+                    type="text"
+                    formControlName="backgroundImageUrl"
+                    placeholder="https://cdn.exemplo.com/bg.jpg"
+                  />
+                  <p class="ap-hint" style="margin-top: 4px">Sobrepõe cor e gradiente</p>
+                </div>
+
+                <!-- CORES -->
+                <p class="ap-section-label" style="margin-top: 20px">Cores</p>
+
+                <div class="ap-colors-grid">
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Botões / destaque</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="primaryColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.primaryColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Texto do formulário</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="formTextColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.formTextColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Fundo dos campos</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="fieldBackgroundColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Texto dos campos</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="fieldTextColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.fieldTextColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARDS / TABELA -->
+                <p class="ap-section-label" style="margin-top: 20px">Cards e Tabela</p>
+                <p class="ap-hint">Cor de fundo e borda dos cards, tabela e área de filtros — independente do fundo da página</p>
+
+                <div class="ap-colors-grid" style="margin-top: 10px">
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Fundo dos cards / tabela</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="cardBackgroundColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.cardBackgroundColor')?.value || 'auto (glass)' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ap-group" style="margin-bottom: 0">
+                    <label class="ap-label">Borda dos cards / tabela</label>
+                    <div class="ap-color-row">
+                      <input type="color" formControlName="cardBorderColor" class="ap-color-picker" />
+                      <span class="ap-color-hex">
+                        {{ templateForm.get('appearance.cardBorderColor')?.value || 'auto' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- IMAGENS -->
+                <p class="ap-section-label" style="margin-top: 20px">Imagens de topo e rodapé</p>
+
+                <div class="ap-group">
+                  <label class="ap-label">Imagem do topo (URL)</label>
+                  <input
+                    class="ap-input"
+                    type="text"
+                    formControlName="headerImageUrl"
+                    placeholder="https://cdn.exemplo.com/logo.png"
+                  />
+                </div>
+                <div class="ap-group">
+                  <label class="ap-label">Imagem do rodapé (URL)</label>
+                  <input
+                    class="ap-input"
+                    type="text"
+                    formControlName="footerImageUrl"
+                    placeholder="https://cdn.exemplo.com/footer.png"
+                  />
+                </div>
+
+              </div>
+
+              <!-- Coluna direita: previews -->
+              <div class="ap-preview-col">
+
+                <!-- ── Preview do formulário ── -->
+                <p class="ap-section-label">Preview — formulário</p>
+                <div class="ap-preview-page" [ngStyle]="previewPageStyle">
+                  @if (templateForm.get('appearance.headerImageUrl')?.value) {
+                    <img
+                      [src]="templateForm.get('appearance.headerImageUrl')?.value"
+                      class="ap-preview-img"
+                      alt=""
+                    />
+                  }
+                  <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
+                    <div class="ap-preview-form-title">
+                      {{ templateForm.get('name')?.value || 'Meu Formulário' }}
+                    </div>
+
+                    <div
+                      class="ap-drag-list"
+                      cdkDropList
+                      [cdkDropListData]="fields.controls"
+                      (cdkDropListDropped)="dropField($event)"
+                    >
+                      @for (field of previewFields; track field.index) {
+                        <div
+                          class="ap-drag-item"
+                          [class.ap-drag-half]="field.colSpan === 1"
+                          cdkDrag
+                        >
+                          <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
+                          <div class="ap-drag-field">
+                            <span
+                              class="ap-preview-label"
+                              [style.color]="field.fieldColor || null"
+                            >{{ field.label }}</span>
+                            <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
+                          </div>
+                          <button
+                            type="button"
+                            class="ap-span-btn"
+                            [title]="field.colSpan === 2 ? 'Reduzir para ½' : 'Expandir para full'"
+                            (click)="toggleFieldSpan(field.index); $event.stopPropagation()"
+                          >{{ field.colSpan === 2 ? '½' : '⬜' }}</button>
+                          <div class="ap-drag-placeholder" *cdkDragPlaceholder></div>
+                        </div>
+                      }
+                    </div>
+
+                    <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
+                  </div>
+                  @if (templateForm.get('appearance.footerImageUrl')?.value) {
+                    <img
+                      [src]="templateForm.get('appearance.footerImageUrl')?.value"
+                      class="ap-preview-img"
+                      alt=""
+                    />
+                  }
+                </div>
+                <p class="ap-hint" style="text-align: center; margin-top: 8px">
+                  ⠿ arraste · ½ alterna largura
+                </p>
+
+                <!-- ── Preview da listagem ── -->
+                <p class="ap-section-label" style="margin-top: 20px">
+                  Preview — {{ hasAttendance ? 'lista de presença' : 'listagem' }}
+                </p>
+                <div class="ap-list-preview" [ngStyle]="previewListPageStyle">
+                  @if (templateForm.get('appearance.headerImageUrl')?.value) {
+                    <img
+                      [src]="templateForm.get('appearance.headerImageUrl')?.value"
+                      class="ap-preview-img"
+                      alt=""
+                      style="max-height: 60px; border-radius: 6px 6px 0 0"
+                    />
+                  }
+
+                  <!-- Título -->
+                  <div class="ap-list-name">
+                    {{ templateForm.get('name')?.value || 'Meu Formulário' }}
+                  </div>
+
+                  @if (hasAttendance) {
+                    <!-- ── Preview exclusivo: lista de presença ── -->
+
+                    <!-- Stats de presença -->
+                    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                        <div style="font-size:16px;font-weight:700" [style.color]="previewAccentColor">0</div>
+                        <div style="font-size:9px;opacity:.65">Total</div>
+                      </div>
+                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                        <div style="font-size:16px;font-weight:700;color:#10c98a">0</div>
+                        <div style="font-size:9px;opacity:.65">Presente</div>
+                      </div>
+                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                        <div style="font-size:16px;font-weight:700;color:#ff4f6a">0</div>
+                        <div style="font-size:9px;opacity:.65">Ausente</div>
+                      </div>
+                    </div>
+
+                    <!-- Tabela presença com toggle -->
+                    <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                      <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span>{{ f.label }}</span>
+                        }
+                        <span>Presença</span>
+                      </div>
+                      <div class="ap-list-trow">
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span class="ap-list-cell-muted">—</span>
+                        }
+                        <span style="display:inline-flex;align-items:center;gap:4px">
+                          <span style="width:28px;height:16px;border-radius:99px;background:#10c98a;display:inline-block;opacity:.85"></span>
+                          <span style="font-size:9px;color:#10c98a">✓</span>
+                        </span>
+                      </div>
+                      <div class="ap-list-trow" style="opacity:.5">
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span class="ap-list-cell-muted">—</span>
+                        }
+                        <span style="display:inline-flex;align-items:center;gap:4px">
+                          <span style="width:28px;height:16px;border-radius:99px;background:#2b3f5c;display:inline-block"></span>
+                          <span style="font-size:9px;color:#ff4f6a">✗</span>
+                        </span>
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- ── Preview padrão: respostas / agendamentos ── -->
+
+                    <!-- Tabs -->
+                    <div class="ap-list-tabs">
+                      <span [ngStyle]="previewListActiveTabStyle">
+                        {{ hasSchedule ? 'Agendamentos' : 'Respostas' }}
+                        <span [ngStyle]="previewListBadgeStyle">0</span>
+                      </span>
+                    </div>
+
+                    <!-- Mini tabela -->
+                    <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                      <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                        @if (!hasSchedule) {
+                          <span>ID</span>
+                          <span>Data</span>
+                        } @else {
+                          <span>Data</span>
+                          <span>Horário</span>
+                          <span>Nome</span>
+                          <span>Status</span>
+                        }
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span>{{ f.label }}</span>
+                        }
+                      </div>
+                      <div class="ap-list-trow">
+                        @if (!hasSchedule) {
+                          <span class="ap-list-cell-muted">#1</span>
+                          <span class="ap-list-cell-muted">01/04/2025</span>
+                        } @else {
+                          <span class="ap-list-cell-muted">01/04/2025</span>
+                          <span class="ap-list-cell-muted">09:00</span>
+                          <span class="ap-list-cell-muted">João S.</span>
+                          <span style="font-size:9px;color:#10c98a;font-weight:700">AGENDADO</span>
+                        }
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span class="ap-list-cell-muted">—</span>
+                        }
+                      </div>
+                      <div class="ap-list-trow" style="opacity: .5">
+                        @if (!hasSchedule) {
+                          <span class="ap-list-cell-muted">#2</span>
+                          <span class="ap-list-cell-muted">02/04/2025</span>
+                        } @else {
+                          <span class="ap-list-cell-muted">02/04/2025</span>
+                          <span class="ap-list-cell-muted">10:00</span>
+                          <span class="ap-list-cell-muted">Maria L.</span>
+                          <span style="font-size:9px;color:#ff4f6a;font-weight:700">CANCELADO</span>
+                        }
+                        @for (f of previewFields.slice(0, 2); track f.index) {
+                          <span class="ap-list-cell-muted">—</span>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  @if (templateForm.get('appearance.footerImageUrl')?.value) {
+                    <img
+                      [src]="templateForm.get('appearance.footerImageUrl')?.value"
+                      class="ap-preview-img"
+                      alt=""
+                      style="max-height: 40px; border-radius: 0 0 6px 6px"
+                    />
+                  }
+                </div>
+
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Seção de configuração de agenda -->

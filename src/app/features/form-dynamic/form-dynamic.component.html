@@ -1,4 +1,4 @@
-<div class="page fd-page">
+<div class="page fd-page" [ngStyle]="pageStyle()">
   @if (loading()) {
     <div class="loading-center"><div class="spinner"></div></div>
   }
@@ -26,6 +26,15 @@
   }
 
   @if (!submitted() && template()) {
+    <!-- Header image -->
+    @if (template()?.appearance?.headerImageUrl) {
+      <img
+        [src]="template()!.appearance!.headerImageUrl"
+        class="fd-header-img"
+        alt="Cabeçalho"
+      />
+    }
+
     <div class="page-header">
       <div>
         <h1 class="page-title">{{ template()?.name }}</h1>
@@ -39,7 +48,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" [ngStyle]="formCardStyle()">
       <div class="fd-section-header">
         <span class="fd-section-title">
           @if (template()?.hasSchedule) {
@@ -65,6 +74,7 @@
                   [max]="maxDate"
                   [value]="selectedDate()"
                   (change)="onDateChange($event)"
+                  [ngStyle]="fieldInputStyle()"
                 />
               </div>
 
@@ -84,6 +94,7 @@
                         [class.fd-slot-taken]="!slot.available"
                         (click)="selectSlot(slot)"
                         [disabled]="!slot.available"
+                        [ngStyle]="selectedSlot() === slot.time ? submitBtnStyle() : {}"
                       >
                         {{ formatTime(slot.time) }}
                         @if (!slot.available) {
@@ -117,30 +128,36 @@
               <p class="fd-block-label">Dados do solicitante</p>
             }
 
-            @for (fg of formFields(); track fg.value.label) {
-              <div class="field">
-                <label>
-                  {{ fg.value.label }}
-                  @if (fg.value.required) {
-                    <span class="fd-required">*</span>
+            <div class="fd-fields-grid">
+              @for (fg of formFields(); track fg.value.label; let i = $index) {
+                <div
+                  class="field"
+                  [style.grid-column]="'span ' + (fg.value.colSpan ?? 2)"
+                >
+                  <label [ngStyle]="fieldLabelStyle(fg.value.fieldColor)">
+                    {{ fg.value.label }}
+                    @if (fg.value.required) {
+                      <span class="fd-required">*</span>
+                    }
+                  </label>
+                  <input
+                    [type]="fg.value.type"
+                    [formControl]="getControl(i)"
+                    [required]="fg.value.required"
+                    [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
+                    [ngStyle]="fieldInputStyle()"
+                  />
+                  @if (getControl(i).invalid && getControl(i).touched) {
+                    <span class="field-error">Campo obrigatório</span>
                   }
-                </label>
-                <input
-                  [type]="fg.value.type"
-                  [formControl]="getControl($index)"
-                  [required]="fg.value.required"
-                  [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
-                />
-                @if (getControl($index).invalid && getControl($index).touched) {
-                  <span class="field-error">Campo obrigatório</span>
-                }
-              </div>
-            }
+                </div>
+              }
+            </div>
           }
 
           <div class="fd-form-footer">
             <a routerLink="/" class="btn-outline">Cancelar</a>
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="btn-primary" [ngStyle]="submitBtnStyle()">
               @if (template()?.hasSchedule) {
                 Confirmar agendamento
               } @else {
@@ -151,5 +168,14 @@
         </form>
       </div>
     </div>
+
+    <!-- Footer image -->
+    @if (template()?.appearance?.footerImageUrl) {
+      <img
+        [src]="template()!.appearance!.footerImageUrl"
+        class="fd-footer-img"
+        alt="Rodapé"
+      />
+    }
   }
 </div>

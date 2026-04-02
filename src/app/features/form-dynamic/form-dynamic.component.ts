@@ -77,6 +77,117 @@ export class FormDynamicComponent implements OnInit {
     }
   }
 
+  // =====================
+  // APPEARANCE STYLES
+  // =====================
+
+  pageStyle = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a) return {};
+    const style: Record<string, string> = {};
+    if (a.backgroundGradient) {
+      style['background'] = a.backgroundGradient;
+    } else if (a.backgroundImageUrl) {
+      style['backgroundImage'] = `url(${a.backgroundImageUrl})`;
+      style['backgroundSize'] = 'cover';
+      style['backgroundPosition'] = 'center';
+    } else if (a.backgroundColor) {
+      style['backgroundColor'] = a.backgroundColor;
+    }
+    if (a.formTextColor) style['color'] = a.formTextColor;
+
+    // ── CSS custom properties para componentes filhos ────────────
+    const hasBg = !!(a.backgroundGradient || a.backgroundImageUrl || a.backgroundColor);
+    if (hasBg) {
+      const accent = this.resolvedAccentColor() ?? '#4d8fff';
+      const cardBg = a.cardBackgroundColor || 'rgba(10, 16, 32, 0.68)';
+      const cardBorder = a.cardBorderColor || 'rgba(255, 255, 255, 0.1)';
+
+      style['--surface']       = cardBg;
+      style['--surface-high']  = a.cardBackgroundColor ? cardBg : 'rgba(15, 25, 50, 0.8)';
+      style['--bg-subtle']     = a.cardBackgroundColor ? cardBg : 'rgba(5, 10, 20, 0.72)';
+      style['--border']        = cardBorder;
+      style['--border-hover']  = a.cardBorderColor ? cardBorder : 'rgba(255, 255, 255, 0.18)';
+      style['--text']          = a.formTextColor || '#d8e4f8';
+      style['--text-muted']    = a.formTextColor
+        ? this.hexToRgba(a.formTextColor, 0.65)
+        : 'rgba(216, 228, 248, 0.65)';
+      style['--primary']       = accent;
+      style['--primary-muted'] = this.hexToRgba(accent, 0.12);
+      style['--primary-glow']  = this.hexToRgba(accent, 0.22);
+      style['--surface-hover'] = this.hexToRgba(accent, 0.08);
+    }
+
+    return style;
+  });
+
+  /** Converte hex para rgba — suporta #rrggbb e #rgb */
+  private hexToRgba(hex: string, alpha: number): string {
+    if (!hex || !hex.startsWith('#')) return `rgba(77,143,255,${alpha})`;
+    let h = hex.slice(1);
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    if (isNaN(r + g + b)) return `rgba(77,143,255,${alpha})`;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  formCardStyle = computed(() => {
+    const a = this.template()?.appearance;
+    const hasBg = a?.backgroundGradient || a?.backgroundImageUrl || a?.backgroundColor;
+    if (!hasBg && !a?.cardBackgroundColor) return {};
+
+    const border = a?.cardBorderColor
+      ? `1px solid ${a.cardBorderColor}`
+      : '1px solid rgba(255,255,255,0.14)';
+
+    if (a?.cardBackgroundColor) {
+      return { background: a.cardBackgroundColor, border };
+    }
+    return {
+      background: 'rgba(255,255,255,0.08)',
+      'backdrop-filter': 'blur(14px)',
+      '-webkit-backdrop-filter': 'blur(14px)',
+      border,
+    };
+  });
+
+  fieldInputStyle = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a) return {};
+    const style: Record<string, string> = {};
+    if (a.fieldBackgroundColor) style['backgroundColor'] = a.fieldBackgroundColor;
+    if (a.fieldTextColor) style['color'] = a.fieldTextColor;
+    const accent = this.resolvedAccentColor();
+    if (accent) style['borderColor'] = accent;
+    return style;
+  });
+
+  /** Cor de destaque: usa primaryColor ou deriva do gradiente automaticamente */
+  private resolvedAccentColor = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a) return null;
+    if (a.primaryColor) return a.primaryColor;
+    if (a.backgroundGradient) {
+      const hex = a.backgroundGradient.match(/#[0-9a-fA-F]{6}/);
+      if (hex) return hex[0];
+    }
+    if (a.backgroundColor) return a.backgroundColor;
+    return null;
+  });
+
+  submitBtnStyle = computed(() => {
+    const color = this.resolvedAccentColor();
+    if (!color) return {};
+    return { 'background-color': color, 'border-color': color };
+  });
+
+  fieldLabelStyle(fieldColor?: string): Record<string, string> {
+    if (!fieldColor) return {};
+    return { color: fieldColor };
+  }
+
   private buildForm(fields: FormField[]) {
     const fgArray: FormGroup[] = fields.map((f) =>
       this.fb.group({
@@ -84,6 +195,8 @@ export class FormDynamicComponent implements OnInit {
         type: [f.type],
         value: ['', f.required ? Validators.required : []],
         required: [f.required ?? false],
+        fieldColor: [f.fieldColor ?? ''],
+        colSpan: [f.colSpan ?? 2],
       }),
     );
 

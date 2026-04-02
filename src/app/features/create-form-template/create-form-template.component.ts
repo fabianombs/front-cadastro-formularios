@@ -12,11 +12,13 @@ import { ExportService } from '../../core/services/export.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { switchMap, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { AbstractControl } from '@angular/forms';
 
 @Component({
   selector: 'app-create-template',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule],
   templateUrl: './create-form-template.component.html',
   styleUrls: ['./create-form-template.component.scss'],
 })
@@ -27,6 +29,196 @@ export class CreateTemplateComponent implements OnInit {
   public template: FormTemplate | null = null;
   public slug: string | null = null;
   public loading = false;
+  public showAppearance = false;
+
+  readonly gradientPresets = [
+    { label: 'Meia-noite', value: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' },
+    { label: 'Oceano', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+    { label: 'Aurora', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+    { label: 'Céu', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+    { label: 'Pôr do sol', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+    { label: 'Esmeralda', value: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)' },
+    { label: 'Carvão', value: 'linear-gradient(135deg, #232526 0%, #414345 100%)' },
+    { label: 'Lavanda', value: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' },
+  ];
+
+  applyGradientPreset(value: string) {
+    this.templateForm.get('appearance.backgroundGradient')?.setValue(value);
+    this.templateForm.get('appearance.backgroundColor')?.setValue('');
+    this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
+  }
+
+  get previewPageStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const style: Record<string, string> = {};
+    if (a.backgroundGradient) style['background'] = a.backgroundGradient;
+    else if (a.backgroundImageUrl) {
+      style['backgroundImage'] = `url(${a.backgroundImageUrl})`;
+      style['backgroundSize'] = 'cover';
+      style['backgroundPosition'] = 'center';
+    } else if (a.backgroundColor) style['backgroundColor'] = a.backgroundColor;
+    if (a.formTextColor) style['color'] = a.formTextColor;
+    return style;
+  }
+
+  get previewFormCardStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const hasBg = a.backgroundGradient || a.backgroundImageUrl || a.backgroundColor;
+    const style: Record<string, string> = { 'border-radius': '10px' };
+    if (a.cardBackgroundColor) {
+      style['background'] = a.cardBackgroundColor;
+      style['border'] = `1px solid ${a.cardBorderColor || 'rgba(255,255,255,0.14)'}`;
+    } else if (hasBg) {
+      style['background'] = 'rgba(255,255,255,0.08)';
+      style['backdrop-filter'] = 'blur(14px)';
+      style['-webkit-backdrop-filter'] = 'blur(14px)';
+      style['border'] = `1px solid ${a.cardBorderColor || 'rgba(255,255,255,0.14)'}`;
+    }
+    return style;
+  }
+
+  get previewInputStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const style: Record<string, string> = {};
+    if (a.fieldBackgroundColor) style['backgroundColor'] = a.fieldBackgroundColor;
+    if (a.fieldTextColor) style['color'] = a.fieldTextColor;
+    if (a.primaryColor) style['borderColor'] = a.primaryColor;
+    return style;
+  }
+
+  get previewBtnStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    if (!a.primaryColor) return {};
+    return { 'background-color': a.primaryColor, 'border-color': a.primaryColor };
+  }
+
+  // ── PREVIEW DA LISTAGEM ──────────────────────────────────────
+
+  get previewAccentColor(): string {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    if (a.primaryColor) return a.primaryColor;
+    if (a.backgroundGradient) {
+      const hex = a.backgroundGradient.match(/#[0-9a-fA-F]{6}/);
+      if (hex) return hex[0];
+    }
+    if (a.backgroundColor) return a.backgroundColor;
+    return '#4d8fff';
+  }
+
+  private previewHexToRgba(hex: string, alpha: number): string {
+    if (!hex?.startsWith('#')) return `rgba(77,143,255,${alpha})`;
+    const h = hex.slice(1).length === 3
+      ? hex.slice(1).split('').map((c: string) => c + c).join('')
+      : hex.slice(1);
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return isNaN(r + g + b) ? `rgba(77,143,255,${alpha})` : `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  get previewListPageStyle(): Record<string, string> {
+    return this.previewPageStyle;
+  }
+
+  get previewListActiveTabStyle(): Record<string, string> {
+    const color = this.previewAccentColor;
+    return {
+      color,
+      background: this.previewHexToRgba(color, 0.14),
+      border: `1px solid ${this.previewHexToRgba(color, 0.3)}`,
+      'border-radius': '8px',
+      padding: '5px 12px',
+      'font-size': '11px',
+      'font-weight': '700',
+      cursor: 'default',
+      display: 'inline-flex',
+      'align-items': 'center',
+      gap: '5px',
+    };
+  }
+
+  get previewListBadgeStyle(): Record<string, string> {
+    const color = this.previewAccentColor;
+    return {
+      background: color,
+      color: '#fff',
+      'border-radius': '99px',
+      padding: '1px 6px',
+      'font-size': '9px',
+      'font-weight': '700',
+    };
+  }
+
+  get previewListCardStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const border = a.cardBorderColor
+      ? `1px solid ${a.cardBorderColor}`
+      : '1px solid rgba(255,255,255,0.1)';
+    if (a.cardBackgroundColor) {
+      return { background: a.cardBackgroundColor, border, 'border-radius': '7px', overflow: 'hidden' };
+    }
+    return {
+      background: 'rgba(10,16,32,0.55)',
+      'backdrop-filter': 'blur(10px)',
+      border,
+      'border-radius': '7px',
+      overflow: 'hidden',
+    };
+  }
+
+  get previewListHeaderStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const color = this.previewAccentColor;
+    // Se cardBackgroundColor definido, header é levemente mais escuro/claro
+    if (a.cardBackgroundColor) {
+      return {
+        background: this.previewHexToRgba(color, 0.15),
+        color: this.previewHexToRgba(color, 0.9),
+        'border-bottom': `1px solid ${a.cardBorderColor || this.previewHexToRgba(color, 0.2)}`,
+      };
+    }
+    return {
+      background: this.previewHexToRgba(color, 0.12),
+      color: this.previewHexToRgba(color, 0.85),
+      'border-bottom': `1px solid ${this.previewHexToRgba(color, 0.2)}`,
+    };
+  }
+
+  get previewFields(): { label: string; fieldColor: string; colSpan: number; index: number }[] {
+    const f = this.fields.value as { label: string; fieldColor: string; colSpan: number }[];
+    if (f.length > 0)
+      return f.map((x, i) => ({
+        label: x.label || 'Campo',
+        fieldColor: x.fieldColor || '',
+        colSpan: x.colSpan ?? 2,
+        index: i,
+      }));
+    return [
+      { label: 'Nome completo', fieldColor: '', colSpan: 2, index: 0 },
+      { label: 'E-mail', fieldColor: '', colSpan: 2, index: 1 },
+    ];
+  }
+
+  get previewRows(): { label: string; fieldColor: string; colSpan: number; index: number }[][] {
+    type Field = { label: string; fieldColor: string; colSpan: number; index: number };
+    const fields: Field[] = this.previewFields;
+    const result: Field[][] = [];
+    let row: Field[] = [];
+    let width = 0;
+    for (const f of fields) {
+      if (width + f.colSpan > 2) {
+        result.push(row);
+        row = [f];
+        width = f.colSpan;
+      } else {
+        row.push(f);
+        width += f.colSpan;
+        if (width >= 2) { result.push(row); row = []; width = 0; }
+      }
+    }
+    if (row.length) result.push(row);
+    return result;
+  }
 
   // Presença — dados em memória antes de criar o template
   public pendingAttendanceRows: Record<string, string>[] = [];
@@ -58,6 +250,19 @@ export class CreateTemplateComponent implements OnInit {
         endTime: ['17:00'],
         slotDurationMinutes: [60, [Validators.min(15), Validators.max(480)]],
         maxDaysAhead: [30, [Validators.min(1), Validators.max(365)]],
+      }),
+      appearance: this.fb.group({
+        backgroundColor: [''],
+        backgroundGradient: [''],
+        backgroundImageUrl: [''],
+        headerImageUrl: [''],
+        footerImageUrl: [''],
+        primaryColor: [''],
+        formTextColor: [''],
+        fieldBackgroundColor: [''],
+        fieldTextColor: [''],
+        cardBackgroundColor: [''],
+        cardBorderColor: [''],
       }),
     });
   }
@@ -138,8 +343,22 @@ export class CreateTemplateComponent implements OnInit {
         label: ['', Validators.required],
         type: ['text', Validators.required],
         required: [false],
+        fieldColor: [''],
+        colSpan: [2],
       }),
     );
+  }
+
+  dropField(event: CdkDragDrop<AbstractControl[]>) {
+    moveItemInArray(this.fields.controls, event.previousIndex, event.currentIndex);
+    this.fields.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  toggleFieldSpan(index: number) {
+    const field = this.fields.at(index);
+    const current = field.get('colSpan')?.value ?? 2;
+    field.get('colSpan')?.setValue(current === 2 ? 1 : 2);
   }
 
   removeField(i: number) {
@@ -197,10 +416,22 @@ export class CreateTemplateComponent implements OnInit {
     if (this.templateForm.invalid) return;
 
     const formValue = this.templateForm.value;
+    const rawAppearance = formValue.appearance ?? {};
+    const appearance: Record<string, string> = {};
+    Object.keys(rawAppearance).forEach((k) => {
+      if (rawAppearance[k]) appearance[k] = rawAppearance[k];
+    });
+
     const payload: CreateFormTemplateRequest = {
       name: formValue.name,
       clientId: formValue.clientId,
-      fields: formValue.fields,
+      fields: formValue.fields.map((f: any) => ({
+        label: f.label,
+        type: f.type,
+        required: f.required,
+        ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
+        colSpan: f.colSpan ?? 2,
+      })),
       scheduleConfig: formValue.hasSchedule
         ? {
             startTime: formValue.scheduleConfig.startTime + ':00',
@@ -209,6 +440,7 @@ export class CreateTemplateComponent implements OnInit {
             maxDaysAhead: formValue.scheduleConfig.maxDaysAhead,
           }
         : null,
+      appearance: Object.keys(appearance).length > 0 ? appearance : null,
     };
 
     this.templateService.createTemplate(payload.clientId, payload).subscribe({
@@ -259,6 +491,10 @@ export class CreateTemplateComponent implements OnInit {
       });
     }
 
+    if (template.appearance) {
+      this.templateForm.get('appearance')?.patchValue(template.appearance);
+    }
+
     this.fields.clear();
     template.fields.forEach((f) => {
       this.fields.push(
@@ -266,6 +502,8 @@ export class CreateTemplateComponent implements OnInit {
           label: [f.label, Validators.required],
           type: [f.type, Validators.required],
           required: [f.required ?? false],
+          fieldColor: [f.fieldColor ?? ''],
+          colSpan: [(f as any).colSpan ?? 2],
         }),
       );
     });
@@ -327,6 +565,8 @@ export class CreateTemplateComponent implements OnInit {
   }
 
   get formLink(): string {
-    return `/forms/${this.template?.slug ?? ''}`;
+    const slug = this.template?.slug ?? '';
+    if (this.template?.hasAttendance) return `/forms/${slug}/list`;
+    return `/forms/${slug}`;
   }
 }

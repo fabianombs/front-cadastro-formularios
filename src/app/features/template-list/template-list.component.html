@@ -1,4 +1,20 @@
-<div class="page">
+<!-- ══ FUNDO FIXO — cobre o viewport inteiro ════════════════ -->
+@if (hasAppearanceBg()) {
+  <div class="tl-viewport-bg" [style]="bgOnlyStyle()"></div>
+}
+
+<div class="page"
+     [class.page--with-bg]="hasAppearanceBg()"
+     [class.page--with-solid-card]="hasSolidCard()"
+     [style]="pageStyle()">
+
+  <!-- ══ IMAGEM DE TOPO DO TEMPLATE ═══════════════════════════ -->
+  @if (template()?.appearance?.headerImageUrl) {
+    <div class="template-banner template-banner--header">
+      <img [src]="template()!.appearance!.headerImageUrl!" alt="Header do template" />
+    </div>
+  }
+
   <!-- ══ HEADER ════════════════════════════════════════════════ -->
   <div class="page-header">
     <div>
@@ -45,51 +61,30 @@
           <button
             (click)="activeTab.set('appointments')"
             [class]="activeTab() === 'appointments' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+            [ngStyle]="tabActiveStyle('appointments')"
           >
             Agendamentos
-            <span
-              [style]="
-                activeTab() === 'appointments'
-                  ? 'background:#6366f1;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-                  : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-              "
-            >
-              {{ apptTotalElements() }}
-            </span>
+            <span [style]="tabBadgeStyle('appointments')">{{ apptTotalElements() }}</span>
           </button>
         }
 
         <button
           (click)="activeTab.set('submissions')"
           [class]="activeTab() === 'submissions' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+          [ngStyle]="tabActiveStyle('submissions')"
         >
           Respostas
-          <span
-            [style]="
-              activeTab() === 'submissions'
-                ? 'background:#3b82f6;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-                : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-            "
-          >
-            {{ subTotalElements() }}
-          </span>
+          <span [style]="tabBadgeStyle('submissions')">{{ subTotalElements() }}</span>
         </button>
 
         @if (attTotalElements() > 0 || attendance().length > 0) {
           <button
             (click)="activeTab.set('attendance')"
             [class]="activeTab() === 'attendance' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+            [ngStyle]="tabActiveStyle('attendance')"
           >
             Lista de Presença
-            <span
-              [style]="
-                activeTab() === 'attendance'
-                  ? 'background:#10b981;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-                  : 'background:#e2e8f0;color:#64748b;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;'
-              "
-            >
-              {{ attTotalElements() }}
-            </span>
+            <span [style]="tabBadgeStyle('attendance')">{{ attTotalElements() }}</span>
           </button>
         }
       </div>
@@ -251,19 +246,19 @@
                 <tr>
                   <th class="sortable" (click)="sort('slotDate')">
                     Data
-                    <span class="sort-icon" [style.color]="isSorted('slotDate') ? '#3b82f6' : ''">{{
+                    <span class="sort-icon" [style.color]="sortColor('slotDate')">{{
                       sortIcon('slotDate')
                     }}</span>
                   </th>
                   <th class="sortable" (click)="sort('slotTime')">
                     Hora
-                    <span class="sort-icon" [style.color]="isSorted('slotTime') ? '#3b82f6' : ''">{{
+                    <span class="sort-icon" [style.color]="sortColor('slotTime')">{{
                       sortIcon('slotTime')
                     }}</span>
                   </th>
                   <th class="sortable" (click)="sort('status')">
                     Status
-                    <span class="sort-icon" [style.color]="isSorted('status') ? '#3b82f6' : ''">{{
+                    <span class="sort-icon" [style.color]="sortColor('status')">{{
                       sortIcon('status')
                     }}</span>
                   </th>
@@ -271,7 +266,7 @@
                     Nome
                     <span
                       class="sort-icon"
-                      [style.color]="isSorted('bookedByName') ? '#3b82f6' : ''"
+                      [style.color]="sortColor('bookedByName')"
                       >{{ sortIcon('bookedByName') }}</span
                     >
                   </th>
@@ -279,7 +274,7 @@
                   @for (col of appointmentExtraCols(); track col) {
                     <th class="sortable" (click)="sort(col)">
                       {{ formatLabel(col) }}
-                      <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{
+                      <span class="sort-icon" [style.color]="sortColor(col)">{{
                         sortIcon(col)
                       }}</span>
                     </th>
@@ -507,7 +502,7 @@
                 <tr>
                   <th class="sortable" (click)="sort('id')" style="width: 60px">
                     ID
-                    <span class="sort-icon" [style.color]="isSorted('id') ? '#3b82f6' : ''">{{
+                    <span class="sort-icon" [style.color]="sortColor('id')">{{
                       sortIcon('id')
                     }}</span>
                   </th>
@@ -515,14 +510,14 @@
                     Data
                     <span
                       class="sort-icon"
-                      [style.color]="isSorted('createdAt') ? '#3b82f6' : ''"
+                      [style.color]="sortColor('createdAt')"
                       >{{ sortIcon('createdAt') }}</span
                     >
                   </th>
                   @for (col of columns(); track col) {
                     <th class="sortable" (click)="sort(col)">
                       {{ formatLabel(col) }}
-                      <span class="sort-icon" [style.color]="isSorted(col) ? '#3b82f6' : ''">{{
+                      <span class="sort-icon" [style.color]="sortColor(col)">{{
                         sortIcon(col)
                       }}</span>
                     </th>
@@ -711,5 +706,12 @@
         <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
       }
     }
+  }
+
+  <!-- ══ IMAGEM DE RODAPÉ DO TEMPLATE ═════════════════════════ -->
+  @if (template()?.appearance?.footerImageUrl) {
+    <div class="template-banner template-banner--footer">
+      <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
+    </div>
   }
 </div>
