@@ -72,6 +72,7 @@
   <!-- TABELA -->
   @if (!loadingData && templates.length) {
     <div class="table-container">
+      <div class="table-scroll">
       <table class="dashboard-table">
         <thead>
           <tr>
@@ -110,6 +111,7 @@
           }
         </tbody>
       </table>
+      </div>
       <div class="table-footer">
         @if (selected()) {
           <button class="btn-clear-filter" (click)="showAll()">&#10005; Limpar seleção</button>

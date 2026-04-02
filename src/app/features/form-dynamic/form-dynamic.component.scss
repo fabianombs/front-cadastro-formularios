@@ -1,30 +1,13 @@
 .fd-page {
-  max-width: 100%;
   min-height: 100vh;
-  padding: 32px 0;
-
-  .page-header,
-  form,
-  .fd-section-body {
-    max-width: 640px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  /* padding horizontal herdado de .page (28px cada lado) */
+  /* padding vertical próprio */
+  padding-top: 32px;
+  padding-bottom: 32px;
 
   .page-header {
-    padding: 0 20px 16px;
-  }
-
-  .card {
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  .fd-header-img,
-  .fd-footer-img {
-    max-width: 640px;
-    margin-left: auto;
-    margin-right: auto;
+    padding-bottom: 20px;
+    /* sem max-width — usa toda a largura da .page */
   }
 }
 
@@ -185,22 +168,43 @@
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ── Fields grid (colSpan: 2 = full, 1 = half) ── */
+/* ── Fields grid
+   .fd-field--full = linha inteira | .fd-field--half = meia linha
+   Desktop (≥992px):  4 colunas
+   Tablet  (768–991): 2 colunas
+   Mobile  (<768px):  1 coluna
+── */
 .fd-fields-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px 20px;
   margin-bottom: 4px;
 
   .field {
     margin-bottom: 0;
   }
 
-  @media (max-width: 520px) {
+  .fd-field--full {
+    grid-column: span 4;
+  }
+
+  .fd-field--half {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 991px) {
+    grid-template-columns: repeat(2, 1fr);
+
+    .fd-field--full { grid-column: span 2; }
+    .fd-field--half { grid-column: span 1; }
+  }
+
+  @media (max-width: 575px) {
     grid-template-columns: 1fr;
 
-    .field {
-      grid-column: span 1 !important;
+    .fd-field--full,
+    .fd-field--half {
+      grid-column: span 1;
     }
   }
 }
@@ -215,10 +219,44 @@
   gap: 12px;
 }
 
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .fd-page {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .fd-section-body {
+    padding: 18px 16px;
+  }
+
+  .fd-form-footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    .btn-primary,
+    .btn-outline {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .fd-slots-grid {
+    gap: 6px;
+  }
+
+  .fd-slot-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
 /* ── Success screen ── */
 .fd-success {
   text-align: center;
   padding: 56px 32px;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 .fd-success-icon {

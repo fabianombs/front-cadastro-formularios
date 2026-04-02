@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -46,11 +46,22 @@ export class HeaderComponent {
   // Computed para usuário
   user = computed(() => this.auth.user());
 
+  menuOpen = signal(false);
+
+  toggleMenu() {
+    this.menuOpen.update((v) => !v);
+  }
+
+  closeMenu() {
+    this.menuOpen.set(false);
+  }
+
   navigate(path: string) {
     this.router.navigateByUrl(path);
   }
 
   logout() {
+    this.closeMenu();
     this.auth.logout();
   }
 }

@@ -80,26 +80,14 @@
                 </td>
 
                 @if (isAdmin()) {
-                  <td>
+                  <td class="td-actions">
                     <div class="row-actions">
                       @if (editingUserId() === user.id) {
-                        <button class="btn-success" (click)="saveEdit(user.id)">Salvar</button>
-                        <button
-                          class="btn-outline"
-                          style="padding: 5px 10px; font-size: 12px"
-                          (click)="cancelEdit()"
-                        >
-                          Cancelar
-                        </button>
+                        <button class="btn-table-outline save-btn" (click)="saveEdit(user.id)">Salvar</button>
+                        <button class="btn-table-outline" (click)="cancelEdit()">Cancelar</button>
                       } @else {
-                        <button
-                          class="btn-outline"
-                          style="padding: 5px 10px; font-size: 12px"
-                          (click)="startEdit(user)"
-                        >
-                          Editar
-                        </button>
-                        <button class="btn-danger" (click)="deleteUser(user.id)">Excluir</button>
+                        <button class="btn-table-outline" (click)="startEdit(user)">Editar</button>
+                        <button class="btn-table-danger" (click)="deleteUser(user.id)">Excluir</button>
                       }
                     </div>
                   </td>

@@ -109,26 +109,18 @@
     <!-- ════════════════════════════════════════════════════════ -->
     @if (activeTab() === 'appointments') {
       <!-- Stats -->
-      <div
-        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px"
-      >
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #1e293b">
-            {{ appointmentStats().total }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Total</div>
+      <div class="stats-3-grid">
+        <div class="mini-stat-card">
+          <span class="mini-stat-value">{{ appointmentStats().total }}</span>
+          <span class="mini-stat-label">Total</span>
         </div>
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #22c55e">
-            {{ appointmentStats().agendado }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Confirmados</div>
+        <div class="mini-stat-card mini-stat-card--success">
+          <span class="mini-stat-value">{{ appointmentStats().agendado }}</span>
+          <span class="mini-stat-label">Confirmados</span>
         </div>
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #ef4444">
-            {{ appointmentStats().cancelado }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Cancelados</div>
+        <div class="mini-stat-card mini-stat-card--danger">
+          <span class="mini-stat-value">{{ appointmentStats().cancelado }}</span>
+          <span class="mini-stat-label">Cancelados</span>
         </div>
       </div>
 
@@ -294,29 +286,9 @@
                     <td>{{ formatTime(a.slotTime) }}</td>
                     <td>
                       @if (a.status === 'AGENDADO') {
-                        <span
-                          style="
-                            background: #dcfce7;
-                            color: #15803d;
-                            padding: 3px 10px;
-                            border-radius: 99px;
-                            font-size: 11px;
-                            font-weight: 700;
-                          "
-                          >Confirmado</span
-                        >
+                        <span class="status-badge status-badge--confirmed">Confirmado</span>
                       } @else {
-                        <span
-                          style="
-                            background: #fee2e2;
-                            color: #b91c1c;
-                            padding: 3px 10px;
-                            border-radius: 99px;
-                            font-size: 11px;
-                            font-weight: 700;
-                          "
-                          >Cancelado</span
-                        >
+                        <span class="status-badge status-badge--cancelled">Cancelado</span>
                       }
                     </td>
                     <td>{{ a.bookedByName || '-' }}</td>
@@ -326,28 +298,17 @@
                     }
                     <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
                     @if (auth.isAdmin() || auth.isClient()) {
-                      <td>
+                      <td class="td-actions">
                         @if (a.status === 'AGENDADO') {
                           <button
+                            class="btn-table-danger"
                             (click)="doCancel(a.id)"
                             [disabled]="cancellingId() === a.id"
-                            style="
-                              background: none;
-                              border: 1px solid #fca5a5;
-                              color: #ef4444;
-                              padding: 4px 10px;
-                              border-radius: 6px;
-                              font-size: 11px;
-                              font-weight: 600;
-                              cursor: pointer;
-                            "
-                            onmouseover="this.style.background = '#fef2f2'"
-                            onmouseout="this.style.background = 'none'"
                           >
                             {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
                           </button>
                         } @else {
-                          <span class="text-muted" style="font-size: 12px">—</span>
+                          <span class="text-muted td-muted">—</span>
                         }
                       </td>
                     }
@@ -536,22 +497,11 @@
                       <td>{{ getValue(sub, col) }}</td>
                     }
                     @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
-                      <td>
+                      <td class="td-actions">
                         <button
+                          class="btn-table-danger"
                           (click)="doDelete(sub.id)"
                           [disabled]="deletingId() === sub.id"
-                          style="
-                            background: none;
-                            border: 1px solid #fca5a5;
-                            color: #ef4444;
-                            padding: 4px 10px;
-                            border-radius: 6px;
-                            font-size: 11px;
-                            font-weight: 600;
-                            cursor: pointer;
-                          "
-                          onmouseover="this.style.background = '#fef2f2'"
-                          onmouseout="this.style.background = 'none'"
                         >
                           {{ deletingId() === sub.id ? '...' : 'Excluir' }}
                         </button>
@@ -572,26 +522,18 @@
     <!-- ════════════════════════════════════════════════════════ -->
     @if (activeTab() === 'attendance') {
       <!-- Stats presença -->
-      <div
-        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px"
-      >
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #1e293b">
-            {{ attendanceStats().total }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Total</div>
+      <div class="stats-3-grid">
+        <div class="mini-stat-card">
+          <span class="mini-stat-value">{{ attendanceStats().total }}</span>
+          <span class="mini-stat-label">Total</span>
         </div>
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #10b981">
-            {{ attendanceStats().presente }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Presentes</div>
+        <div class="mini-stat-card mini-stat-card--success">
+          <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
+          <span class="mini-stat-label">Presentes</span>
         </div>
-        <div class="card" style="padding: 16px 20px; text-align: center">
-          <div style="font-size: 24px; font-weight: 800; color: #f59e0b">
-            {{ attendanceStats().ausente }}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 2px">Ausentes</div>
+        <div class="mini-stat-card mini-stat-card--warning">
+          <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
+          <span class="mini-stat-label">Ausentes</span>
         </div>
       </div>
 
@@ -634,7 +576,7 @@
             <span class="result-count"
               >{{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)</span
             >
-            <span class="result-count" style="margin-left: auto; color: #10b981">
+            <span class="result-count result-count--present">
               {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
             </span>
           </div>
@@ -652,19 +594,17 @@
               </thead>
               <tbody>
                 @for (r of filteredAttendance(); track r.id) {
-                  <tr [style]="r.attended ? 'background:#f0fdf4;' : ''">
-                    <td style="text-align: center">
+                  <tr [class.row--present]="r.attended">
+                    <td class="td-center">
                       <button
+                        class="attendance-toggle"
+                        [class.attendance-toggle--present]="r.attended"
+                        [class.attendance-toggle--loading]="markingId() === r.id"
                         (click)="toggleAttendance(r)"
                         [disabled]="markingId() === r.id"
-                        [style]="
-                          r.attended
-                            ? 'background:#10b981;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;min-width:90px;'
-                            : 'background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;min-width:90px;'
-                        "
                       >
                         @if (markingId() === r.id) {
-                          ...
+                          <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
                         } @else if (r.attended) {
                           ✓ Presente
                         } @else {
@@ -678,23 +618,13 @@
                     <td>
                       <input
                         type="text"
+                        class="notes-input"
                         [value]="r.notes ?? ''"
                         (blur)="saveNote(r, $any($event.target).value)"
                         placeholder="Observação..."
-                        style="
-                          border: 1px solid #e2e8f0;
-                          border-radius: 6px;
-                          padding: 4px 8px;
-                          font-size: 12px;
-                          width: 140px;
-                          font-family: inherit;
-                          outline: none;
-                        "
-                        onfocus="this.style.borderColor = '#6366f1'"
-                        onblur="this.style.borderColor = '#e2e8f0'"
                       />
                     </td>
-                    <td class="text-muted" style="font-size: 12px; white-space: nowrap">
+                    <td class="td-mono">
                       {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
                     </td>
                   </tr>
