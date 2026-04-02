@@ -11,11 +11,11 @@ interface MenuItem {
 
 const MENU_ITEMS: MenuItem[] = [
   { label: 'Dashboard', path: '/', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO', 'ROLE_CLIENT'] },
-  { label: 'Usuários', path: '/users', roles: ['ROLE_ADMIN'] },
+  { label: 'Usuários', path: '/users', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
   { label: 'Clientes', path: '/clients', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
-  { label: 'Criar Formulário', path: '/form-builder', roles: ['ROLE_ADMIN'] },
+  { label: 'Criar Formulário', path: '/form-builder', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
   { label: 'Formulários', path: '/forms-all', roles: ['ROLE_CLIENT'] },
-  { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN'] },
+  { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
 ];
 
 @Component({

@@ -42,7 +42,7 @@ export const routes: Routes = [
       {
         path: 'users',
         canActivate: [authGuard],
-        data: { roles: ['ROLE_ADMIN'] },
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
         loadComponent: () =>
           import('./features/users/users.component').then((m) => m.UsersComponent),
       },
@@ -56,7 +56,7 @@ export const routes: Routes = [
       {
         path: 'clients/new',
         canActivate: [authGuard],
-        data: { roles: ['ROLE_ADMIN'] },
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
         loadComponent: () =>
           import('./features/cliente/create-client/create-client.component').then(
             (m) => m.CreateClientComponent,
@@ -65,7 +65,7 @@ export const routes: Routes = [
       {
         path: 'form-builder',
         canActivate: [authGuard],
-        data: { roles: ['ROLE_ADMIN'] },
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
         loadComponent: () =>
           import('./features/create-form-template/create-form-template.component').then(
             (m) => m.CreateTemplateComponent,
@@ -84,7 +84,7 @@ export const routes: Routes = [
       {
         path: 'forms-all',
         canActivate: [authGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_CLIENT'] }, // apenas admin e cliente
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO', 'ROLE_CLIENT'] }, // apenas admin e cliente
         loadComponent: () =>
           import('./features/forms-all/forms-all.component').then((m) => m.FormsAllComponent),
       },

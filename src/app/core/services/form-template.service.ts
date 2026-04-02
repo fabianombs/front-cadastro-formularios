@@ -5,11 +5,30 @@ import { Observable, map, tap } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
 import { environment } from '../../../environments/environment';
 
+export interface TemplateAppearance {
+  backgroundColor?: string;
+  backgroundGradient?: string;
+  backgroundImageUrl?: string;
+  headerImageUrl?: string;
+  footerImageUrl?: string;
+  primaryColor?: string;
+  formTextColor?: string;
+  fieldBackgroundColor?: string;
+  fieldTextColor?: string;
+  /** Cor de fundo dos cards, tabelas e área de filtros */
+  cardBackgroundColor?: string;
+  /** Cor da borda dos cards e tabelas */
+  cardBorderColor?: string;
+}
+
 export interface FormField {
   label: string;
   type: string;
   id: number;
   required: boolean;
+  fieldColor?: string;
+  /** 2 = largura total, 1 = meia largura */
+  colSpan?: number;
 }
 
 export interface ScheduleConfig {
@@ -28,6 +47,7 @@ export interface FormTemplate {
   hasSchedule: boolean;
   hasAttendance: boolean;
   scheduleConfig: ScheduleConfig | null;
+  appearance?: TemplateAppearance | null;
 }
 
 export interface CreateFormTemplateRequest {
@@ -35,6 +55,7 @@ export interface CreateFormTemplateRequest {
   clientId: number;
   fields: Omit<FormField, 'id'>[];
   scheduleConfig?: ScheduleConfig | null;
+  appearance?: TemplateAppearance | null;
 }
 
 export interface FormSubmission {

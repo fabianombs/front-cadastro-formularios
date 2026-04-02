@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -521,6 +521,125 @@ export class TemplateListComponent implements OnInit {
         this.cancellingId.set(null);
       },
     });
+  }
+
+  // ── Appearance ───────────────────────────────────────────────
+
+  /** Apenas o background — usado no overlay fixo que cobre o viewport inteiro */
+  bgOnlyStyle = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a) return {};
+    const style: Record<string, string> = {};
+    if (a.backgroundGradient) {
+      style['background'] = a.backgroundGradient;
+    } else if (a.backgroundImageUrl) {
+      style['backgroundImage'] = `url(${a.backgroundImageUrl})`;
+      style['backgroundSize'] = 'cover';
+      style['backgroundPosition'] = 'center';
+    } else if (a.backgroundColor) {
+      style['background'] = a.backgroundColor;
+    }
+    return style;
+  });
+
+  /** Estilos para o .page — variáveis CSS + cor de texto */
+  pageStyle = computed(() => {
+    const a = this.template()?.appearance;
+    const style: Record<string, string> = {};
+    if (a?.formTextColor) style['color'] = a.formTextColor;
+    const accent = this.accentColor();
+    style['--accent'] = accent;
+    // Sobrescreve CSS vars globais da tabela para seguir o tema do template
+    if (this.hasAppearanceBg()) {
+      // Fundo dos cards: usa cardBackgroundColor se definido, senão glass rgba
+      const cardBg = a?.cardBackgroundColor || 'rgba(10, 16, 32, 0.68)';
+      const cardBorder = a?.cardBorderColor || 'rgba(255, 255, 255, 0.1)';
+
+      style['--surface']      = cardBg;
+      style['--surface-high'] = a?.cardBackgroundColor
+        ? cardBg                        // usa a mesma cor sólida
+        : 'rgba(15, 25, 50, 0.8)';
+      style['--bg-subtle']    = a?.cardBackgroundColor
+        ? cardBg
+        : 'rgba(5, 10, 20, 0.72)';
+      style['--border']       = cardBorder;
+      style['--border-hover'] = a?.cardBorderColor
+        ? cardBorder
+        : 'rgba(255, 255, 255, 0.18)';
+      style['--text']         = a?.formTextColor || '#d8e4f8';
+      style['--text-muted']   = a?.formTextColor
+        ? this.hexToRgba(a.formTextColor, 0.65)
+        : 'rgba(216, 228, 248, 0.65)';
+      style['--primary']      = accent;
+      style['--primary-muted']= this.hexToRgba(accent, 0.12);
+      style['--primary-glow'] = this.hexToRgba(accent, 0.22);
+      style['--surface-hover']= this.hexToRgba(accent, 0.08);
+    }
+    return style;
+  });
+
+  hasAppearanceBg = computed(() => {
+    const a = this.template()?.appearance;
+    return !!(a?.backgroundGradient || a?.backgroundImageUrl || a?.backgroundColor);
+  });
+
+  hasSolidCard = computed(() => !!this.template()?.appearance?.cardBackgroundColor);
+
+  /** Cor de destaque: usa primaryColor ou deriva do gradiente automaticamente */
+  accentColor = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a) return '#4d8fff';
+    if (a.primaryColor) return a.primaryColor;
+    // Auto-deriva do gradiente: pega o primeiro hex encontrado
+    if (a.backgroundGradient) {
+      const hex = a.backgroundGradient.match(/#[0-9a-fA-F]{6}/);
+      if (hex) return hex[0];
+      // Tenta rgb()
+      const rgb = a.backgroundGradient.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (rgb) {
+        const [, r, g, b] = rgb;
+        return '#' + [r, g, b].map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+      }
+    }
+    if (a.backgroundColor) return a.backgroundColor;
+    return '#4d8fff';
+  });
+
+  /** Badge de contagem das tabs */
+  tabBadgeStyle(tab: 'appointments' | 'submissions' | 'attendance'): string {
+    const active = this.activeTab() === tab;
+    const color = this.accentColor();
+    return active
+      ? `background:${color};color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;`
+      : `background:rgba(0,0,0,0.25);color:#94a3b8;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;`;
+  }
+
+  /** Estilo completo do botão da tab ativa (background + borda no accentColor) */
+  tabActiveStyle(tab: 'appointments' | 'submissions' | 'attendance'): Record<string, string> {
+    if (this.activeTab() !== tab) return {};
+    const color = this.accentColor();
+    return {
+      color: color,
+      background: this.hexToRgba(color, 0.12),
+      border: `1px solid ${this.hexToRgba(color, 0.28)}`,
+    };
+  }
+
+  /** Cor do ícone de sort */
+  sortColor(col: string): string {
+    return this.isSorted(col) ? this.accentColor() : '';
+  }
+
+  /** Converte hex para rgba — suporta #rrggbb e #rgb */
+  private hexToRgba(hex: string, alpha: number): string {
+    if (!hex || !hex.startsWith('#')) return `rgba(77,143,255,${alpha})`;
+    let h = hex.slice(1);
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    if (isNaN(r + g + b)) return `rgba(77,143,255,${alpha})`;
+    return `rgba(${r},${g},${b},${alpha})`;
   }
 
   // ── Helpers ──────────────────────────────────────────────────
