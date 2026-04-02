@@ -1,29 +1,44 @@
 <header class="app-header">
   <div class="header-inner">
-    <a class="brand" routerLink="/">
+    <a class="brand" routerLink="/" (click)="closeMenu()">
       <div class="brand-icon">F</div>
       <span class="brand-name">FormsPro</span>
     </a>
 
-    <nav class="header-nav">
-      @for (item of menuItems(); track item.path) {
-        <a class="nav-link" [routerLink]="item.path" [queryParams]="item.queryParams">
-          {{ item.label }}
-        </a>
-      }
-    </nav>
+    <!-- Hamburger (mobile only) -->
+    <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen()" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    @if (user()) {
-      <div class="header-right">
-        <div class="user-pill">
-          <div class="user-avatar">{{ user()?.sub?.charAt(0)?.toUpperCase() }}</div>
-          <div class="user-info">
-            <span class="user-name">{{ user()?.sub }}</span>
-            <span class="user-role">{{ user()?.role }}</span>
+    <!-- Nav collapse (desktop inline / mobile dropdown) -->
+    <div class="header-collapse" [class.open]="menuOpen()">
+      <nav class="header-nav">
+        @for (item of menuItems(); track item.path) {
+          <a class="nav-link" [routerLink]="item.path" [queryParams]="item.queryParams" (click)="closeMenu()">
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+
+      @if (user()) {
+        <div class="header-right">
+          <div class="user-pill">
+            <div class="user-avatar">{{ user()?.sub?.charAt(0)?.toUpperCase() }}</div>
+            <div class="user-info">
+              <span class="user-name">{{ user()?.sub }}</span>
+              <span class="user-role">{{ user()?.role }}</span>
+            </div>
           </div>
+          <button class="logout-btn" (click)="logout()">Sair</button>
         </div>
-        <button class="logout-btn" (click)="logout()">Sair</button>
-      </div>
-    }
+      }
+    </div>
   </div>
+
+  <!-- Mobile overlay -->
+  @if (menuOpen()) {
+    <div class="nav-overlay" (click)="closeMenu()"></div>
+  }
 </header>

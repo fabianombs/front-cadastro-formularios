@@ -132,7 +132,8 @@
               @for (fg of formFields(); track fg.value.label; let i = $index) {
                 <div
                   class="field"
-                  [style.grid-column]="'span ' + (fg.value.colSpan ?? 2)"
+                  [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
+                  [class.fd-field--half]="fg.value.colSpan === 1"
                 >
                   <label [ngStyle]="fieldLabelStyle(fg.value.fieldColor)">
                     {{ fg.value.label }}

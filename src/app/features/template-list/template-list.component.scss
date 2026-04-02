@@ -445,3 +445,207 @@
 .text-muted {
   color: var(--text-muted, #5d789f) !important;
 }
+
+/* ── Mini stat cards (appointment / attendance header) ── */
+.mini-stat-card {
+  background: var(--surface, #0d1627);
+  border: 1px solid var(--border, #1c2e4a);
+  border-radius: var(--radius-md, 12px);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  transition: border-color var(--fast), transform var(--fast);
+
+  &:hover {
+    border-color: var(--border-hover, #2e4e78);
+    transform: translateY(-1px);
+  }
+
+  &--success {
+    border-color: rgba(16, 201, 138, 0.2);
+    background: rgba(16, 201, 138, 0.04);
+
+    .mini-stat-value { color: var(--success, #10c98a); }
+  }
+
+  &--danger {
+    border-color: rgba(255, 79, 106, 0.2);
+    background: rgba(255, 79, 106, 0.04);
+
+    .mini-stat-value { color: var(--danger, #ff4f6a); }
+  }
+
+  &--warning {
+    border-color: rgba(245, 166, 35, 0.2);
+    background: rgba(245, 166, 35, 0.04);
+
+    .mini-stat-value { color: var(--warning, #f5a623); }
+  }
+}
+
+.mini-stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text, #d8e4f8);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.mini-stat-label {
+  font-size: 11px;
+  color: var(--text-muted, #5d789f);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Attendance table specifics ── */
+.row--present {
+  background: rgba(16, 201, 138, 0.05) !important;
+
+  td {
+    border-bottom-color: rgba(16, 201, 138, 0.1);
+  }
+}
+
+.td-center {
+  text-align: center;
+}
+
+.attendance-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 90px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border-strong, #264060);
+  background: var(--surface-high, #122038);
+  color: var(--text-muted, #5d789f);
+
+  &:hover:not(:disabled) {
+    border-color: var(--success, #10c98a);
+    color: var(--success, #10c98a);
+    background: rgba(16, 201, 138, 0.08);
+  }
+
+  &--present {
+    background: var(--success, #10c98a);
+    border-color: var(--success, #10c98a);
+    color: #fff;
+    font-weight: 700;
+
+    &:hover:not(:disabled) {
+      background: var(--success-dark, #0aa870);
+      border-color: var(--success-dark, #0aa870);
+      color: #fff;
+    }
+  }
+
+  &--loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.notes-input {
+  border: 1px solid var(--border, #1c2e4a);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 12px;
+  width: 140px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  background: var(--bg-subtle, #0a1020);
+  color: var(--text, #d8e4f8);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &::placeholder {
+    color: var(--text-faint, #2b3f5c);
+  }
+
+  &:focus {
+    border-color: var(--primary, #4d8fff);
+    box-shadow: 0 0 0 3px var(--primary-muted, rgba(77, 143, 255, 0.12));
+  }
+}
+
+.result-count--present {
+  margin-left: auto;
+  color: var(--success, #10c98a) !important;
+}
+
+/* ── Stats 3-column grid ── */
+.stats-3-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .search-row {
+    flex-wrap: wrap;
+
+    .btn-outline {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .filters-toggle {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .table-info {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-card {
+    padding: 12px 14px;
+  }
+
+  .search-input-wrapper .search-input {
+    font-size: 13px;
+  }
+
+  .date-range {
+    flex-direction: column;
+    gap: 6px;
+
+    .date-sep {
+      text-align: center;
+      transform: rotate(90deg);
+    }
+  }
+}

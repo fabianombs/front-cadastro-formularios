@@ -2,6 +2,29 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 18px;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ── Responsive template card ── */
+@media (max-width: 480px) {
+  .template-card {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .tc-actions {
+    flex-direction: column;
+  }
+
+  .tc-btn-primary,
+  .tc-btn-outline {
+    flex: none;
+    width: 100%;
+  }
 }
 
 /* ── Card base ── */

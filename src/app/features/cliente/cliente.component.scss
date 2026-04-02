@@ -30,3 +30,26 @@
 .text-muted {
   color: #5d789f !important;
 }
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  /* Hide phone + company on small screens; keep id/name/email/action */
+  .data-table {
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5) {
+      display: none;
+    }
+  }
+
+  .client-name-cell {
+    gap: 7px;
+  }
+
+  .client-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+}

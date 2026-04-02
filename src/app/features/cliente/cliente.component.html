@@ -60,8 +60,8 @@
                     }
                   </td>
                   @if (isAdmin()) {
-                    <td>
-                      <button class="btn-danger" (click)="deleteClient(client.id)">Excluir</button>
+                    <td class="td-actions">
+                      <button class="btn-table-danger" (click)="deleteClient(client.id)">Excluir</button>
                     </td>
                   }
                 </tr>
