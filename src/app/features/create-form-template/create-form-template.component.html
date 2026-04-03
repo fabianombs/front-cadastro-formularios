@@ -636,13 +636,29 @@
                 </div>
 
                 <div class="ap-group">
-                  <label class="ap-label">Imagem de fundo (URL)</label>
-                  <input
-                    class="ap-input"
-                    type="text"
-                    formControlName="backgroundImageUrl"
-                    placeholder="https://cdn.exemplo.com/bg.jpg"
-                  />
+                  <label class="ap-label">Imagem de fundo</label>
+                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
+                    @if (imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value; as src) {
+                      <div class="img-upload-preview">
+                        <img [src]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value" alt="Preview" />
+                        <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageUrl')" title="Remover imagem">×</button>
+                      </div>
+                    } @else {
+                      <label class="img-upload-label">
+                        @if (uploadingField() === 'backgroundImageUrl') {
+                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
+                          <span>Enviando...</span>
+                        } @else {
+                          <span class="img-upload-icon">🖼</span>
+                          <span>Clique para anexar</span>
+                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
+                        }
+                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                          (change)="onImageFileChange('backgroundImageUrl', $event)"
+                          [disabled]="uploadingField() !== null" />
+                      </label>
+                    }
+                  </div>
                   <p class="ap-hint" style="margin-top: 4px">Sobrepõe cor e gradiente</p>
                 </div>
 
@@ -717,22 +733,55 @@
                 <p class="ap-section-label" style="margin-top: 20px">Imagens de topo e rodapé</p>
 
                 <div class="ap-group">
-                  <label class="ap-label">Imagem do topo (URL)</label>
-                  <input
-                    class="ap-input"
-                    type="text"
-                    formControlName="headerImageUrl"
-                    placeholder="https://cdn.exemplo.com/logo.png"
-                  />
+                  <label class="ap-label">Imagem do topo</label>
+                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
+                    @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
+                      <div class="img-upload-preview">
+                        <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" alt="Preview header" />
+                        <button type="button" class="img-clear-btn" (click)="clearImage('headerImageUrl')" title="Remover imagem">×</button>
+                      </div>
+                    } @else {
+                      <label class="img-upload-label">
+                        @if (uploadingField() === 'headerImageUrl') {
+                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
+                          <span>Enviando...</span>
+                        } @else {
+                          <span class="img-upload-icon">🖼</span>
+                          <span>Clique para anexar</span>
+                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
+                        }
+                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                          (change)="onImageFileChange('headerImageUrl', $event)"
+                          [disabled]="uploadingField() !== null" />
+                      </label>
+                    }
+                  </div>
                 </div>
+
                 <div class="ap-group">
-                  <label class="ap-label">Imagem do rodapé (URL)</label>
-                  <input
-                    class="ap-input"
-                    type="text"
-                    formControlName="footerImageUrl"
-                    placeholder="https://cdn.exemplo.com/footer.png"
-                  />
+                  <label class="ap-label">Imagem do rodapé</label>
+                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
+                    @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
+                      <div class="img-upload-preview">
+                        <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" alt="Preview footer" />
+                        <button type="button" class="img-clear-btn" (click)="clearImage('footerImageUrl')" title="Remover imagem">×</button>
+                      </div>
+                    } @else {
+                      <label class="img-upload-label">
+                        @if (uploadingField() === 'footerImageUrl') {
+                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
+                          <span>Enviando...</span>
+                        } @else {
+                          <span class="img-upload-icon">🖼</span>
+                          <span>Clique para anexar</span>
+                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
+                        }
+                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                          (change)="onImageFileChange('footerImageUrl', $event)"
+                          [disabled]="uploadingField() !== null" />
+                      </label>
+                    }
+                  </div>
                 </div>
 
               </div>
@@ -743,9 +792,9 @@
                 <!-- ── Preview do formulário ── -->
                 <p class="ap-section-label">Preview — formulário</p>
                 <div class="ap-preview-page" [ngStyle]="previewPageStyle">
-                  @if (templateForm.get('appearance.headerImageUrl')?.value) {
+                  @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
                     <img
-                      [src]="templateForm.get('appearance.headerImageUrl')?.value"
+                      [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value"
                       class="ap-preview-img"
                       alt=""
                     />
@@ -788,9 +837,9 @@
 
                     <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
                   </div>
-                  @if (templateForm.get('appearance.footerImageUrl')?.value) {
+                  @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
                     <img
-                      [src]="templateForm.get('appearance.footerImageUrl')?.value"
+                      [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value"
                       class="ap-preview-img"
                       alt=""
                     />

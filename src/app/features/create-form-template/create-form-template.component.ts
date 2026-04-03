@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -31,6 +31,10 @@ export class CreateTemplateComponent implements OnInit {
   public loading = false;
   public showAppearance = false;
 
+  // Upload state: qual campo está fazendo upload e preview local
+  uploadingField = signal<string | null>(null);
+  imagePreviews: Record<string, string> = {};
+
   readonly gradientPresets = [
     { label: 'Meia-noite', value: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' },
     { label: 'Oceano', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
@@ -46,6 +50,51 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.get('appearance.backgroundGradient')?.setValue(value);
     this.templateForm.get('appearance.backgroundColor')?.setValue('');
     this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
+  }
+
+  /** Upload de imagem (header / footer / background) */
+  onImageFileChange(
+    field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl',
+    event: Event,
+  ) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Preview local imediato
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreviews[field] = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+
+    // Enviar para o backend
+    this.uploadingField.set(field);
+    this.templateService.uploadImage(file).subscribe({
+      next: ({ url }) => {
+        this.templateForm.get(`appearance.${field}`)?.setValue(url);
+        this.uploadingField.set(null);
+        // Se era backgroundImage, limpar gradiente/cor
+        if (field === 'backgroundImageUrl') {
+          this.templateForm.get('appearance.backgroundGradient')?.setValue('');
+          this.templateForm.get('appearance.backgroundColor')?.setValue('');
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.uploadingField.set(null);
+        alert('Erro ao enviar imagem. Tente novamente.');
+        this.imagePreviews[field] = '';
+        input.value = '';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  clearImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
+    this.templateForm.get(`appearance.${field}`)?.setValue('');
+    this.imagePreviews[field] = '';
   }
 
   get previewPageStyle(): Record<string, string> {

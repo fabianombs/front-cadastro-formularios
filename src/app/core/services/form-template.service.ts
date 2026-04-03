@@ -135,7 +135,17 @@ export class FormTemplateService {
   private appointmentsUrl = `${environment.apiUrl}/appointments`;
   private attendanceUrl = `${environment.apiUrl}/attendance`;
 
+  private uploadsUrl = `${environment.apiUrl}/uploads`;
+
   constructor(private http: HttpClient) {}
+
+  // ================= IMAGE UPLOAD =================
+
+  uploadImage(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ url: string }>(`${this.uploadsUrl}/image`, form);
+  }
 
   // ================= TEMPLATES =================
 
