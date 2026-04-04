@@ -1,565 +1,475 @@
 <!-- ══ FUNDO FIXO — cobre o viewport inteiro ════════════════ -->
 @if (hasAppearanceBg()) {
-  <div class="tl-viewport-bg" [style]="bgOnlyStyle()"></div>
+<div class="tl-viewport-bg" [style]="bgOnlyStyle()"></div>
 }
 
 <app-page-shell [pageStyle]="pageStyle()" [hasBg]="hasAppearanceBg()" [hasSolidCard]="hasSolidCard()">
 
   <!-- ══ IMAGEM DE TOPO DO TEMPLATE ═══════════════════════════ -->
   @if (template()?.appearance?.headerImageUrl) {
-    <div class="template-banner template-banner--header">
-      <img [src]="template()!.appearance!.headerImageUrl!" alt="Header do template" />
-    </div>
+  <div class="template-banner template-banner--header">
+    <img [src]="template()!.appearance!.headerImageUrl!" alt="Header do template" />
+  </div>
   }
 
-  <app-page-header
-    [title]="template() ? template()!.name : 'Respostas'"
-    [subtitle]="template() ? template()!.clientName : ''"
-  >
+  <app-page-header [title]="template() ? template()!.name : 'Respostas'"
+    [subtitle]="template() ? template()!.clientName : ''">
     <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
   </app-page-header>
 
   <!-- ══ LOADING ═══════════════════════════════════════════════ -->
   @if (loading()) {
-    <div class="loading-center">
-      <div class="spinner"></div>
-    </div>
+  <div class="loading-center">
+    <div class="spinner"></div>
+  </div>
   }
 
   @if (!loading()) {
-    <!-- ══ TABS + PAGE SIZE ══════════════════════════════════ -->
-    <div
-      style="
+  <!-- ══ TABS + PAGE SIZE ══════════════════════════════════ -->
+  <div style="
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 12px;
         margin-bottom: 20px;
-      "
-    >
-      <div
-        style="
+      ">
+    <div style="
           display: flex;
           gap: 2px;
           background: #f1f5f9;
           border-radius: 10px;
           padding: 4px;
           flex-wrap: wrap;
-        "
-      >
-        @if (template()!.hasSchedule) {
-          <button
-            (click)="activeTab.set('appointments')"
-            [class]="activeTab() === 'appointments' ? 'tab-btn tab-btn--active' : 'tab-btn'"
-            [ngStyle]="tabActiveStyle('appointments')"
-          >
-            Agendamentos
-            <span [style]="tabBadgeStyle('appointments')">{{ apptTotalElements() }}</span>
-          </button>
-        }
+        ">
+      @if (template()!.hasSchedule) {
+      <button (click)="changeTab('appointments')"
+        [class]="activeTab() === 'appointments' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+        [ngStyle]="tabActiveStyle('appointments')">
+        Agendamentos
+        <span [style]="tabBadgeStyle('appointments')">{{ apptTotalElements() }}</span>
+      </button>
+      }
 
-        <button
-          (click)="activeTab.set('submissions')"
-          [class]="activeTab() === 'submissions' ? 'tab-btn tab-btn--active' : 'tab-btn'"
-          [ngStyle]="tabActiveStyle('submissions')"
-        >
-          Respostas
-          <span [style]="tabBadgeStyle('submissions')">{{ subTotalElements() }}</span>
-        </button>
+      <button (click)="changeTab('submissions')"
+        [class]="activeTab() === 'submissions' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+        [ngStyle]="tabActiveStyle('submissions')">
+        Respostas
+        <span [style]="tabBadgeStyle('submissions')">{{ subTotalElements() }}</span>
+      </button>
 
-        @if (attTotalElements() > 0 || attendance().length > 0) {
-          <button
-            (click)="activeTab.set('attendance')"
-            [class]="activeTab() === 'attendance' ? 'tab-btn tab-btn--active' : 'tab-btn'"
-            [ngStyle]="tabActiveStyle('attendance')"
-          >
-            Lista de Presença
-            <span [style]="tabBadgeStyle('attendance')">{{ attTotalElements() }}</span>
-          </button>
-        }
-      </div>
-
-      <!-- Select de itens por página -->
-      <div style="display: flex; align-items: center; gap: 8px">
-        <label style="font-size: 12px; color: #64748b; white-space: nowrap">Itens por página</label>
-        <select
-          class="page-size-select"
-          [ngModel]="pageSize()"
-          (ngModelChange)="changePageSize(+$event)"
-        >
-          @for (opt of pageSizeOptions; track opt) {
-            <option [value]="opt">{{ opt }}</option>
-          }
-        </select>
-      </div>
+      @if (attTotalElements() > 0 || attendance().length > 0) {
+      <button (click)="changeTab('attendance')"
+        [class]="activeTab() === 'attendance' ? 'tab-btn tab-btn--active' : 'tab-btn'"
+        [ngStyle]="tabActiveStyle('attendance')">
+        Lista de Presença
+        <span [style]="tabBadgeStyle('attendance')">{{ attTotalElements() }}</span>
+      </button>
+      }
     </div>
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- ABA: AGENDAMENTOS                                        -->
-    <!-- ════════════════════════════════════════════════════════ -->
-    @if (activeTab() === 'appointments') {
-      <!-- Stats -->
-      <div class="stats-3-grid">
-        <div class="mini-stat-card">
-          <span class="mini-stat-value">{{ appointmentStats().total }}</span>
-          <span class="mini-stat-label">Total</span>
-        </div>
-        <div class="mini-stat-card mini-stat-card--success">
-          <span class="mini-stat-value">{{ appointmentStats().agendado }}</span>
-          <span class="mini-stat-label">Confirmados</span>
-        </div>
-        <div class="mini-stat-card mini-stat-card--danger">
-          <span class="mini-stat-value">{{ appointmentStats().cancelado }}</span>
-          <span class="mini-stat-label">Cancelados</span>
-        </div>
-      </div>
-
-      <!-- Filtros agendamentos -->
-      <div class="filters-card">
-        <div class="search-row">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar por nome, contato, data..."
-              [ngModel]="globalSearch()"
-              (ngModelChange)="globalSearch.set($event)"
-            />
-            @if (globalSearch()) {
-              <button class="clear-input" (click)="globalSearch.set('')">×</button>
-            }
-          </div>
-          <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
-            Filtros
-            @if (activeFiltersCount() > 0) {
-              <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
-            }
-            <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
-          </button>
-          @if (filteredAppointments().length > 0) {
-            <button
-              class="btn-outline"
-              style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
-              (click)="exportAppointmentsXlsx()"
-            >
-              ⬇ Exportar Excel
-            </button>
-          }
-        </div>
-
-        @if (filtersOpen()) {
-          <div class="dynamic-filters">
-            <div class="filter-item">
-              <label class="filter-label">Status</label>
-              <select
-                class="filter-control"
-                [ngModel]="getFieldFilter('appt_status')"
-                (ngModelChange)="setFieldFilter('appt_status', $event)"
-              >
-                <option value="">Todos</option>
-                <option value="AGENDADO">Confirmado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
-            </div>
-            <div class="filter-item" style="grid-column: span 2">
-              <label class="filter-label">Período</label>
-              <div class="date-range">
-                <input
-                  type="date"
-                  class="filter-control"
-                  [ngModel]="getFieldFilter('appt_date__start')"
-                  (ngModelChange)="setFieldFilter('appt_date__start', $event)"
-                />
-                <span class="date-sep">→</span>
-                <input
-                  type="date"
-                  class="filter-control"
-                  [ngModel]="getFieldFilter('appt_date__end')"
-                  (ngModelChange)="setFieldFilter('appt_date__end', $event)"
-                />
-              </div>
-            </div>
-          </div>
+    <!-- Select de itens por página -->
+    <div style="display: flex; align-items: center; gap: 8px">
+      <label style="font-size: 12px; color: #64748b; white-space: nowrap">Itens por página</label>
+      <select class="page-size-select" [ngModel]="pageSize()" (ngModelChange)="changePageSize(+$event)">
+        @for (opt of pageSizeOptions; track opt) {
+        <option [value]="opt">{{ opt }}</option>
         }
+      </select>
+    </div>
+  </div>
 
-        @if (activeFiltersList().length > 0) {
-          <div class="active-filters">
-            <span class="active-filters-label">Ativos:</span>
-            @for (chip of activeFiltersList(); track chip.key) {
-              <span class="filter-chip">
-                <span class="chip-label">{{ chip.label }}</span>
-                <span class="chip-sep">:</span>
-                <span class="chip-value">{{ chip.value }}</span>
-                <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
-              </span>
-            }
-            <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
-          </div>
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- ABA: AGENDAMENTOS                                        -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'appointments') {
+  <!-- Stats -->
+  <div class="stats-3-grid">
+    <div class="mini-stat-card">
+      <span class="mini-stat-value">{{ appointmentStats().total }}</span>
+      <span class="mini-stat-label">Total</span>
+    </div>
+    <div class="mini-stat-card mini-stat-card--success">
+      <span class="mini-stat-value">{{ appointmentStats().agendado }}</span>
+      <span class="mini-stat-label">Confirmados</span>
+    </div>
+    <div class="mini-stat-card mini-stat-card--danger">
+      <span class="mini-stat-value">{{ appointmentStats().cancelado }}</span>
+      <span class="mini-stat-label">Cancelados</span>
+    </div>
+  </div>
+
+  <!-- Filtros agendamentos -->
+  <div class="filters-card">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Buscar por nome, contato, data..."
+          [ngModel]="globalSearch()" (ngModelChange)="globalSearch.set($event)" />
+        @if (globalSearch()) {
+        <button class="clear-input" (click)="globalSearch.set('')">×</button>
         }
       </div>
-
-      @if (filteredAppointments().length === 0) {
-        <div class="card">
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>Nenhum agendamento encontrado</p>
-            @if (activeFiltersCount() > 0) {
-              <small>Tente remover os filtros ativos</small>
-            }
-          </div>
-        </div>
-      } @else {
-        <div class="card" style="overflow: hidden">
-          <div class="table-info">
-            <span class="result-count">
-              {{ filteredAppointments().length }} de {{ apptTotalElements() }} agendamento(s)
-            </span>
-            @if (sortColumn()) {
-              <span class="sort-info"
-                >ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong>
-                {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span
-              >
-            }
-          </div>
-          <div style="overflow-x: auto">
-            <app-data-table
-              [columns]="apptColumns()"
-              [rows]="filteredAppointments()"
-              [sortColumn]="sortColumn()"
-              [sortDirection]="sortDirection()"
-              [noDataLabel]="'Nenhum agendamento encontrado'"
-              (sortChange)="sort($event)"
-              rowKey="id"
-            >
-              <ng-template #rowTemplate let-a>
-                <td><strong>{{ a.slotDate | date: 'dd/MM/yyyy' }}</strong></td>
-                <td>{{ formatTime(a.slotTime) }}</td>
-                <td>
-                  @if (a.status === 'AGENDADO') {
-                    <span class="status-badge status-badge--confirmed">Confirmado</span>
-                  } @else {
-                    <span class="status-badge status-badge--cancelled">Cancelado</span>
-                  }
-                </td>
-                <td>{{ a.bookedByName || '-' }}</td>
-                <td class="text-muted">{{ a.bookedByContact || '-' }}</td>
-                @for (col of appointmentExtraCols(); track col) {
-                  <td>{{ a.extraValues[col] || '-' }}</td>
-                }
-                <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
-                @if (auth.isAdmin() || auth.isClient()) {
-                  <td class="td-actions">
-                    @if (a.status === 'AGENDADO') {
-                      <button
-                        class="btn-table-danger"
-                        (click)="doCancel(a.id)"
-                        [disabled]="cancellingId() === a.id"
-                      >
-                        {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
-                      </button>
-                    } @else {
-                      <span class="text-muted td-muted">—</span>
-                    }
-                  </td>
-                }
-              </ng-template>
-            </app-data-table>
-          </div>
-        </div>
-        <app-pagination [pagination]="apptPagination()" (pageChange)="goToApptPage($event)" />
+      <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
+        Filtros
+        @if (activeFiltersCount() > 0) {
+        <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
+        }
+        <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
+      </button>
+      @if (filteredAppointments().length > 0) {
+      <button class="btn-outline" style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+        (click)="exportAppointmentsXlsx()">
+        ⬇ Exportar Excel
+      </button>
       }
+    </div>
+
+    @if (filtersOpen()) {
+    <div class="dynamic-filters">
+      <div class="filter-item">
+        <label class="filter-label">Status</label>
+        <select class="filter-control" [ngModel]="getFieldFilter('appt_status')"
+          (ngModelChange)="setFieldFilter('appt_status', $event)">
+          <option value="">Todos</option>
+          <option value="AGENDADO">Confirmado</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </div>
+      <div class="filter-item" style="grid-column: span 2">
+        <label class="filter-label">Período</label>
+        <div class="date-range">
+          <input type="date" class="filter-control" [ngModel]="getFieldFilter('appt_date__start')"
+            (ngModelChange)="setFieldFilter('appt_date__start', $event)" />
+          <span class="date-sep">→</span>
+          <input type="date" class="filter-control" [ngModel]="getFieldFilter('appt_date__end')"
+            (ngModelChange)="setFieldFilter('appt_date__end', $event)" />
+        </div>
+      </div>
+    </div>
     }
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- ABA: RESPOSTAS                                           -->
-    <!-- ════════════════════════════════════════════════════════ -->
-    @if (activeTab() === 'submissions') {
-      <div class="filters-card">
-        <div class="search-row">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar em todos os campos..."
-              [ngModel]="globalSearch()"
-              (ngModelChange)="globalSearch.set($event)"
-            />
-            @if (globalSearch()) {
-              <button class="clear-input" (click)="globalSearch.set('')">×</button>
-            }
-          </div>
-          <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
-            Filtros
-            @if (activeFiltersCount() > 0) {
-              <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
-            }
-            <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
-          </button>
-          @if (filteredSubmissions().length > 0) {
-            <button
-              class="btn-outline"
-              style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
-              (click)="exportSubmissionsXlsx()"
-            >
-              ⬇ Exportar Excel
-            </button>
-          }
-        </div>
+    @if (activeFiltersList().length > 0) {
+    <div class="active-filters">
+      <span class="active-filters-label">Ativos:</span>
+      @for (chip of activeFiltersList(); track chip.key) {
+      <span class="filter-chip">
+        <span class="chip-label">{{ chip.label }}</span>
+        <span class="chip-sep">:</span>
+        <span class="chip-value">{{ chip.value }}</span>
+        <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
+      </span>
+      }
+      <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
+    </div>
+    }
+  </div>
 
-        @if (filtersOpen() && filterableFields().length > 0) {
-          <div class="dynamic-filters">
-            @for (field of filterableFields(); track field.col) {
-              <div
-                class="filter-item"
-                [style]="field.filterType === 'daterange' ? 'grid-column: span 2;' : ''"
-              >
-                <label class="filter-label">{{ field.label }}</label>
-                @if (field.filterType === 'select') {
-                  <select
-                    class="filter-control"
-                    [ngModel]="getFieldFilter(field.col)"
-                    (ngModelChange)="setFieldFilter(field.col, $event)"
-                  >
-                    <option value="">Todos</option>
-                    @for (val of field.uniqueVals; track val) {
-                      <option [value]="val">{{ val }}</option>
-                    }
-                  </select>
-                } @else if (field.filterType === 'daterange') {
-                  <div class="date-range">
-                    <input
-                      type="date"
-                      class="filter-control"
-                      [ngModel]="getFieldFilter(field.col + '__start')"
-                      (ngModelChange)="setFieldFilter(field.col + '__start', $event)"
-                    />
-                    <span class="date-sep">→</span>
-                    <input
-                      type="date"
-                      class="filter-control"
-                      [ngModel]="getFieldFilter(field.col + '__end')"
-                      (ngModelChange)="setFieldFilter(field.col + '__end', $event)"
-                    />
-                  </div>
-                } @else if (field.filterType === 'number') {
-                  <input
-                    type="number"
-                    class="filter-control"
-                    [ngModel]="getFieldFilter(field.col)"
-                    (ngModelChange)="setFieldFilter(field.col, $event)"
-                    placeholder="Filtrar..."
-                  />
-                } @else {
-                  <input
-                    type="text"
-                    class="filter-control"
-                    [ngModel]="getFieldFilter(field.col)"
-                    (ngModelChange)="setFieldFilter(field.col, $event)"
-                    placeholder="Filtrar..."
-                  />
-                }
-              </div>
-            }
-          </div>
-        }
-
-        @if (activeFiltersList().length > 0) {
-          <div class="active-filters">
-            <span class="active-filters-label">Ativos:</span>
-            @for (chip of activeFiltersList(); track chip.key) {
-              <span class="filter-chip">
-                <span class="chip-label">{{ chip.label }}</span>
-                <span class="chip-sep">:</span>
-                <span class="chip-value">{{ chip.value }}</span>
-                <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
-              </span>
-            }
-            <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
-          </div>
-        }
-      </div>
-
-      @if (filteredSubmissions().length === 0) {
-        <div class="card">
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>Nenhuma resposta encontrada</p>
-            @if (activeFiltersCount() > 0) {
-              <small>Tente remover os filtros ativos</small>
+  @if (filteredAppointments().length === 0) {
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>Nenhum agendamento encontrado</p>
+      @if (activeFiltersCount() > 0) {
+      <small>Tente remover os filtros ativos</small>
+      }
+    </div>
+  </div>
+  } @else {
+  <div class="card" style="overflow: hidden">
+    <div class="table-info">
+      <span class="result-count">
+        {{ filteredAppointments().length }} de {{ apptTotalElements() }} agendamento(s)
+      </span>
+      @if (sortColumn()) {
+      <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong>
+        {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+      }
+    </div>
+    <div style="overflow-x: auto">
+      <app-data-table [columns]="apptColumns()" [rows]="filteredAppointments()" [sortColumn]="sortColumn()"
+        [sortDirection]="sortDirection()" [noDataLabel]="'Nenhum agendamento encontrado'" (sortChange)="sort($event)"
+        rowKey="id">
+        <ng-template #rowTemplate let-a>
+          <td><strong>{{ a.slotDate | date: 'dd/MM/yyyy' }}</strong></td>
+          <td>{{ formatTime(a.slotTime) }}</td>
+          <td>
+            @if (a.status === 'AGENDADO') {
+            <span class="status-badge status-badge--confirmed">Confirmado</span>
             } @else {
-              <small>As respostas aparecerão aqui quando alguém preencher o formulário</small>
+            <span class="status-badge status-badge--cancelled">Cancelado</span>
             }
-          </div>
-        </div>
-      } @else {
-        <div class="card" style="overflow: hidden">
-          <div class="table-info">
-            <span class="result-count">
-              {{ filteredSubmissions().length }} de {{ subTotalElements() }} resposta(s)
-            </span>
-            @if (sortColumn()) {
-              <span class="sort-info"
-                >ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong>
-                {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span
-              >
+          </td>
+          <td>{{ a.bookedByName || '-' }}</td>
+          <td class="text-muted">{{ a.bookedByContact || '-' }}</td>
+          @for (col of appointmentExtraCols(); track col) {
+          <td>{{ a.extraValues[col] || '-' }}</td>
+          }
+          <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+          @if (auth.isAdmin() || auth.isClient()) {
+          <td class="td-actions">
+            @if (a.status === 'AGENDADO') {
+            <button class="btn-table-danger" (click)="doCancel(a.id)" [disabled]="cancellingId() === a.id">
+              {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
+            </button>
+            } @else {
+            <span class="text-muted td-muted">—</span>
             }
-          </div>
-          <div style="overflow-x: auto">
-            <app-data-table
-              [columns]="subColumns()"
-              [rows]="filteredSubmissions()"
-              [sortColumn]="sortColumn()"
-              [sortDirection]="sortDirection()"
-              [noDataLabel]="'Nenhuma resposta encontrada'"
-              (sortChange)="sort($event)"
-              rowKey="id"
-            >
-              <ng-template #rowTemplate let-sub let-columns="columns">
-                <td class="text-muted">#{{ sub.id }}</td>
-                <td>{{ sub.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
-                @for (col of columns.slice(2, columns.length - 1); track col.key) {
-                  <td>{{ getValue(sub, col.key) }}</td>
-                }
-                @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
-                  <td class="td-actions">
-                    <button
-                      class="btn-table-danger"
-                      (click)="doDelete(sub.id)"
-                      [disabled]="deletingId() === sub.id"
-                    >
-                      {{ deletingId() === sub.id ? '...' : 'Excluir' }}
-                    </button>
-                  </td>
-                }
-              </ng-template>
-            </app-data-table>
-          </div>
-        </div>
-        <app-pagination [pagination]="subPagination()" (pageChange)="goToSubPage($event)" />
+          </td>
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  </div>
+  <app-pagination [pagination]="apptPagination()" (pageChange)="goToApptPage($event)" />
+  }
+  }
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- ABA: RESPOSTAS                                           -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'submissions') {
+  <div class="filters-card">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Buscar em todos os campos..." [ngModel]="globalSearch()"
+          (ngModelChange)="globalSearch.set($event)" />
+        @if (globalSearch()) {
+        <button class="clear-input" (click)="globalSearch.set('')">×</button>
+        }
+      </div>
+      <button class="filters-toggle" (click)="filtersOpen.set(!filtersOpen())">
+        Filtros
+        @if (activeFiltersCount() > 0) {
+        <span class="filter-count-badge">{{ activeFiltersCount() }}</span>
+        }
+        <span class="toggle-chevron" [class.open]="filtersOpen()">▾</span>
+      </button>
+      @if (filteredSubmissions().length > 0) {
+      <button class="btn-outline" style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+        (click)="exportSubmissionsXlsx()">
+        ⬇ Exportar Excel
+      </button>
       }
+    </div>
+
+    @if (filtersOpen() && filterableFields().length > 0) {
+    <div class="dynamic-filters">
+      @for (field of filterableFields(); track field.col) {
+      <div class="filter-item" [style]="field.filterType === 'daterange' ? 'grid-column: span 2;' : ''">
+        <label class="filter-label">{{ field.label }}</label>
+        @if (field.filterType === 'select') {
+        <select class="filter-control" [ngModel]="getFieldFilter(field.col)"
+          (ngModelChange)="setFieldFilter(field.col, $event)">
+          <option value="">Todos</option>
+          @for (val of field.uniqueVals; track val) {
+          <option [value]="val">{{ val }}</option>
+          }
+        </select>
+        } @else if (field.filterType === 'daterange') {
+        <div class="date-range">
+          <input type="date" class="filter-control" [ngModel]="getFieldFilter(field.col + '__start')"
+            (ngModelChange)="setFieldFilter(field.col + '__start', $event)" />
+          <span class="date-sep">→</span>
+          <input type="date" class="filter-control" [ngModel]="getFieldFilter(field.col + '__end')"
+            (ngModelChange)="setFieldFilter(field.col + '__end', $event)" />
+        </div>
+        } @else if (field.filterType === 'number') {
+        <input type="number" class="filter-control" [ngModel]="getFieldFilter(field.col)"
+          (ngModelChange)="setFieldFilter(field.col, $event)" placeholder="Filtrar..." />
+        } @else {
+        <input type="text" class="filter-control" [ngModel]="getFieldFilter(field.col)"
+          (ngModelChange)="setFieldFilter(field.col, $event)" placeholder="Filtrar..." />
+        }
+      </div>
+      }
+    </div>
     }
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!-- ABA: LISTA DE PRESENÇA                                   -->
-    <!-- ════════════════════════════════════════════════════════ -->
-    @if (activeTab() === 'attendance') {
-      <!-- Stats presença -->
-      <div class="stats-3-grid">
-        <div class="mini-stat-card">
-          <span class="mini-stat-value">{{ attendanceStats().total }}</span>
-          <span class="mini-stat-label">Total</span>
-        </div>
-        <div class="mini-stat-card mini-stat-card--success">
-          <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
-          <span class="mini-stat-label">Presentes</span>
-        </div>
-        <div class="mini-stat-card mini-stat-card--warning">
-          <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
-          <span class="mini-stat-label">Ausentes</span>
-        </div>
-      </div>
-
-      <!-- Barra de busca + export -->
-      <div class="filters-card">
-        <div class="search-row">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Buscar na lista..."
-              [ngModel]="attendanceSearch()"
-              (ngModelChange)="attendanceSearch.set($event)"
-            />
-            @if (attendanceSearch()) {
-              <button class="clear-input" (click)="attendanceSearch.set('')">×</button>
-            }
-          </div>
-          <button
-            class="btn-outline"
-            style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
-            (click)="exportAttendanceXlsx()"
-          >
-            ⬇ Exportar Excel
-          </button>
-        </div>
-      </div>
-
-      @if (filteredAttendance().length === 0) {
-        <div class="card">
-          <div class="empty-state">
-            <div class="empty-icon">📋</div>
-            <p>Nenhum registro encontrado</p>
-          </div>
-        </div>
-      } @else {
-        <div class="card" style="overflow: hidden">
-          <div class="table-info">
-            <span class="result-count"
-              >{{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)</span
-            >
-            <span class="result-count result-count--present">
-              {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
-            </span>
-          </div>
-          <div style="overflow-x: auto">
-            <app-data-table
-              [columns]="attendanceColumnsMeta()"
-              [rows]="filteredAttendance()"
-              [noDataLabel]="'Nenhum registro encontrado'"
-              rowKey="id"
-              [rowClass]="attendanceRowClass"
-            >
-              <ng-template #rowTemplate let-r let-columns="columns">
-                <td class="td-center">
-                  <button
-                    class="attendance-toggle"
-                    [class.attendance-toggle--present]="r.attended"
-                    [class.attendance-toggle--loading]="markingId() === r.id"
-                    (click)="toggleAttendance(r)"
-                    [disabled]="markingId() === r.id"
-                  >
-                    @if (markingId() === r.id) {
-                      <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
-                    } @else if (r.attended) {
-                      ✓ Presente
-                    } @else {
-                      Ausente
-                    }
-                  </button>
-                </td>
-                @for (col of columns.slice(1, columns.length - 2); track col.key) {
-                  <td>{{ r.rowData[col.key] || '-' }}</td>
-                }
-                <td>
-                  <input
-                    type="text"
-                    class="notes-input"
-                    [value]="r.notes ?? ''"
-                    (blur)="saveNote(r, $any($event.target).value)"
-                    placeholder="Observação..."
-                  />
-                </td>
-                <td class="td-mono">
-                  {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
-                </td>
-              </ng-template>
-            </app-data-table>
-          </div>
-        </div>
-        <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
+    @if (activeFiltersList().length > 0) {
+    <div class="active-filters">
+      <span class="active-filters-label">Ativos:</span>
+      @for (chip of activeFiltersList(); track chip.key) {
+      <span class="filter-chip">
+        <span class="chip-label">{{ chip.label }}</span>
+        <span class="chip-sep">:</span>
+        <span class="chip-value">{{ chip.value }}</span>
+        <button class="chip-remove" (click)="clearFilter(chip.key)">×</button>
+      </span>
       }
+      <button class="clear-all-btn" (click)="clearAllFilters()">Limpar tudo</button>
+    </div>
     }
+  </div>
+
+  @if (filteredSubmissions().length === 0) {
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>Nenhuma resposta encontrada</p>
+      @if (activeFiltersCount() > 0) {
+      <small>Tente remover os filtros ativos</small>
+      } @else {
+      <small>As respostas aparecerão aqui quando alguém preencher o formulário</small>
+      }
+    </div>
+  </div>
+  } @else {
+  <div class="card" style="overflow: hidden">
+    <div class="table-info">
+      <span class="result-count">
+        {{ filteredSubmissions().length }} de {{ subTotalElements() }} resposta(s)
+      </span>
+      @if (sortColumn()) {
+      <span class="sort-info">ordenado por <strong>{{ formatLabel(sortColumn()!) }}</strong>
+        {{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+      }
+    </div>
+    <div style="overflow-x: auto">
+      <app-data-table [columns]="subColumns()" [rows]="filteredSubmissions()" [sortColumn]="sortColumn()"
+        [sortDirection]="sortDirection()" [noDataLabel]="'Nenhuma resposta encontrada'" (sortChange)="sort($event)"
+        rowKey="id">
+        <ng-template #rowTemplate let-sub let-columns="columns">
+          <td class="text-muted">#{{ sub.id }}</td>
+          <td>{{ sub.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+          @for (col of columns.slice(2, columns.length - 1); track col.key) {
+          <td>{{ getValue(sub, col.key) }}</td>
+          }
+          @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
+          <td class="td-actions">
+            <button class="btn-table-danger" (click)="doDelete(sub.id)" [disabled]="deletingId() === sub.id">
+              {{ deletingId() === sub.id ? '...' : 'Excluir' }}
+            </button>
+          </td>
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  </div>
+  <app-pagination [pagination]="subPagination()" (pageChange)="goToSubPage($event)" />
+  }
+  }
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- ABA: LISTA DE PRESENÇA                                 -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'attendance') {
+
+  <!-- Stats presença -->
+  <div class="stats-3-grid">
+    <div class="mini-stat-card">
+      <span class="mini-stat-value">{{ attendanceStats().total }}</span>
+      <span class="mini-stat-label">Total</span>
+    </div>
+    <div class="mini-stat-card mini-stat-card--success">
+      <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
+      <span class="mini-stat-label">Presentes</span>
+    </div>
+    <div class="mini-stat-card mini-stat-card--warning">
+      <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
+      <span class="mini-stat-label">Ausentes</span>
+    </div>
+  </div>
+
+  <!-- Barra de busca + export -->
+  <div class="filters-card">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Buscar na lista..." [ngModel]="attendanceSearch()"
+          (ngModelChange)="attendanceSearch.set($event)" />
+        @if (attendanceSearch()) {
+        <button class="clear-input" (click)="attendanceSearch.set('')">×</button>
+        }
+      </div>
+
+      <button class="btn-outline" style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+        (click)="exportAttendanceXlsx()">
+        ⬇ Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  @if (filteredAttendance().length === 0) {
+
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>Nenhum registro encontrado</p>
+    </div>
+  </div>
+
+  } @else {
+
+  <div class="card" style="overflow: hidden">
+
+    <div class="table-info">
+      <span class="result-count">
+        {{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)
+      </span>
+
+      <span class="result-count result-count--present">
+        {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
+      </span>
+    </div>
+
+    <div style="overflow-x: auto">
+
+      <app-data-table [columns]="attendanceColumnsMeta()" [rows]="filteredAttendance()"
+        [noDataLabel]="'Nenhum registro encontrado'" rowKey="id" [rowClass]="attendanceRowClass">
+        <ng-template #rowTemplate let-r>
+
+          <!-- PRESENÇA -->
+          <td class="td-center">
+            <button class="attendance-toggle" [class.attendance-toggle--present]="r.attended"
+              [class.attendance-toggle--loading]="markingId() === r.id" (click)="toggleAttendance(r)"
+              [disabled]="markingId() === r.id">
+              @if (markingId() === r.id) {
+              <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+              } @else if (r.attended) {
+              ✓ Presente
+              } @else {
+              Ausente
+              }
+            </button>
+          </td>
+
+          <!-- CAMPOS DINÂMICOS -->
+          @for (col of attendanceDataColumns(); track col.key) {
+          <td>
+            {{ r.rowData?.[col.key] ?? '-' }}
+          </td>
+          }
+
+          <!-- OBS -->
+          <td>
+            <input type="text" class="notes-input" [value]="r.notes ?? ''" (click)="$event.stopPropagation()"
+              (blur)="saveNote(r, $any($event.target).value)" placeholder="Observação..." />
+          </td>
+
+          <!-- DATA -->
+          <td class="td-mono">
+            {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
+          </td>
+
+        </ng-template>
+      </app-data-table>
+
+    </div>
+  </div>
+
+  <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
+
+  }
   }
 
   <!-- ══ IMAGEM DE RODAPÉ DO TEMPLATE ═════════════════════════ -->
   @if (template()?.appearance?.footerImageUrl) {
-    <div class="template-banner template-banner--footer">
-      <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
-    </div>
+  <div class="template-banner template-banner--footer">
+    <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
+  </div>
+  }
   }
 </app-page-shell>
 

@@ -105,9 +105,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   });
 
-  // Carregado uma vez, independente da paginação — usado nos KPI cards
-  private allTemplatesGlobal = signal<TemplateStatResponse[]>([]);
-
   readonly pageSize = 5;
   pagination: SpringPage = { page: 0, size: this.pageSize, totalElements: 0, totalPages: 0 };
 
@@ -123,16 +120,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadGlobalStats();
     this.loadData();
-  }
-
-  // Busca todos os templates de uma vez para calcular os KPI cards globais
-  loadGlobalStats(): void {
-    this.dashboardService
-      .getSummary(0, 99999)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (data) => this.allTemplatesGlobal.set(data.templates) });
   }
 
   ngOnDestroy(): void {
@@ -213,26 +201,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   kpiCards(): KpiCard[] {
-    // Usa allTemplatesGlobal para que os totais não mudem com a paginação da tabela
-    const byType = (type: KpiType) =>
-      this.allTemplatesGlobal().filter((t) => this.inferType(t) === type);
-
-    const formulario = byType('formulario');
-    const agendamento = byType('agendamento');
-    const presenca = byType('lista-presenca');
-
-    const totalFormSubs = formulario.reduce((acc, t) => acc + t.submissionCount, 0);
-    const totalAgendTotal = agendamento.reduce((acc, t) => acc + t.appointmentTotal, 0);
-    const totalAgendConf = agendamento.reduce((acc, t) => acc + t.appointmentConfirmed, 0);
-    const totalPresTotal = presenca.reduce((acc, t) => acc + (t.attendanceTotal ?? 0), 0);
-    const totalPresPres = presenca.reduce((acc, t) => acc + (t.attendancePresent ?? 0), 0);
+    if (!this.summary) return [];
 
     return [
       {
         type: 'formulario',
         label: 'Formulários',
-        totalTemplates: formulario.length,
-        submissoes: totalFormSubs,
+        totalTemplates: this.summary.formTemplateCount,
+        submissoes: this.summary.globalTotalSubmissions,
         agendamentos: 0,
         confirmados: 0,
         presencaTotal: 0,
@@ -242,24 +218,28 @@ export class HomeComponent implements OnInit, OnDestroy {
       {
         type: 'agendamento',
         label: 'Agendamentos',
-        totalTemplates: agendamento.length,
+        totalTemplates: this.summary.appointmentTemplateCount,
         submissoes: 0,
-        agendamentos: totalAgendTotal,
-        confirmados: totalAgendConf,
+        agendamentos: this.summary.globalTotalAppointments,
+        confirmados: this.summary.globalConfirmedAppointments,
         presencaTotal: 0,
         presencaPresente: 0,
-        presencaPercent: totalAgendTotal ? (totalAgendConf / totalAgendTotal) * 100 : 0,
+        presencaPercent: this.summary.globalTotalAppointments
+          ? (this.summary.globalConfirmedAppointments / this.summary.globalTotalAppointments) * 100
+          : 0,
       },
       {
         type: 'lista-presenca',
         label: 'Lista de Presença',
-        totalTemplates: presenca.length,
+        totalTemplates: this.summary.attendanceTemplateCount,
         submissoes: 0,
         agendamentos: 0,
         confirmados: 0,
-        presencaTotal: totalPresTotal,
-        presencaPresente: totalPresPres,
-        presencaPercent: totalPresTotal ? (totalPresPres / totalPresTotal) * 100 : 0,
+        presencaTotal: this.summary.globalTotalAttendanceRecords,
+        presencaPresente: this.summary.globalPresentAttendanceRecords,
+        presencaPercent: this.summary.globalTotalAttendanceRecords
+          ? (this.summary.globalPresentAttendanceRecords / this.summary.globalTotalAttendanceRecords) * 100
+          : 0,
       },
     ];
   }

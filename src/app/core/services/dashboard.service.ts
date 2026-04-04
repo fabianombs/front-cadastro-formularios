@@ -6,14 +6,16 @@ import { environment } from '../../../environments/environment';
 export interface TemplateStatResponse {
   id: number;
   name: string;
+  slug: string;
   clientName?: string;
+  hasSchedule?: boolean;
+  fieldCount: number;
   submissionCount: number;
   appointmentTotal: number;
   appointmentConfirmed: number;
   attendanceTotal: number;
   attendancePresent: number;
   type?: 'formulario' | 'agendamento' | 'lista-presenca';
-  hasSchedule?: boolean;
   appointmentCancelled?: number;
 }
 
@@ -26,12 +28,22 @@ export interface DashboardSummary {
   cancelledAppointments: number;
   totalAttendanceRecords: number;
   presentAttendanceRecords: number;
+  formTemplateCount: number;
+  appointmentTemplateCount: number;
+  attendanceTemplateCount: number;
   templates: TemplateStatResponse[];
   // metadados de paginação do Spring Page
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
+  // Totais globais para KPIs
+  globalTotalSubmissions: number;
+  globalTotalAppointments: number;
+  globalConfirmedAppointments: number;
+  globalCancelledAppointments: number;
+  globalTotalAttendanceRecords: number;
+  globalPresentAttendanceRecords: number;
 }
 
 @Injectable({ providedIn: 'root' })
