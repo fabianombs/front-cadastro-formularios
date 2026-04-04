@@ -146,13 +146,8 @@ export class TemplateListComponent implements OnInit {
     this.service.getTemplateBySlug(slug).subscribe({
       next: (t) => {
         this.template.set(t);
-        console.log('####################', t.hasSchedule); // 🔥 DEBUG FLAG
-
-
         // 🔥 se existir attendance mesmo com flag errada, usa ela
         this.resolveTemplateType(t); // 👈 usa esse cara
-
-
         this.loadActiveTabData();
       },
       error: () => this.loading.set(false),
@@ -174,8 +169,6 @@ export class TemplateListComponent implements OnInit {
     this.service.getAttendance(t.id, 0, 1).subscribe({
       next: (res) => {
         if (res.totalElements > 0) {
-          console.log('dfafasfdasd', res);
-          
           this.activeTab.set('attendance');
         } else {
           this.activeTab.set('submissions');
@@ -278,15 +271,12 @@ export class TemplateListComponent implements OnInit {
 
   private loadAttendance(): void {
     const t = this.template();
-    console.log('Loading attendance for template:', t); // 🔥 DEBUG
     if (!t) return;
 
     this.loading.set(true);
 
     this.service.getAttendance(t.id, this.attPage(), this.pageSize()).subscribe({
       next: (page) => {
-        console.log('ATTENDANCE PAGE:', page); // 🔥 DEBUG
-
         this.attendance.set([...page.content]); // 🔥 GARANTE NOVA REFERÊNCIA
         this.attTotalPages.set(page.totalPages);
         this.attTotalElements.set(page.totalElements);

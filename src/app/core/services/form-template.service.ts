@@ -160,7 +160,6 @@ export class FormTemplateService {
   getMyTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {
     return this.http
       .get<PageResponse<FormTemplate>>(`${this.apiUrl}/my-templates?page=${page}&size=${size}`)
-      .pipe(tap((res) => console.log('TEMPLATES DO USUÁRIO:', res)));
   }
 
   getTemplateBySlug(slug: string): Observable<FormTemplate> {

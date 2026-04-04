@@ -106,18 +106,18 @@ export class FormDynamicComponent implements OnInit {
       const cardBg = a.cardBackgroundColor || 'rgba(10, 16, 32, 0.68)';
       const cardBorder = a.cardBorderColor || 'rgba(255, 255, 255, 0.1)';
 
-      style['--surface']       = cardBg;
-      style['--surface-high']  = a.cardBackgroundColor ? cardBg : 'rgba(15, 25, 50, 0.8)';
-      style['--bg-subtle']     = a.cardBackgroundColor ? cardBg : 'rgba(5, 10, 20, 0.72)';
-      style['--border']        = cardBorder;
-      style['--border-hover']  = a.cardBorderColor ? cardBorder : 'rgba(255, 255, 255, 0.18)';
-      style['--text']          = a.formTextColor || '#d8e4f8';
-      style['--text-muted']    = a.formTextColor
+      style['--surface'] = cardBg;
+      style['--surface-high'] = a.cardBackgroundColor ? cardBg : 'rgba(15, 25, 50, 0.8)';
+      style['--bg-subtle'] = a.cardBackgroundColor ? cardBg : 'rgba(5, 10, 20, 0.72)';
+      style['--border'] = cardBorder;
+      style['--border-hover'] = a.cardBorderColor ? cardBorder : 'rgba(255, 255, 255, 0.18)';
+      style['--text'] = a.formTextColor || '#d8e4f8';
+      style['--text-muted'] = a.formTextColor
         ? this.hexToRgba(a.formTextColor, 0.65)
         : 'rgba(216, 228, 248, 0.65)';
-      style['--primary']       = accent;
+      style['--primary'] = accent;
       style['--primary-muted'] = this.hexToRgba(accent, 0.12);
-      style['--primary-glow']  = this.hexToRgba(accent, 0.22);
+      style['--primary-glow'] = this.hexToRgba(accent, 0.22);
       style['--surface-hover'] = this.hexToRgba(accent, 0.08);
     }
 
@@ -320,17 +320,26 @@ export class FormDynamicComponent implements OnInit {
 
     this.service.bookAppointment(payload).subscribe({
       next: () => {
+        this.messages.success('Agendamento realizado com sucesso!');
         this.submitted.set(true);
+
         this.form.reset();
-        this.selectedDate.set('');
+
+        // só limpa o slot selecionado
         this.selectedSlot.set('');
-        this.availableSlots.set([]);
-      },
-      error: (err) => {
-        const msg = err.error?.message ?? 'Erro ao realizar agendamento';
-        this.messages.error(msg);
-      },
+
+        // opcional: recarrega horários da mesma data
+        const template = this.template();
+        const date = this.selectedDate();
+
+        if (template && date) {
+          this.service.getAvailableSlots(template.id, date).subscribe(res => {
+            this.availableSlots.set(res.slots);
+          });
+        }
+      }
     });
+
   }
 
   private resolveNameField(values: { [key: string]: string }): string {
