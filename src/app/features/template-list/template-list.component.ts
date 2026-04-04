@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -54,6 +54,13 @@ export class TemplateListComponent implements OnInit {
   columns = signal<string[]>([]);
   appointments = signal<AppointmentResponse[]>([]);
   loading = signal(true);
+  loadingAppointments = signal(false);
+  cdr = inject(ChangeDetectorRef);
+
+  // ── Controle de carregamento por aba ──────────────────────────
+  appointmentsLoaded = signal(false);
+  submissionsLoaded = signal(false);
+  attendanceLoaded = signal(false);
 
   // ── Paginação por aba ────────────────────────────────────────
   apptPage = signal(0);
@@ -120,6 +127,17 @@ export class TemplateListComponent implements OnInit {
   markingId = signal<number | null>(null);
   attendanceSearch = signal('');
 
+  constructor() {
+    effect(() => {
+      const t = this.template();
+
+      if (t) {
+        console.log('Template mudou, carregando presença...');
+        this.loadAttendance();
+      }
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -128,67 +146,157 @@ export class TemplateListComponent implements OnInit {
     this.service.getTemplateBySlug(slug).subscribe({
       next: (t) => {
         this.template.set(t);
+        console.log('####################', t.hasSchedule); // 🔥 DEBUG FLAG
 
-        if (t.hasSchedule) this.activeTab.set('appointments');
-        else if (t.hasAttendance) this.activeTab.set('attendance');
-        else this.activeTab.set('submissions');
 
-        this.loadAppointments();
-        this.loadAttendance();
-        this.loadSubmissions();
+        // 🔥 se existir attendance mesmo com flag errada, usa ela
+        this.resolveTemplateType(t); // 👈 usa esse cara
+
+
+        this.loadActiveTabData();
       },
       error: () => this.loading.set(false),
+      complete: () => this.loading.set(false), // 🔥 ADICIONADO
+    });
+  }
+
+  //TODO VERIFICAR ISSO DPS PARA FAZER NO BACK
+
+  private resolveTemplateType(t: FormTemplate) {
+    // prioridade 1: agendamento
+    if (t.scheduleConfig) {
+      this.activeTab.set('appointments');
+      this.loadActiveTabData();
+      return;
+    }
+
+    // prioridade 2: tenta detectar presença pelos dados reais
+    this.service.getAttendance(t.id, 0, 1).subscribe({
+      next: (res) => {
+        if (res.totalElements > 0) {
+          console.log('dfafasfdasd', res);
+          
+          this.activeTab.set('attendance');
+        } else {
+          this.activeTab.set('submissions');
+        }
+        this.loadActiveTabData();
+      },
+      error: () => {
+        this.activeTab.set('submissions');
+        this.loadActiveTabData();
+      }
     });
   }
 
   // ── Loaders por aba ──────────────────────────────────────────
 
+  private loadActiveTabData(): void {
+    switch (this.activeTab()) {
+      case 'appointments':
+        if (!this.appointmentsLoaded()) this.loadAppointments();
+        break;
+
+      case 'submissions':
+        if (!this.submissionsLoaded()) this.loadSubmissions();
+        break;
+
+      case 'attendance':
+        console.log('Loading attendance tab data...'); // 🔥 DEBUG
+        if (!this.attendanceLoaded()) this.loadAttendance();
+        break;
+    }
+  }
+
+  changeTab(tab: 'appointments' | 'submissions' | 'attendance'): void {
+    if (this.activeTab() === tab) return;
+    this.activeTab.set(tab);
+    this.loadActiveTabData();
+    this.cdr.detectChanges();
+  }
+
+  // ─────────────────────────────────────────────
+  // loadAppointments (🔥 PRINCIPAL CORREÇÃO)
+
   private loadAppointments(): void {
     const t = this.template();
     if (!t) return;
-    this.service.getAppointmentsByTemplate(t.id, this.apptPage(), this.pageSize()).subscribe({
-      next: (page) => {
-        this.appointments.set(page.content);
-        this.apptTotalPages.set(page.totalPages);
-        this.apptTotalElements.set(page.totalElements);
-      },
-      error: () => this.appointments.set([]),
-    });
+
+    this.loading.set(true); // 🔥 IMPORTANTE (global)
+    this.loadingAppointments.set(true);
+
+    this.service.getAppointmentsByTemplate(t.id, this.apptPage(), this.pageSize())
+      .subscribe({
+        next: (page) => {
+          this.appointments.set(page.content);
+          this.apptTotalPages.set(page.totalPages);
+          this.apptTotalElements.set(page.totalElements);
+          this.appointmentsLoaded.set(true);
+        },
+        error: () => {
+          this.appointments.set([]);
+          this.loading.set(false);              // 🔥 GARANTE NÃO TRAVAR
+          this.loadingAppointments.set(false);  // 🔥 GARANTE NÃO TRAVAR
+        },
+        complete: () => {
+          this.loading.set(false);              // 🔥 ESSENCIAL
+          this.loadingAppointments.set(false);  // 🔥 ESSENCIAL
+        }
+      });
   }
+
+  // ─────────────────────────────────────────────
+  // loadSubmissions (ajuste leve)
 
   private loadSubmissions(): void {
     const t = this.template();
     if (!t) return;
+
+    this.loading.set(true); // 🔥 padroniza
+
     this.service.getSubmissionsByTemplate(t.id, this.subPage(), this.pageSize()).subscribe({
       next: (page) => {
         this.submissions.set(page.content);
         this.buildColumns(page.content);
         this.subTotalPages.set(page.totalPages);
         this.subTotalElements.set(page.totalElements);
-        this.loading.set(false);
+        this.submissionsLoaded.set(true);
       },
       error: () => this.loading.set(false),
+      complete: () => this.loading.set(false), // 🔥 ADICIONADO
     });
   }
 
+  attendanceDataColumns = computed(() =>
+    this.attendanceColumnsMeta().filter(
+      c => !['attendance', 'notes', 'attendedAt'].includes(c.key)
+    )
+  );
+
+  // ─────────────────────────────────────────────
+  // loadAttendance (mesma correção)
+
   private loadAttendance(): void {
     const t = this.template();
+    console.log('Loading attendance for template:', t); // 🔥 DEBUG
     if (!t) return;
+
+    this.loading.set(true);
+
     this.service.getAttendance(t.id, this.attPage(), this.pageSize()).subscribe({
       next: (page) => {
-        this.attendance.set(page.content);
+        console.log('ATTENDANCE PAGE:', page); // 🔥 DEBUG
+
+        this.attendance.set([...page.content]); // 🔥 GARANTE NOVA REFERÊNCIA
         this.attTotalPages.set(page.totalPages);
         this.attTotalElements.set(page.totalElements);
-        // fallback: se hasAttendance não foi marcado mas há registros, muda aba
-        if (
-          !this.template()?.hasSchedule &&
-          !this.template()?.hasAttendance &&
-          page.totalElements > 0
-        ) {
-          this.activeTab.set('attendance');
-        }
+        this.attendanceLoaded.set(true);
       },
-      error: () => this.attendance.set([]),
+      error: () => {
+        this.attendance.set([]);
+        this.loading.set(false);
+      },
+      complete: () => this.loading.set(false),
     });
   }
 
@@ -197,9 +305,9 @@ export class TemplateListComponent implements OnInit {
     this.apptPage.set(0);
     this.subPage.set(0);
     this.attPage.set(0);
-    this.loadAppointments();
-    this.loadSubmissions();
-    this.loadAttendance();
+    if (this.appointmentsLoaded()) this.loadAppointments();
+    if (this.submissionsLoaded()) this.loadSubmissions();
+    if (this.attendanceLoaded()) this.loadAttendance();
   }
 
   goToApptPage(n: number): void {
@@ -475,12 +583,15 @@ export class TemplateListComponent implements OnInit {
 
   // ── Presença filtrada ────────────────────────────────────────
   filteredAttendance = computed<AttendanceRecord[]>(() => {
-    const search = this.attendanceSearch().toLowerCase().trim();
+    const search = this.attendanceSearch()?.toLowerCase().trim();
+
     if (!search) return this.attendance();
-    return this.attendance().filter(
-      (r) =>
-        Object.values(r.rowData || {}).some((v) => v.toLowerCase().includes(search)) ||
-        (r.notes ?? '').toLowerCase().includes(search),
+
+    return this.attendance().filter((r) =>
+      Object.values(r.rowData || {}).some((v) =>
+        String(v).toLowerCase().includes(search)
+      ) ||
+      String(r.notes ?? '').toLowerCase().includes(search)
     );
   });
 
@@ -599,25 +710,25 @@ export class TemplateListComponent implements OnInit {
       const cardBg = a?.cardBackgroundColor || 'rgba(10, 16, 32, 0.68)';
       const cardBorder = a?.cardBorderColor || 'rgba(255, 255, 255, 0.1)';
 
-      style['--surface']      = cardBg;
+      style['--surface'] = cardBg;
       style['--surface-high'] = a?.cardBackgroundColor
         ? cardBg                        // usa a mesma cor sólida
         : 'rgba(15, 25, 50, 0.8)';
-      style['--bg-subtle']    = a?.cardBackgroundColor
+      style['--bg-subtle'] = a?.cardBackgroundColor
         ? cardBg
         : 'rgba(5, 10, 20, 0.72)';
-      style['--border']       = cardBorder;
+      style['--border'] = cardBorder;
       style['--border-hover'] = a?.cardBorderColor
         ? cardBorder
         : 'rgba(255, 255, 255, 0.18)';
-      style['--text']         = a?.formTextColor || '#d8e4f8';
-      style['--text-muted']   = a?.formTextColor
+      style['--text'] = a?.formTextColor || '#d8e4f8';
+      style['--text-muted'] = a?.formTextColor
         ? this.hexToRgba(a.formTextColor, 0.65)
         : 'rgba(216, 228, 248, 0.65)';
-      style['--primary']      = accent;
-      style['--primary-muted']= this.hexToRgba(accent, 0.12);
+      style['--primary'] = accent;
+      style['--primary-muted'] = this.hexToRgba(accent, 0.12);
       style['--primary-glow'] = this.hexToRgba(accent, 0.22);
-      style['--surface-hover']= this.hexToRgba(accent, 0.08);
+      style['--surface-hover'] = this.hexToRgba(accent, 0.08);
     }
     return style;
   });
@@ -678,7 +789,7 @@ export class TemplateListComponent implements OnInit {
   private hexToRgba(hex: string, alpha: number): string {
     if (!hex || !hex.startsWith('#')) return `rgba(77,143,255,${alpha})`;
     let h = hex.slice(1);
-    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
     const r = parseInt(h.slice(0, 2), 16);
     const g = parseInt(h.slice(2, 4), 16);
     const b = parseInt(h.slice(4, 6), 16);

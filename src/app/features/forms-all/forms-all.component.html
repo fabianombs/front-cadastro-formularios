@@ -46,13 +46,8 @@
   <!-- Cards -->
   <div class="templates-grid">
     @for (t of templates(); track t.id) {
-    @let apps = appointmentsMap()[t.id] || [];
-    @let subs = submissionsMap()[t.id] || [];
-    @let att = attendanceMap()[t.id] || [];
 
-    @let isAttendance = !t.hasSchedule && (t.hasAttendance || att.length > 0);
-
-    <div class="template-card" [class.tc-appointment]="t.hasSchedule" [class.tc-attendance]="isAttendance">
+    <div class="template-card" [class.tc-appointment]="t.hasSchedule" [class.tc-attendance]="!t.hasSchedule && t.attendanceTotal > 0">
       <!-- BOTÃO EXCLUIR -->
       <button class="tc-delete-btn" (click)="deleteTemplate(t.id, $event)">
         ✕
@@ -70,12 +65,12 @@
       @if (t.hasSchedule) {
       <div class="tc-stats">
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ apps.length }}</span>
+          <span class="tc-stat-value">{{ t.appointmentTotal }}</span>
           <span class="tc-stat-label">Agendamentos</span>
         </div>
         <div class="tc-divider"></div>
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ t.fields.length }}</span>
+          <span class="tc-stat-value">{{ t.fieldCount }}</span>
           <span class="tc-stat-label">Campos</span>
         </div>
       </div>
@@ -85,27 +80,21 @@
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver agenda</a>
       </div>
 
-      <div class="tc-recent">
-        <p class="tc-recent-title">Últimos agendamentos</p>
-        @for (a of apps.slice(0, 3); track a.id) {
-        <div class="tc-sub-row">
-          <span class="tc-sub-id">#{{ a.id }}</span>
-          <span class="tc-sub-date">{{ a.slotDate | date: 'dd/MM/yy' }} {{ a.slotTime }}</span>
-          <span class="tc-sub-date">{{ a.bookedByName }}</span>
-        </div>
-        }
+      <div class="tc-summary">
+        <p class="tc-summary-text">Total de agendamentos: {{ t.appointmentTotal }}</p>
+        <p class="tc-summary-text">Confirmados: {{ t.appointmentConfirmed }}</p>
       </div>
 
       <!-- CARD: PRESENÇA -->
-      } @else if (isAttendance) {
+      } @else if (!t.hasSchedule && t.attendanceTotal > 0) {
       <div class="tc-stats">
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ att.length }}</span>
+          <span class="tc-stat-value">{{ t.attendanceTotal }}</span>
           <span class="tc-stat-label">Total</span>
         </div>
         <div class="tc-divider"></div>
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ presentesMap()[t.id] || 0 }}</span>
+          <span class="tc-stat-value">{{ t.attendancePresent }}</span>
           <span class="tc-stat-label">Presentes</span>
         </div>
       </div>
@@ -114,28 +103,21 @@
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
       </div>
 
-      <div class="tc-recent">
-        <p class="tc-recent-title">Lista de presença</p>
-        @for (r of att.slice(0, 3); track r.id) {
-        <div class="tc-sub-row">
-          <span class="tc-sub-id">#{{ r.id }}</span>
-          <span class="tc-sub-date" [style.color]="r.attended ? '#22c55e' : '#ef4444'">
-            {{ r.attended ? 'Presente' : 'Ausente' }}
-          </span>
-        </div>
-        }
+      <div class="tc-summary">
+        <p class="tc-summary-text">Total de registros: {{ t.attendanceTotal }}</p>
+        <p class="tc-summary-text">Presentes: {{ t.attendancePresent }}</p>
       </div>
 
       <!-- CARD: FORMULÁRIO -->
       } @else {
       <div class="tc-stats">
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ subs.length }}</span>
+          <span class="tc-stat-value">{{ t.submissionCount }}</span>
           <span class="tc-stat-label">Respostas</span>
         </div>
         <div class="tc-divider"></div>
         <div class="tc-stat">
-          <span class="tc-stat-value">{{ t.fields.length }}</span>
+          <span class="tc-stat-value">{{ t.fieldCount }}</span>
           <span class="tc-stat-label">Campos</span>
         </div>
       </div>
@@ -145,14 +127,8 @@
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
       </div>
 
-      <div class="tc-recent">
-        <p class="tc-recent-title">Últimas respostas</p>
-        @for (s of subs.slice(0, 3); track s.id) {
-        <div class="tc-sub-row">
-          <span class="tc-sub-id">#{{ s.id }}</span>
-          <span class="tc-sub-date">{{ s.createdAt | date: 'dd/MM/yy HH:mm' }}</span>
-        </div>
-        }
+      <div class="tc-summary">
+        <p class="tc-summary-text">Total de respostas: {{ t.submissionCount }}</p>
       </div>
       }
     </div>

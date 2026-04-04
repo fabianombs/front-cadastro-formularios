@@ -1,6 +1,6 @@
 // src/app/core/services/form-template.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
 import { environment } from '../../../environments/environment';
@@ -250,6 +250,14 @@ export class FormTemplateService {
     return this.http.get<PageResponse<AttendanceRecord>>(
       `${this.attendanceUrl}/template/${templateId}?page=${page}&size=${size}`,
     );
+  }
+
+  getAttendanceExistence(templateIds: number[]): Observable<Record<number, boolean>> {
+    const params = new HttpParams();
+    const queryParams = templateIds.reduce((acc, id) => acc.append('templateIds', String(id)), params);
+    return this.http.get<Record<number, boolean>>(`${this.attendanceUrl}/template/existence`, {
+      params: queryParams,
+    });
   }
 
   markAttendance(recordId: number, payload: MarkAttendanceRequest): Observable<AttendanceRecord> {
