@@ -10,11 +10,19 @@ import {
 } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ExportService } from '../../core/services/export.service';
+import { MessageService } from '../../core/services/message.service';
 import { FormsModule } from '@angular/forms';
 import {
   PaginationComponent,
   SpringPage,
 } from '../../shared/components/pagination/pagination.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../shared/components/data-table/data-table.component';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 
 interface FilterableField {
   col: string;
@@ -26,7 +34,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent],
+  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
@@ -34,6 +42,7 @@ export class TemplateListComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private service = inject(FormTemplateService);
   private exporter = inject(ExportService);
+  private messages = inject(MessageService);
   public auth = inject(AuthService);
 
   readonly pageSizeOptions = [2, 5, 10, 50];
@@ -223,6 +232,41 @@ export class TemplateListComponent implements OnInit {
     );
     return Array.from(keys);
   });
+
+  apptColumns = computed<DataTableColumn[]>(() => [
+    { key: 'slotDate', label: 'Data', sortable: true, width: '130px' },
+    { key: 'slotTime', label: 'Hora', sortable: true, width: '90px' },
+    { key: 'status', label: 'Status', sortable: true, width: '120px' },
+    { key: 'bookedByName', label: 'Nome', sortable: true },
+    { key: 'bookedByContact', label: 'Contato' },
+    ...this.appointmentExtraCols().map((col) => ({
+      key: col,
+      label: this.formatLabel(col),
+      sortable: true,
+    })),
+    { key: 'createdAt', label: 'Agendado em' },
+    { key: 'action', label: 'Ação', width: '90px' },
+  ]);
+
+  subColumns = computed<DataTableColumn[]>(() => [
+    { key: 'id', label: 'ID', sortable: true, width: '60px' },
+    { key: 'createdAt', label: 'Data', sortable: true, width: '140px' },
+    ...this.columns().map((col) => ({
+      key: col,
+      label: this.formatLabel(col),
+      sortable: true,
+    })),
+    { key: 'action', label: 'Ação', width: '90px' },
+  ]);
+
+  attendanceColumnsMeta = computed<DataTableColumn[]>(() => [
+    { key: 'attendance', label: 'Presença', width: '110px', align: 'center' },
+    ...this.attendanceCols().map((col) => ({ key: col, label: this.formatLabel(col) })),
+    { key: 'notes', label: 'Obs.' },
+    { key: 'attendedAt', label: 'Marcado em', width: '120px' },
+  ]);
+
+  attendanceRowClass = (row: AttendanceRecord) => ({ 'row--present': row.attended });
 
   // ── Stats agendamentos ───────────────────────────────────────
   appointmentStats = computed(() => ({
@@ -453,7 +497,7 @@ export class TemplateListComponent implements OnInit {
           this.markingId.set(null);
         },
         error: () => {
-          alert('Erro ao atualizar presença.');
+          this.messages.error('Erro ao atualizar presença.');
           this.markingId.set(null);
         },
       });
@@ -469,7 +513,7 @@ export class TemplateListComponent implements OnInit {
         next: (updated) => {
           this.attendance.update((list) => list.map((r) => (r.id === record.id ? updated : r)));
         },
-        error: () => alert('Erro ao salvar observação.'),
+        error: () => this.messages.error('Erro ao salvar observação.'),
       });
   }
 
@@ -502,7 +546,7 @@ export class TemplateListComponent implements OnInit {
         this.deletingId.set(null);
       },
       error: () => {
-        alert('Erro ao excluir resposta.');
+        this.messages.error('Erro ao excluir resposta.');
         this.deletingId.set(null);
       },
     });
@@ -517,7 +561,7 @@ export class TemplateListComponent implements OnInit {
         this.cancellingId.set(null);
       },
       error: () => {
-        alert('Erro ao cancelar agendamento.');
+        this.messages.error('Erro ao cancelar agendamento.');
         this.cancellingId.set(null);
       },
     });

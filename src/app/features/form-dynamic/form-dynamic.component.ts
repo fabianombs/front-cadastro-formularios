@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, signal, computed } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -16,6 +16,7 @@ import {
   SlotInfo,
   BookAppointmentRequest,
 } from '../../core/services/form-template.service';
+import { MessageService } from '../../core/services/message.service';
 
 @Component({
   selector: 'app-form-dynamic',
@@ -49,6 +50,8 @@ export class FormDynamicComponent implements OnInit {
     return max.toISOString().split('T')[0];
   }
 
+  private messages = inject(MessageService);
+
   constructor(
     private route: ActivatedRoute,
     private service: FormTemplateService,
@@ -70,7 +73,7 @@ export class FormDynamicComponent implements OnInit {
           this.loading.set(false);
         },
         error: () => {
-          alert('Erro ao carregar o formulário');
+          this.messages.error('Erro ao carregar o formulário');
           this.loading.set(false);
         },
       });
@@ -233,7 +236,7 @@ export class FormDynamicComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        alert('Erro ao carregar horários disponíveis');
+        this.messages.error('Erro ao carregar horários disponíveis');
         this.loadingSlots.set(false);
       },
     });
@@ -265,7 +268,7 @@ export class FormDynamicComponent implements OnInit {
 
   private submitRegularForm(template: FormTemplate): void {
     if (this.form.invalid) {
-      alert('Preencha todos os campos obrigatórios!');
+      this.messages.warning('Preencha todos os campos obrigatórios!');
       return;
     }
 
@@ -276,24 +279,24 @@ export class FormDynamicComponent implements OnInit {
 
     this.service.submitForm({ templateId: template.id, values }).subscribe({
       next: () => {
-        this.submitted.set(true);
+        this.messages.success('Formulário enviado com sucesso!');
         this.form.reset();
       },
-      error: () => alert('Erro ao enviar formulário'),
+      error: () => this.messages.error('Erro ao enviar formulário'),
     });
   }
 
   private submitAppointment(template: FormTemplate): void {
     if (!this.selectedDate()) {
-      alert('Selecione uma data para o atendimento');
+      this.messages.warning('Selecione uma data para o atendimento');
       return;
     }
     if (!this.selectedSlot()) {
-      alert('Selecione um horário disponível');
+      this.messages.warning('Selecione um horário disponível');
       return;
     }
     if (this.form.invalid) {
-      alert('Preencha todos os campos obrigatórios!');
+      this.messages.warning('Preencha todos os campos obrigatórios!');
       return;
     }
 
@@ -325,7 +328,7 @@ export class FormDynamicComponent implements OnInit {
       },
       error: (err) => {
         const msg = err.error?.message ?? 'Erro ao realizar agendamento';
-        alert(msg);
+        this.messages.error(msg);
       },
     });
   }

@@ -6,13 +6,15 @@ import {
   FormSubmission,
 } from '../../core/services/form-template.service';
 import { signal } from '@angular/core';
-import { DatePipe, KeyValuePipe } from '@angular/common';
+import { DatePipe, KeyValuePipe, CommonModule } from '@angular/common';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-template-submission',
   standalone: true,
-  imports: [DatePipe, KeyValuePipe, RouterLink],
+  imports: [CommonModule, DatePipe, KeyValuePipe, RouterLink, PageShellComponent, PageHeaderComponent],
   templateUrl: './template-submission.component.html',
   styleUrls: ['./template-submission.component.scss'],
 })

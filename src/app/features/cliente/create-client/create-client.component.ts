@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ClientService } from '../../../core/services/client.service';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../../shared/components/page-shell/page-shell.component';
+import { MessageService } from '../../../core/services/message.service';
 
 export interface CreateClientRequest {
   name: string;
@@ -15,12 +18,13 @@ export interface CreateClientRequest {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageShellComponent, PageHeaderComponent],
   templateUrl: './create-client.component.html',
 })
 export class CreateClientComponent {
   private service = inject(ClientService);
   private router = inject(Router);
+  private messages = inject(MessageService);
 
   loading = signal(false);
 
@@ -64,11 +68,11 @@ export class CreateClientComponent {
 
     this.service.create(this.form()).subscribe({
       next: () => {
-        alert('Cliente criado com sucesso 🚀');
+        this.messages.success('Cliente criado com sucesso 🚀');
         this.router.navigate(['/clients']);
       },
       error: () => {
-        alert('Erro ao criar cliente');
+        this.messages.error('Erro ao criar cliente');
         this.loading.set(false);
       },
     });

@@ -3,28 +3,6 @@
     <div class="loading-center"><div class="spinner"></div></div>
   }
 
-  <!-- Sucesso -->
-  @if (submitted()) {
-    <div class="card fd-success">
-      <div class="fd-success-icon">✅</div>
-      <h2 class="fd-success-title">
-        @if (template()?.hasSchedule) {
-          Agendamento confirmado!
-        } @else {
-          Enviado com sucesso!
-        }
-      </h2>
-      <p class="fd-success-sub">
-        @if (template()?.hasSchedule) {
-          Seu horário foi reservado. Você receberá uma confirmação em breve.
-        } @else {
-          Suas respostas foram registradas com sucesso.
-        }
-      </p>
-      <a routerLink="/" class="btn-outline">Voltar ao início</a>
-    </div>
-  }
-
   @if (!submitted() && template()) {
     <!-- Header image -->
     @if (template()?.appearance?.headerImageUrl) {

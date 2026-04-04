@@ -3,10 +3,7 @@
   <div class="tl-viewport-bg" [style]="bgOnlyStyle()"></div>
 }
 
-<div class="page"
-     [class.page--with-bg]="hasAppearanceBg()"
-     [class.page--with-solid-card]="hasSolidCard()"
-     [style]="pageStyle()">
+<app-page-shell [pageStyle]="pageStyle()" [hasBg]="hasAppearanceBg()" [hasSolidCard]="hasSolidCard()">
 
   <!-- ══ IMAGEM DE TOPO DO TEMPLATE ═══════════════════════════ -->
   @if (template()?.appearance?.headerImageUrl) {
@@ -15,18 +12,12 @@
     </div>
   }
 
-  <!-- ══ HEADER ════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <div>
-      @if (template()) {
-        <h1 class="page-title">{{ template()!.name }}</h1>
-        <p class="page-subtitle">{{ template()!.clientName }}</p>
-      } @else {
-        <h1 class="page-title">Respostas</h1>
-      }
-    </div>
-    <a routerLink="/forms-all" class="btn-outline">← Voltar</a>
-  </div>
+  <app-page-header
+    [title]="template() ? template()!.name : 'Respostas'"
+    [subtitle]="template() ? template()!.clientName : ''"
+  >
+    <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
+  </app-page-header>
 
   <!-- ══ LOADING ═══════════════════════════════════════════════ -->
   @if (loading()) {
@@ -233,89 +224,48 @@
             }
           </div>
           <div style="overflow-x: auto">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th class="sortable" (click)="sort('slotDate')">
-                    Data
-                    <span class="sort-icon" [style.color]="sortColor('slotDate')">{{
-                      sortIcon('slotDate')
-                    }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('slotTime')">
-                    Hora
-                    <span class="sort-icon" [style.color]="sortColor('slotTime')">{{
-                      sortIcon('slotTime')
-                    }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('status')">
-                    Status
-                    <span class="sort-icon" [style.color]="sortColor('status')">{{
-                      sortIcon('status')
-                    }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('bookedByName')">
-                    Nome
-                    <span
-                      class="sort-icon"
-                      [style.color]="sortColor('bookedByName')"
-                      >{{ sortIcon('bookedByName') }}</span
-                    >
-                  </th>
-                  <th>Contato</th>
-                  @for (col of appointmentExtraCols(); track col) {
-                    <th class="sortable" (click)="sort(col)">
-                      {{ formatLabel(col) }}
-                      <span class="sort-icon" [style.color]="sortColor(col)">{{
-                        sortIcon(col)
-                      }}</span>
-                    </th>
+            <app-data-table
+              [columns]="apptColumns()"
+              [rows]="filteredAppointments()"
+              [sortColumn]="sortColumn()"
+              [sortDirection]="sortDirection()"
+              [noDataLabel]="'Nenhum agendamento encontrado'"
+              (sortChange)="sort($event)"
+              rowKey="id"
+            >
+              <ng-template #rowTemplate let-a>
+                <td><strong>{{ a.slotDate | date: 'dd/MM/yyyy' }}</strong></td>
+                <td>{{ formatTime(a.slotTime) }}</td>
+                <td>
+                  @if (a.status === 'AGENDADO') {
+                    <span class="status-badge status-badge--confirmed">Confirmado</span>
+                  } @else {
+                    <span class="status-badge status-badge--cancelled">Cancelado</span>
                   }
-                  <th>Agendado em</th>
-                  @if (auth.isAdmin() || auth.isClient()) {
-                    <th>Ação</th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (a of filteredAppointments(); track a.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ a.slotDate | date: 'dd/MM/yyyy' }}</strong>
-                    </td>
-                    <td>{{ formatTime(a.slotTime) }}</td>
-                    <td>
-                      @if (a.status === 'AGENDADO') {
-                        <span class="status-badge status-badge--confirmed">Confirmado</span>
-                      } @else {
-                        <span class="status-badge status-badge--cancelled">Cancelado</span>
-                      }
-                    </td>
-                    <td>{{ a.bookedByName || '-' }}</td>
-                    <td class="text-muted">{{ a.bookedByContact || '-' }}</td>
-                    @for (col of appointmentExtraCols(); track col) {
-                      <td>{{ a.extraValues[col] || '-' }}</td>
-                    }
-                    <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
-                    @if (auth.isAdmin() || auth.isClient()) {
-                      <td class="td-actions">
-                        @if (a.status === 'AGENDADO') {
-                          <button
-                            class="btn-table-danger"
-                            (click)="doCancel(a.id)"
-                            [disabled]="cancellingId() === a.id"
-                          >
-                            {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
-                          </button>
-                        } @else {
-                          <span class="text-muted td-muted">—</span>
-                        }
-                      </td>
-                    }
-                  </tr>
+                </td>
+                <td>{{ a.bookedByName || '-' }}</td>
+                <td class="text-muted">{{ a.bookedByContact || '-' }}</td>
+                @for (col of appointmentExtraCols(); track col) {
+                  <td>{{ a.extraValues[col] || '-' }}</td>
                 }
-              </tbody>
-            </table>
+                <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+                @if (auth.isAdmin() || auth.isClient()) {
+                  <td class="td-actions">
+                    @if (a.status === 'AGENDADO') {
+                      <button
+                        class="btn-table-danger"
+                        (click)="doCancel(a.id)"
+                        [disabled]="cancellingId() === a.id"
+                      >
+                        {{ cancellingId() === a.id ? '...' : 'Cancelar' }}
+                      </button>
+                    } @else {
+                      <span class="text-muted td-muted">—</span>
+                    }
+                  </td>
+                }
+              </ng-template>
+            </app-data-table>
           </div>
         </div>
         <app-pagination [pagination]="apptPagination()" (pageChange)="goToApptPage($event)" />
@@ -458,59 +408,34 @@
             }
           </div>
           <div style="overflow-x: auto">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th class="sortable" (click)="sort('id')" style="width: 60px">
-                    ID
-                    <span class="sort-icon" [style.color]="sortColor('id')">{{
-                      sortIcon('id')
-                    }}</span>
-                  </th>
-                  <th class="sortable" (click)="sort('createdAt')">
-                    Data
-                    <span
-                      class="sort-icon"
-                      [style.color]="sortColor('createdAt')"
-                      >{{ sortIcon('createdAt') }}</span
-                    >
-                  </th>
-                  @for (col of columns(); track col) {
-                    <th class="sortable" (click)="sort(col)">
-                      {{ formatLabel(col) }}
-                      <span class="sort-icon" [style.color]="sortColor(col)">{{
-                        sortIcon(col)
-                      }}</span>
-                    </th>
-                  }
-                  @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
-                    <th style="width: 80px">Ação</th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (sub of filteredSubmissions(); track sub.id) {
-                  <tr>
-                    <td class="text-muted">#{{ sub.id }}</td>
-                    <td>{{ sub.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
-                    @for (col of columns(); track col) {
-                      <td>{{ getValue(sub, col) }}</td>
-                    }
-                    @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
-                      <td class="td-actions">
-                        <button
-                          class="btn-table-danger"
-                          (click)="doDelete(sub.id)"
-                          [disabled]="deletingId() === sub.id"
-                        >
-                          {{ deletingId() === sub.id ? '...' : 'Excluir' }}
-                        </button>
-                      </td>
-                    }
-                  </tr>
+            <app-data-table
+              [columns]="subColumns()"
+              [rows]="filteredSubmissions()"
+              [sortColumn]="sortColumn()"
+              [sortDirection]="sortDirection()"
+              [noDataLabel]="'Nenhuma resposta encontrada'"
+              (sortChange)="sort($event)"
+              rowKey="id"
+            >
+              <ng-template #rowTemplate let-sub let-columns="columns">
+                <td class="text-muted">#{{ sub.id }}</td>
+                <td>{{ sub.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+                @for (col of columns.slice(2, columns.length - 1); track col.key) {
+                  <td>{{ getValue(sub, col.key) }}</td>
                 }
-              </tbody>
-            </table>
+                @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
+                  <td class="td-actions">
+                    <button
+                      class="btn-table-danger"
+                      (click)="doDelete(sub.id)"
+                      [disabled]="deletingId() === sub.id"
+                    >
+                      {{ deletingId() === sub.id ? '...' : 'Excluir' }}
+                    </button>
+                  </td>
+                }
+              </ng-template>
+            </app-data-table>
           </div>
         </div>
         <app-pagination [pagination]="subPagination()" (pageChange)="goToSubPage($event)" />
@@ -581,56 +506,48 @@
             </span>
           </div>
           <div style="overflow-x: auto">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="width: 110px; text-align: center">Presença</th>
-                  @for (col of attendanceCols(); track col) {
-                    <th>{{ col }}</th>
-                  }
-                  <th>Obs.</th>
-                  <th>Marcado em</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (r of filteredAttendance(); track r.id) {
-                  <tr [class.row--present]="r.attended">
-                    <td class="td-center">
-                      <button
-                        class="attendance-toggle"
-                        [class.attendance-toggle--present]="r.attended"
-                        [class.attendance-toggle--loading]="markingId() === r.id"
-                        (click)="toggleAttendance(r)"
-                        [disabled]="markingId() === r.id"
-                      >
-                        @if (markingId() === r.id) {
-                          <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
-                        } @else if (r.attended) {
-                          ✓ Presente
-                        } @else {
-                          Ausente
-                        }
-                      </button>
-                    </td>
-                    @for (col of attendanceCols(); track col) {
-                      <td>{{ r.rowData[col] || '-' }}</td>
+            <app-data-table
+              [columns]="attendanceColumnsMeta()"
+              [rows]="filteredAttendance()"
+              [noDataLabel]="'Nenhum registro encontrado'"
+              rowKey="id"
+              [rowClass]="attendanceRowClass"
+            >
+              <ng-template #rowTemplate let-r let-columns="columns">
+                <td class="td-center">
+                  <button
+                    class="attendance-toggle"
+                    [class.attendance-toggle--present]="r.attended"
+                    [class.attendance-toggle--loading]="markingId() === r.id"
+                    (click)="toggleAttendance(r)"
+                    [disabled]="markingId() === r.id"
+                  >
+                    @if (markingId() === r.id) {
+                      <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+                    } @else if (r.attended) {
+                      ✓ Presente
+                    } @else {
+                      Ausente
                     }
-                    <td>
-                      <input
-                        type="text"
-                        class="notes-input"
-                        [value]="r.notes ?? ''"
-                        (blur)="saveNote(r, $any($event.target).value)"
-                        placeholder="Observação..."
-                      />
-                    </td>
-                    <td class="td-mono">
-                      {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
-                    </td>
-                  </tr>
+                  </button>
+                </td>
+                @for (col of columns.slice(1, columns.length - 2); track col.key) {
+                  <td>{{ r.rowData[col.key] || '-' }}</td>
                 }
-              </tbody>
-            </table>
+                <td>
+                  <input
+                    type="text"
+                    class="notes-input"
+                    [value]="r.notes ?? ''"
+                    (blur)="saveNote(r, $any($event.target).value)"
+                    placeholder="Observação..."
+                  />
+                </td>
+                <td class="td-mono">
+                  {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
+                </td>
+              </ng-template>
+            </app-data-table>
           </div>
         </div>
         <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
@@ -644,4 +561,6 @@
       <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
     </div>
   }
-</div>
+</app-page-shell>
+
+<app-footer></app-footer>

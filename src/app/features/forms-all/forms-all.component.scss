@@ -266,3 +266,28 @@
   color: #5d789f;
   font-family: 'DM Sans', sans-serif;
 }
+
+.template-card {
+  position: relative;
+}
+
+.tc-delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  border: none;
+  color: white;
+  font-size: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tc-delete-btn:hover {
+  background: #dc2626;
+}

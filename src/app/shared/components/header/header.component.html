@@ -1,8 +1,10 @@
 <header class="app-header">
   <div class="header-inner">
     <a class="brand" routerLink="/" (click)="closeMenu()">
-      <div class="brand-icon">F</div>
-      <span class="brand-name">FormsPro</span>
+      <div class="brand-icon">
+        <img src="/imgs/flexform.png" alt="FlexForm" />
+      </div>
+      <span class="brand-name">FlexForm</span>
     </a>
 
     <!-- Hamburger (mobile only) -->
@@ -16,29 +18,29 @@
     <div class="header-collapse" [class.open]="menuOpen()">
       <nav class="header-nav">
         @for (item of menuItems(); track item.path) {
-          <a class="nav-link" [routerLink]="item.path" [queryParams]="item.queryParams" (click)="closeMenu()">
-            {{ item.label }}
-          </a>
+        <a class="nav-link" [routerLink]="item.path" [queryParams]="item.queryParams" (click)="closeMenu()">
+          {{ item.label }}
+        </a>
         }
       </nav>
 
       @if (user()) {
-        <div class="header-right">
-          <div class="user-pill">
-            <div class="user-avatar">{{ user()?.sub?.charAt(0)?.toUpperCase() }}</div>
-            <div class="user-info">
-              <span class="user-name">{{ user()?.sub }}</span>
-              <span class="user-role">{{ user()?.role }}</span>
-            </div>
+      <div class="header-right">
+        <div class="user-pill">
+          <div class="user-avatar">{{ user()?.sub?.charAt(0)?.toUpperCase() }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ user()?.sub }}</span>
+            <span class="user-role">{{ user()?.role }}</span>
           </div>
-          <button class="logout-btn" (click)="logout()">Sair</button>
         </div>
+        <button class="logout-btn" (click)="logout()">Sair</button>
+      </div>
       }
     </div>
   </div>
 
   <!-- Mobile overlay -->
   @if (menuOpen()) {
-    <div class="nav-overlay" (click)="closeMenu()"></div>
+  <div class="nav-overlay" (click)="closeMenu()"></div>
   }
 </header>

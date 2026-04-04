@@ -1,172 +1,165 @@
-<div class="page">
-  <!-- Header -->
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Formulários</h1>
-      <p class="page-subtitle">Gerencie seus formulários e acompanhe os dados</p>
-    </div>
-    <a routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
-  </div>
+<app-page-shell>
+  <app-page-header title="Formulários" subtitle="Gerencie seus formulários e acompanhe os dados">
+    <a page-actions routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
+  </app-page-header>
 
   <!-- Loading -->
   @if (loading()) {
-    <div class="loading-center">
-      <div class="spinner"></div>
-    </div>
+  <div class="loading-center">
+    <div class="spinner"></div>
+  </div>
   }
 
   <!-- Empty -->
   @if (!loading() && templates().length === 0) {
-    <div class="card">
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <p>Nenhum formulário encontrado</p>
-        <small>Crie seu primeiro formulário para começar</small>
-      </div>
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>Nenhum formulário encontrado</p>
+      <small>Crie seu primeiro formulário para começar</small>
     </div>
+  </div>
   }
 
   <!-- Conteúdo -->
   @if (!loading() && templates().length > 0) {
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-value">{{ totalElements() }}</span>
-        <span class="stat-label">Total</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ globalFormCount() }}</span>
-        <span class="stat-label">Formulários</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ globalScheduleCount() }}</span>
-        <span class="stat-label">Com agenda</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ globalAttendanceCount() }}</span>
-        <span class="stat-label">Com presença</span>
-      </div>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-value">{{ totalElements() }}</span>
+      <span class="stat-label">Total</span>
     </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ globalFormCount() }}</span>
+      <span class="stat-label">Formulários</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ globalScheduleCount() }}</span>
+      <span class="stat-label">Com agenda</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">{{ globalAttendanceCount() }}</span>
+      <span class="stat-label">Com presença</span>
+    </div>
+  </div>
 
-    <!-- Cards -->
-    <div class="templates-grid">
-      @for (t of templates(); track t.id) {
-        @let apps = appointmentsMap()[t.id] || [];
-        @let subs = submissionsMap()[t.id] || [];
-        @let att = attendanceMap()[t.id] || [];
+  <!-- Cards -->
+  <div class="templates-grid">
+    @for (t of templates(); track t.id) {
+    @let apps = appointmentsMap()[t.id] || [];
+    @let subs = submissionsMap()[t.id] || [];
+    @let att = attendanceMap()[t.id] || [];
 
-        @let isAttendance = !t.hasSchedule && (t.hasAttendance || att.length > 0);
+    @let isAttendance = !t.hasSchedule && (t.hasAttendance || att.length > 0);
 
-        <div
-          class="template-card"
-          [class.tc-appointment]="t.hasSchedule"
-          [class.tc-attendance]="isAttendance"
-        >
-          <!-- HEADER -->
-          <div class="tc-header">
-            <div class="tc-icon">{{ t.name.charAt(0).toUpperCase() }}</div>
-            <div class="tc-meta">
-              <h3 class="tc-name">{{ t.name }}</h3>
-              <span class="badge badge-blue">{{ t.clientName }}</span>
-            </div>
-          </div>
-
-          <!-- CARD: AGENDAMENTO -->
-          @if (t.hasSchedule) {
-            <div class="tc-stats">
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ apps.length }}</span>
-                <span class="tc-stat-label">Agendamentos</span>
-              </div>
-              <div class="tc-divider"></div>
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ t.fields.length }}</span>
-                <span class="tc-stat-label">Campos</span>
-              </div>
-            </div>
-
-            <div class="tc-actions">
-              <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Agendar</a>
-              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver agenda</a>
-            </div>
-
-            <div class="tc-recent">
-              <p class="tc-recent-title">Últimos agendamentos</p>
-              @for (a of apps.slice(0, 3); track a.id) {
-                <div class="tc-sub-row">
-                  <span class="tc-sub-id">#{{ a.id }}</span>
-                  <span class="tc-sub-date"
-                    >{{ a.slotDate | date: 'dd/MM/yy' }} {{ a.slotTime }}</span
-                  >
-                  <span class="tc-sub-date">{{ a.bookedByName }}</span>
-                </div>
-              }
-            </div>
-
-            <!-- CARD: PRESENÇA -->
-          } @else if (isAttendance) {
-            <div class="tc-stats">
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ att.length }}</span>
-                <span class="tc-stat-label">Total</span>
-              </div>
-              <div class="tc-divider"></div>
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ presentesMap()[t.id] || 0 }}</span>
-                <span class="tc-stat-label">Presentes</span>
-              </div>
-            </div>
-
-            <div class="tc-actions">
-              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
-            </div>
-
-            <div class="tc-recent">
-              <p class="tc-recent-title">Lista de presença</p>
-              @for (r of att.slice(0, 3); track r.id) {
-                <div class="tc-sub-row">
-                  <span class="tc-sub-id">#{{ r.id }}</span>
-                  <span class="tc-sub-date" [style.color]="r.attended ? '#22c55e' : '#ef4444'">
-                    {{ r.attended ? 'Presente' : 'Ausente' }}
-                  </span>
-                </div>
-              }
-            </div>
-
-            <!-- CARD: FORMULÁRIO -->
-          } @else {
-            <div class="tc-stats">
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ subs.length }}</span>
-                <span class="tc-stat-label">Respostas</span>
-              </div>
-              <div class="tc-divider"></div>
-              <div class="tc-stat">
-                <span class="tc-stat-value">{{ t.fields.length }}</span>
-                <span class="tc-stat-label">Campos</span>
-              </div>
-            </div>
-
-            <div class="tc-actions">
-              <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
-              <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
-            </div>
-
-            <div class="tc-recent">
-              <p class="tc-recent-title">Últimas respostas</p>
-              @for (s of subs.slice(0, 3); track s.id) {
-                <div class="tc-sub-row">
-                  <span class="tc-sub-id">#{{ s.id }}</span>
-                  <span class="tc-sub-date">{{ s.createdAt | date: 'dd/MM/yy HH:mm' }}</span>
-                </div>
-              }
-            </div>
-          }
+    <div class="template-card" [class.tc-appointment]="t.hasSchedule" [class.tc-attendance]="isAttendance">
+      <!-- BOTÃO EXCLUIR -->
+      <button class="tc-delete-btn" (click)="deleteTemplate(t.id, $event)">
+        ✕
+      </button>
+      <!-- HEADER -->
+      <div class="tc-header">
+        <div class="tc-icon">{{ t.name.charAt(0).toUpperCase() }}</div>
+        <div class="tc-meta">
+          <h3 class="tc-name">{{ t.name }}</h3>
+          <span class="badge badge-blue">{{ t.clientName }}</span>
         </div>
+      </div>
+
+      <!-- CARD: AGENDAMENTO -->
+      @if (t.hasSchedule) {
+      <div class="tc-stats">
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ apps.length }}</span>
+          <span class="tc-stat-label">Agendamentos</span>
+        </div>
+        <div class="tc-divider"></div>
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ t.fields.length }}</span>
+          <span class="tc-stat-label">Campos</span>
+        </div>
+      </div>
+
+      <div class="tc-actions">
+        <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Agendar</a>
+        <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver agenda</a>
+      </div>
+
+      <div class="tc-recent">
+        <p class="tc-recent-title">Últimos agendamentos</p>
+        @for (a of apps.slice(0, 3); track a.id) {
+        <div class="tc-sub-row">
+          <span class="tc-sub-id">#{{ a.id }}</span>
+          <span class="tc-sub-date">{{ a.slotDate | date: 'dd/MM/yy' }} {{ a.slotTime }}</span>
+          <span class="tc-sub-date">{{ a.bookedByName }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- CARD: PRESENÇA -->
+      } @else if (isAttendance) {
+      <div class="tc-stats">
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ att.length }}</span>
+          <span class="tc-stat-label">Total</span>
+        </div>
+        <div class="tc-divider"></div>
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ presentesMap()[t.id] || 0 }}</span>
+          <span class="tc-stat-label">Presentes</span>
+        </div>
+      </div>
+
+      <div class="tc-actions">
+        <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
+      </div>
+
+      <div class="tc-recent">
+        <p class="tc-recent-title">Lista de presença</p>
+        @for (r of att.slice(0, 3); track r.id) {
+        <div class="tc-sub-row">
+          <span class="tc-sub-id">#{{ r.id }}</span>
+          <span class="tc-sub-date" [style.color]="r.attended ? '#22c55e' : '#ef4444'">
+            {{ r.attended ? 'Presente' : 'Ausente' }}
+          </span>
+        </div>
+        }
+      </div>
+
+      <!-- CARD: FORMULÁRIO -->
+      } @else {
+      <div class="tc-stats">
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ subs.length }}</span>
+          <span class="tc-stat-label">Respostas</span>
+        </div>
+        <div class="tc-divider"></div>
+        <div class="tc-stat">
+          <span class="tc-stat-value">{{ t.fields.length }}</span>
+          <span class="tc-stat-label">Campos</span>
+        </div>
+      </div>
+
+      <div class="tc-actions">
+        <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
+        <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
+      </div>
+
+      <div class="tc-recent">
+        <p class="tc-recent-title">Últimas respostas</p>
+        @for (s of subs.slice(0, 3); track s.id) {
+        <div class="tc-sub-row">
+          <span class="tc-sub-id">#{{ s.id }}</span>
+          <span class="tc-sub-date">{{ s.createdAt | date: 'dd/MM/yy HH:mm' }}</span>
+        </div>
+        }
+      </div>
       }
     </div>
+    }
+  </div>
 
-    <!-- Paginação -->
-    <app-pagination [pagination]="templatesPagination()" (pageChange)="goToPage($event)" />
+  <!-- Paginação -->
+  <app-pagination [pagination]="templatesPagination()" (pageChange)="goToPage($event)" />
   }
-</div>
+</app-page-shell>

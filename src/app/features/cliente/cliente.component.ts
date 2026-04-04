@@ -1,12 +1,19 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ClientService, Client } from '../../core/services/client.service';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../shared/components/data-table/data-table.component';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, PageShellComponent, PageHeaderComponent, DataTableComponent],
   templateUrl: './cliente.component.html',
 })
 export class ClienteComponent implements OnInit {
@@ -21,6 +28,42 @@ export class ClienteComponent implements OnInit {
   readonly size = 10;
   totalPages = signal(0);
   totalElements = signal(0);
+
+  clientColumns: DataTableColumn[] = [
+    { key: 'id', label: 'ID', width: '60px' },
+    { key: 'name', label: 'Nome' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Telefone' },
+    { key: 'company', label: 'Empresa' },
+    { key: 'actions', label: '', width: '80px' },
+  ];
+
+  search = signal('');
+  companyFilter = signal('');
+
+  uniqueCompanies = computed(() => [
+    ...new Set(
+      this.clients()
+        .map((client) => client.company)
+        .filter((company): company is string => !!company),
+    ),
+  ]);
+
+  filteredClients = computed(() => {
+    const search = this.search().toLowerCase().trim();
+    const company = this.companyFilter();
+    return this.clients().filter((client) => {
+      const matchesCompany = !company || client.company === company;
+      if (!matchesCompany) return false;
+      if (!search) return true;
+      return (
+        client.name.toLowerCase().includes(search) ||
+        client.email.toLowerCase().includes(search) ||
+        (client.phone ?? '').toLowerCase().includes(search) ||
+        (client.company ?? '').toLowerCase().includes(search)
+      );
+    });
+  });
 
   ngOnInit() {
     this.loadClients();

@@ -1,0 +1,13 @@
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th.sortable {
+  cursor: pointer;
+}
+
+.data-table .sort-icon {
+  margin-left: 6px;
+  font-size: 0.8em;
+}

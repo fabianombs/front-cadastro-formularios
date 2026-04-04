@@ -14,7 +14,6 @@
 }
 
 .header-inner {
-  max-width: 1196px;
   margin: 0 auto;
   padding: 0 28px;
   height: 58px;
@@ -36,7 +35,7 @@
   .brand-icon {
     width: 30px;
     height: 30px;
-    background: linear-gradient(135deg, #4d8fff 0%, #8b67f8 100%);
+    // background: linear-gradient(135deg, #4d8fff 0%, #8b67f8 100%);
     color: white;
     border-radius: 8px;
     display: flex;
@@ -45,7 +44,27 @@
     font-weight: 700;
     font-size: 14px;
     font-family: 'Syne', sans-serif;
-    box-shadow: 0 0 12px rgba(77, 143, 255, 0.35);
+
+    // box-shadow: 0 0 12px rgba(77, 143, 255, 0.35);
+    img {
+      width: 7rem;
+      object-fit: contain;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-1px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
   }
 
   .brand-name {
@@ -208,9 +227,11 @@
       transform: translateY(8px) rotate(45deg);
       background: #4d8fff;
     }
+
     span:nth-child(2) {
       opacity: 0;
     }
+
     span:nth-child(3) {
       transform: translateY(-8px) rotate(-45deg);
       background: #4d8fff;

@@ -1,0 +1,42 @@
+<table class="data-table">
+  <thead>
+    <tr>
+      <th
+        *ngFor="let col of columns"
+        [style.width]="col.width"
+        [style.text-align]="col.align || 'left'"
+        [class.sortable]="col.sortable"
+        (click)="onSort(col)"
+      >
+        {{ col.label }}
+        <span *ngIf="col.sortable" class="sort-icon">{{ getIcon(col) }}</span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngIf="rows.length > 0; else emptyState">
+      <tr *ngFor="let row of rows; trackBy: trackByFn" [ngClass]="rowClass?.(row)" (click)="onRowClick(row)">
+        <ng-container
+          *ngIf="rowTemplate; else defaultRow"
+          [ngTemplateOutlet]="rowTemplate"
+          [ngTemplateOutletContext]="{ $implicit: row, columns: columns }"
+        ></ng-container>
+      </tr>
+    </ng-container>
+  </tbody>
+</table>
+
+<ng-template #emptyState>
+  <tr>
+    <td [attr.colspan]="columns.length">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>{{ noDataLabel }}</p>
+      </div>
+    </td>
+  </tr>
+</ng-template>
+
+<ng-template #defaultRow let-row>
+  <td *ngFor="let col of columns">{{ row[col.key] ?? '-' }}</td>
+</ng-template>

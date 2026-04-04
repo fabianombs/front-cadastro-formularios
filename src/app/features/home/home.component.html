@@ -5,7 +5,7 @@
       <p>Visão geral de formulários, agendamentos e listas de presença</p>
     </div>
     <button class="btn-export" (click)="exportDashboard()">&#11015; Exportar</button>
-    <button class="btn-export" (click)="showAll()">Mostrar todos</button>
+    <!-- <button class="btn-export" (click)="showAll()">Mostrar todos</button> -->
   </div>
 
   @if (loadingData) {
@@ -71,46 +71,64 @@
 
   <!-- TABELA -->
   @if (!loadingData && templates.length) {
+    <div class="filters-card">
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar templates..."
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event)"
+          />
+          @if (search()) {
+            <button class="clear-input" (click)="search.set('')">×</button>
+          }
+        </div>
+        <div style="display:flex; align-items:center; gap:10px">
+          <label style="font-size:12px; color:#64748b; white-space:nowrap">Tipo</label>
+          <select class="filter-control" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+            <option value="all">Todos</option>
+            <option value="formulario">Formulários</option>
+            <option value="agendamento">Agendamentos</option>
+            <option value="lista-presenca">Lista de Presença</option>
+          </select>
+        </div>
+        <button class="btn-outline" (click)="clearHomeFilters()">Limpar filtros</button>
+      </div>
+    </div>
+
     <div class="table-container">
       <div class="table-scroll">
-      <table class="dashboard-table">
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th>Submissões</th>
-            <th>Total</th>
-            <th>Confirmados / Presentes</th>
-            <th>Presença</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (t of templates; track t.id) {
-            <tr (click)="selectTemplate(t)" [class.active]="selected()?.id === t.id">
-              <td>{{ t.clientName || '—' }}</td>
-              <td>{{ t.name }}</td>
-              <td>
-                <span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span>
-              </td>
-              <td>{{ t.submissionCount || '—' }}</td>
-              <td>
-                {{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}
-              </td>
-              <td>
-                {{
-                  inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed
-                }}
-              </td>
-              <td>
-                <div class="progress">
-                  <div class="bar" [style.width.%]="attendancePercent(t)"></div>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+        <app-data-table
+          [columns]="homeColumns"
+          [rows]="filteredTemplates()"
+          [rowClass]="homeRowClass"
+          [noDataLabel]="'Nenhum template encontrado'"
+          rowKey="id"
+          (rowClick)="selectTemplate($event)"
+        >
+          <ng-template #rowTemplate let-t>
+            <td>{{ t.clientName || '—' }}</td>
+            <td>{{ t.name }}</td>
+            <td>
+              <span class="type-badge {{ inferType(t) }}">{{ inferType(t) }}</span>
+            </td>
+            <td>{{ t.submissionCount || '—' }}</td>
+            <td>
+              {{ inferType(t) === 'lista-presenca' ? t.attendanceTotal : t.appointmentTotal }}
+            </td>
+            <td>
+              {{ inferType(t) === 'lista-presenca' ? t.attendancePresent : t.appointmentConfirmed }}
+            </td>
+            <td>
+              <div class="progress">
+                <div class="bar" [style.width.%]="attendancePercent(t)"></div>
+              </div>
+            </td>
+          </ng-template>
+        </app-data-table>
       </div>
       <div class="table-footer">
         @if (selected()) {
