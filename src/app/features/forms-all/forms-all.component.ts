@@ -15,11 +15,13 @@ import {
   PaginationComponent,
   SpringPage,
 } from '../../shared/components/pagination/pagination.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 
 @Component({
   selector: 'app-forms-all',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, PaginationComponent],
+  imports: [CommonModule, RouterLink, DatePipe, PaginationComponent, PageShellComponent, PageHeaderComponent],
   templateUrl: './forms-all.component.html',
   styleUrls: ['./forms-all.component.scss'],
 })

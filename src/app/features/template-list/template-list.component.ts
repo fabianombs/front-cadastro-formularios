@@ -17,6 +17,8 @@ import {
   SpringPage,
 } from '../../shared/components/pagination/pagination.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 
 interface FilterableField {
   col: string;
@@ -28,7 +30,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, FooterComponent],
+  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, FooterComponent, PageShellComponent, PageHeaderComponent],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })

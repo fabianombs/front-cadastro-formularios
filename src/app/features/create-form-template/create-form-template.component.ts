@@ -12,6 +12,8 @@ import { ClientService, Client } from '../../core/services/client.service';
 import { ExportService } from '../../core/services/export.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { switchMap, of } from 'rxjs';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { map } from 'rxjs/operators';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AbstractControl } from '@angular/forms';
@@ -19,7 +21,7 @@ import { AbstractControl } from '@angular/forms';
 @Component({
   selector: 'app-create-template',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent],
   templateUrl: './create-form-template.component.html',
   styleUrls: ['./create-form-template.component.scss'],
 })

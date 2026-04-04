@@ -1,13 +1,9 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Clientes</h1>
-      <p class="page-subtitle">Gerencie os clientes cadastrados na plataforma</p>
-    </div>
+<app-page-shell>
+  <app-page-header title="Clientes" subtitle="Gerencie os clientes cadastrados na plataforma">
     @if (isAdmin()) {
-      <button class="btn-primary" (click)="goToCreate()">+ Novo cliente</button>
+      <button page-actions class="btn-primary" (click)="goToCreate()">+ Novo cliente</button>
     }
-  </div>
+  </app-page-header>
 
   @if (loading()) {
     <div class="loading-center"><div class="spinner"></div></div>
@@ -92,4 +88,4 @@
       </div>
     }
   }
-</div>
+</app-page-shell>

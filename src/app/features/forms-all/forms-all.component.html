@@ -1,12 +1,7 @@
-<div class="page">
-  <!-- Header -->
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Formulários</h1>
-      <p class="page-subtitle">Gerencie seus formulários e acompanhe os dados</p>
-    </div>
-    <a routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
-  </div>
+<app-page-shell>
+  <app-page-header title="Formulários" subtitle="Gerencie seus formulários e acompanhe os dados">
+    <a page-actions routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
+  </app-page-header>
 
   <!-- Loading -->
   @if (loading()) {
@@ -167,4 +162,4 @@
   <!-- Paginação -->
   <app-pagination [pagination]="templatesPagination()" (pageChange)="goToPage($event)" />
   }
-</div>
+</app-page-shell>

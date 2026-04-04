@@ -1,4 +1,4 @@
-<div class="page">
+<app-page-shell>
   @if (loading) {
     <div class="loading-center"><div class="spinner"></div></div>
   }
@@ -8,13 +8,9 @@
     <!-- VIEW MODE                                                  -->
     <!-- ══════════════════════════════════════════════════════════ -->
     @if (slug && template) {
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">{{ template.name }}</h1>
-          <p class="page-subtitle">Cliente: {{ template.clientName }}</p>
-        </div>
-        <a routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
-      </div>
+      <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
+        <a page-actions routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
+      </app-page-header>
 
       <!-- Link público -->
       <div class="card" style="margin-bottom: 16px; padding: 16px 20px">
@@ -208,12 +204,7 @@
     <!-- CREATE MODE                                                -->
     <!-- ══════════════════════════════════════════════════════════ -->
     @if (!slug) {
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Criar formulário</h1>
-          <p class="page-subtitle">Configure o template e os campos do formulário</p>
-        </div>
-      </div>
+      <app-page-header title="Criar formulário" subtitle="Configure o template e os campos do formulário"></app-page-header>
 
       <form [formGroup]="templateForm" (ngSubmit)="submit()">
         <div class="form-grid">
@@ -1067,4 +1058,4 @@
       </form>
     }
   }
-</div>
+</app-page-shell>

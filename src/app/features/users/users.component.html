@@ -1,10 +1,5 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Usuários</h1>
-      <p class="page-subtitle">Gerencie os usuários e permissões de acesso</p>
-    </div>
-  </div>
+<app-page-shell>
+  <app-page-header title="Usuários" subtitle="Gerencie os usuários e permissões de acesso"></app-page-header>
 
   @if (loading()) {
     <div class="loading-center"><div class="spinner"></div></div>
@@ -114,4 +109,4 @@
       }
     </div>
   }
-</div>
+</app-page-shell>

@@ -1,12 +1,14 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService, User } from '../../core/services/user.service';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageShellComponent, PageHeaderComponent],
   templateUrl: './users.component.html',
 })
 export class UsersComponent implements OnInit {

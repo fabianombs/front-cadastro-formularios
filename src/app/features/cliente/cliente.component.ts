@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClientService, Client } from '../../core/services/client.service';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PageShellComponent, PageHeaderComponent],
   templateUrl: './cliente.component.html',
 })
 export class ClienteComponent implements OnInit {

@@ -3,10 +3,7 @@
   <div class="tl-viewport-bg" [style]="bgOnlyStyle()"></div>
 }
 
-<div class="page"
-     [class.page--with-bg]="hasAppearanceBg()"
-     [class.page--with-solid-card]="hasSolidCard()"
-     [style]="pageStyle()">
+<app-page-shell [pageStyle]="pageStyle()" [hasBg]="hasAppearanceBg()" [hasSolidCard]="hasSolidCard()">
 
   <!-- ══ IMAGEM DE TOPO DO TEMPLATE ═══════════════════════════ -->
   @if (template()?.appearance?.headerImageUrl) {
@@ -15,18 +12,12 @@
     </div>
   }
 
-  <!-- ══ HEADER ════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <div>
-      @if (template()) {
-        <h1 class="page-title">{{ template()!.name }}</h1>
-        <p class="page-subtitle">{{ template()!.clientName }}</p>
-      } @else {
-        <h1 class="page-title">Respostas</h1>
-      }
-    </div>
-    <a routerLink="/forms-all" class="btn-outline">← Voltar</a>
-  </div>
+  <app-page-header
+    [title]="template() ? template()!.name : 'Respostas'"
+    [subtitle]="template() ? template()!.clientName : ''"
+  >
+    <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
+  </app-page-header>
 
   <!-- ══ LOADING ═══════════════════════════════════════════════ -->
   @if (loading()) {
@@ -644,6 +635,6 @@
       <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
     </div>
   }
-</div>
+</app-page-shell>
 
 <app-footer></app-footer>

@@ -1,11 +1,7 @@
-<div class="page" style="max-width: 680px">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Novo cliente</h1>
-      <p class="page-subtitle">Preencha os dados para cadastrar um novo cliente</p>
-    </div>
-    <button type="button" class="btn-outline" (click)="redirectToList()">← Voltar</button>
-  </div>
+<app-page-shell [pageStyle]="{ 'max-width': '680px' }">
+  <app-page-header title="Novo cliente" subtitle="Preencha os dados para cadastrar um novo cliente">
+    <button page-actions type="button" class="btn-outline" (click)="redirectToList()">← Voltar</button>
+  </app-page-header>
 
   <div class="card">
     <div class="section-header">
@@ -77,4 +73,4 @@
       </form>
     </div>
   </div>
-</div>
+</app-page-shell>

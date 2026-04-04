@@ -1,13 +1,7 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      @if (template()) {
-        <h1 class="page-title">{{ template()?.name }}</h1>
-        <p class="page-subtitle">Detalhes de cada submissão recebida</p>
-      }
-    </div>
-    <a routerLink="/forms-all" class="btn-outline">← Voltar</a>
-  </div>
+<app-page-shell>
+  <app-page-header title="{{ template()?.name }}" subtitle="Detalhes de cada submissão recebida">
+    <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
+  </app-page-header>
 
   @if (loading()) {
     <div class="loading-center"><div class="spinner"></div></div>
@@ -45,4 +39,4 @@
       }
     </div>
   }
-</div>
+</app-page-shell>
