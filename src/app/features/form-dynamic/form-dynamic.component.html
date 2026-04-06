@@ -109,26 +109,19 @@
             <div class="fd-fields-grid">
               @for (fg of formFields(); track fg.value.label; let i = $index) {
                 <div
-                  class="field"
                   [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
                   [class.fd-field--half]="fg.value.colSpan === 1"
                 >
-                  <label [ngStyle]="fieldLabelStyle(fg.value.fieldColor)">
-                    {{ fg.value.label }}
-                    @if (fg.value.required) {
-                      <span class="fd-required">*</span>
-                    }
-                  </label>
-                  <input
+                  <app-form-field
+                    [control]="getControl(i)"
+                    [label]="fg.value.label"
+                    [id]="'field-' + i"
                     [type]="fg.value.type"
-                    [formControl]="getControl(i)"
-                    [required]="fg.value.required"
                     [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
-                    [ngStyle]="fieldInputStyle()"
+                    [required]="fg.value.required"
+                    [inputStyle]="fieldInputStyle()"
+                    [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"
                   />
-                  @if (getControl(i).invalid && getControl(i).touched) {
-                    <span class="field-error">Campo obrigatório</span>
-                  }
                 </div>
               }
             </div>
