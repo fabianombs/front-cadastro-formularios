@@ -619,6 +619,56 @@ export class CreateTemplateComponent implements OnInit {
     this.exportService.exportAttendance(this.attendanceRecords, this.template.name);
   }
 
+  // ── Auto-contraste ────────────────────────────────────────────
+  /** Retorna branco ou escuro dependendo da luminância do hex */
+  getContrastColor(hex: string): string {
+    if (!hex?.startsWith('#') || hex.length < 7) return '#f0f4f9';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.55 ? '#18283e' : '#f0f4f9';
+  }
+
+  /** Aplica cor de texto com melhor contraste para o fundo atual */
+  applyAutoContrast() {
+    const ap = this.templateForm.get('appearance');
+    const bg = ap?.get('backgroundColor')?.value as string;
+    const gradient = ap?.get('backgroundGradient')?.value as string;
+    let hex = bg;
+    if (!hex && gradient) {
+      const match = gradient.match(/#[0-9a-fA-F]{6}/);
+      hex = match?.[0] ?? '';
+    }
+    if (!hex) return;
+    const text = this.getContrastColor(hex);
+    ap?.get('formTextColor')?.setValue(text);
+    ap?.get('fieldTextColor')?.setValue(text);
+  }
+
+  get hasBgSelected(): boolean {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    return !!(a.backgroundColor || a.backgroundGradient || a.backgroundImageUrl);
+  }
+
+  clearAppearanceField(field: string) {
+    this.templateForm.get(`appearance.${field}`)?.setValue('');
+    if (field in this.imagePreviews) this.imagePreviews[field] = '';
+  }
+
+  /** Atualiza preview em tempo real enquanto o usuário arrasta o color picker */
+  onColorLiveChange(controlName: string, event: Event) {
+    const hex = (event.target as HTMLInputElement).value;
+    this.templateForm.get(`appearance.${controlName}`)?.setValue(hex, { emitEvent: false });
+    // Ao escolher cor sólida de fundo, remove gradiente e imagem para não sobrepor
+    if (controlName === 'backgroundColor' && hex) {
+      this.templateForm.get('appearance.backgroundGradient')?.setValue('', { emitEvent: false });
+      this.templateForm.get('appearance.backgroundImageUrl')?.setValue('', { emitEvent: false });
+      this.imagePreviews['backgroundImageUrl'] = '';
+    }
+    this.cdr.detectChanges();
+  }
+
   get formLink(): string {
     const slug = this.template?.slug ?? '';
     if (this.template?.hasAttendance) return `/forms/${slug}/list`;

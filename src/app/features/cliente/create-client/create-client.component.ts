@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ClientService } from '../../../core/services/client.service';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { PageShellComponent } from '../../../shared/components/page-shell/page-shell.component';
 import { MessageService } from '../../../core/services/message.service';
 
 export interface CreateClientRequest {
@@ -18,8 +16,9 @@ export interface CreateClientRequest {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, PageShellComponent, PageHeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './create-client.component.html',
+  styleUrl: './create-client.component.scss',
 })
 export class CreateClientComponent {
   private service = inject(ClientService);
