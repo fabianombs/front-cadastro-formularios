@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 interface MenuItem {
   label: string;
@@ -28,6 +29,7 @@ const MENU_ITEMS: MenuItem[] = [
 export class HeaderComponent {
   auth = inject(AuthService);
   router = inject(Router);
+  themeService = inject(ThemeService);
 
   // Computed menu filtrado pelo(s) role(s) do usuário
   menuItems = computed(() => {
