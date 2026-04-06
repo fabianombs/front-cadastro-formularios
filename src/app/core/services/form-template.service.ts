@@ -36,6 +36,13 @@ export interface ScheduleConfig {
   endTime: string;
   slotDurationMinutes: number;
   maxDaysAhead: number;
+  slotCapacity: number;
+  /**
+   * Campos usados como chave de deduplicação.
+   * Array vazio = múltiplos agendamentos permitidos.
+   * Ex: ["CPF"] ou ["Nome", "CPF"]
+   */
+  dedupFields: string[];
 }
 
 export interface FormTemplate {
@@ -75,6 +82,8 @@ export interface CreateFormSubmissionRequest {
 export interface SlotInfo {
   time: string; // "HH:mm:ss"
   available: boolean;
+  bookedCount: number;
+  capacity: number;
 }
 
 export interface AvailableSlotsResponse {
@@ -151,6 +160,10 @@ export class FormTemplateService {
 
   createTemplate(clientId: number, payload: CreateFormTemplateRequest): Observable<FormTemplate> {
     return this.http.post<FormTemplate>(`${this.apiUrl}/create/${clientId}`, payload);
+  }
+
+  updateScheduleConfig(templateId: number, config: ScheduleConfig): Observable<FormTemplate> {
+    return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/schedule-config`, config);
   }
 
   getAllTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {
