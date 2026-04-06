@@ -17,11 +17,12 @@ import {
   BookAppointmentRequest,
 } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
+import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
 
 @Component({
   selector: 'app-form-dynamic',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormFieldComponent],
   templateUrl: './form-dynamic.component.html',
   styleUrls: ['./form-dynamic.component.scss'],
 })

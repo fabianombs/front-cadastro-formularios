@@ -224,14 +224,13 @@
                 </select>
               </div>
 
-              <div class="field">
-                <label>Nome do template <span class="required">*</span></label>
-                <input
-                  type="text"
-                  formControlName="name"
-                  placeholder="Ex: Formulário de atendimento"
-                />
-              </div>
+              <app-form-field
+                [control]="nameControl"
+                label="Nome do template"
+                id="template-name"
+                placeholder="Ex: Formulário de atendimento"
+                [required]="true"
+              />
 
               <!-- Toggle: agenda -->
               <div class="field" style="margin-top: 8px">
@@ -623,7 +622,8 @@
                   <div class="ap-color-field">
                     <label class="ap-label">Cor sólida de fundo</label>
                     <div class="ap-color-control">
-                      <input type="color" formControlName="backgroundColor" class="ap-color-input" />
+                      <input type="color" formControlName="backgroundColor" class="ap-color-input"
+                        (input)="onColorLiveChange('backgroundColor', $event)" />
                       <div class="ap-color-swatch"
                         [style.background]="templateForm.get('appearance.backgroundColor')?.value || 'transparent'"
                         [class.ap-color-swatch--empty]="!templateForm.get('appearance.backgroundColor')?.value">
@@ -699,7 +699,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Texto do formulário</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="formTextColor" class="ap-color-input" />
+                        <input type="color" formControlName="formTextColor" class="ap-color-input"
+                          (input)="onColorLiveChange('formTextColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.formTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.formTextColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão' }}</span>
                         @if (templateForm.get('appearance.formTextColor')?.value) {
@@ -711,7 +712,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Cor do botão</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="primaryColor" class="ap-color-input" />
+                        <input type="color" formControlName="primaryColor" class="ap-color-input"
+                          (input)="onColorLiveChange('primaryColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.primaryColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.primaryColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão' }}</span>
                         @if (templateForm.get('appearance.primaryColor')?.value) {
@@ -723,7 +725,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Fundo dos campos</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="fieldBackgroundColor" class="ap-color-input" />
+                        <input type="color" formControlName="fieldBackgroundColor" class="ap-color-input"
+                          (input)="onColorLiveChange('fieldBackgroundColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBackgroundColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão' }}</span>
                         @if (templateForm.get('appearance.fieldBackgroundColor')?.value) {
@@ -735,7 +738,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Texto dos campos</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="fieldTextColor" class="ap-color-input" />
+                        <input type="color" formControlName="fieldTextColor" class="ap-color-input"
+                          (input)="onColorLiveChange('fieldTextColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldTextColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão' }}</span>
                         @if (templateForm.get('appearance.fieldTextColor')?.value) {
@@ -747,7 +751,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Fundo dos cards</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="cardBackgroundColor" class="ap-color-input" />
+                        <input type="color" formControlName="cardBackgroundColor" class="ap-color-input"
+                          (input)="onColorLiveChange('cardBackgroundColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBackgroundColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto (glass)' }}</span>
                         @if (templateForm.get('appearance.cardBackgroundColor')?.value) {
@@ -759,7 +764,8 @@
                     <div class="ap-color-field">
                       <label class="ap-label">Borda dos cards</label>
                       <div class="ap-color-control">
-                        <input type="color" formControlName="cardBorderColor" class="ap-color-input" />
+                        <input type="color" formControlName="cardBorderColor" class="ap-color-input"
+                          (input)="onColorLiveChange('cardBorderColor', $event)" />
                         <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBorderColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBorderColor')?.value"></div>
                         <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto' }}</span>
                         @if (templateForm.get('appearance.cardBorderColor')?.value) {
