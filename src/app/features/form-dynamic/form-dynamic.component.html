@@ -3,7 +3,7 @@
     <div class="loading-center"><div class="spinner"></div></div>
   }
 
-  @if (!submitted() && template()) {
+  @if (template()) {
     <!-- Header image -->
     @if (template()?.appearance?.headerImageUrl) {
       <img
