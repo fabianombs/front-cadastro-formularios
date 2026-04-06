@@ -1,0 +1,30 @@
+<div class="field" [class.field--error]="control.invalid && control.touched">
+  <label [for]="id" [ngStyle]="labelStyle">
+    {{ label }}
+    @if (required) {
+      <span class="required">*</span>
+    }
+  </label>
+
+  <div class="input-wrapper">
+    <input
+      [id]="id"
+      [formControl]="control"
+      [placeholder]="placeholder"
+      [type]="type"
+      [ngStyle]="inputStyle"
+    />
+  </div>
+
+  @if (control.invalid && control.touched) {
+    <div class="error-msg">
+      <span>⚠</span> {{ validator.getErrorMessage(control, label) }}
+    </div>
+  }
+
+  @if (formGroup && formErrorKey && formGroup.errors?.[formErrorKey]) {
+    <div class="error-msg">
+      <span>⚠</span> {{ formGroup.errors?.[formErrorKey] }}
+    </div>
+  }
+</div>

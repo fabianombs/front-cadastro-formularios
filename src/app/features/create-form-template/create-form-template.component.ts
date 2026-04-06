@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
   FormTemplateService,
@@ -17,11 +17,12 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { map } from 'rxjs/operators';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AbstractControl } from '@angular/forms';
+import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
 
 @Component({
   selector: 'app-create-template',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent, FormFieldComponent],
   templateUrl: './create-form-template.component.html',
   styleUrls: ['./create-form-template.component.scss'],
 })
@@ -323,6 +324,10 @@ export class CreateTemplateComponent implements OnInit {
 
   get fields(): FormArray {
     return this.templateForm.get('fields') as FormArray;
+  }
+
+  get nameControl(): FormControl {
+    return this.templateForm.get('name') as FormControl;
   }
 
   get hasSchedule(): boolean {
