@@ -1,13 +1,10 @@
 .fd-page {
   min-height: 100vh;
-  /* padding horizontal herdado de .page (28px cada lado) */
-  /* padding vertical próprio */
   padding-top: 32px;
   padding-bottom: 32px;
 
   .page-header {
     padding-bottom: 20px;
-    /* sem max-width — usa toda a largura da .page */
   }
 }
 
@@ -16,24 +13,19 @@
   width: 100%;
   max-height: 180px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: block;
 }
 
-.fd-header-img {
-  margin-bottom: 16px;
-}
-
-.fd-footer-img {
-  margin-top: 16px;
-}
+.fd-header-img { margin-bottom: 16px; }
+.fd-footer-img { margin-top: 16px; }
 
 /* ── Section header ── */
 .fd-section-header {
   padding: 15px 20px;
-  border-bottom: 1px solid var(--border, #1c2e4a);
-  background: var(--bg-subtle, #0a1020);
-  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -41,10 +33,10 @@
 }
 
 .fd-section-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  color: #d8e4f8;
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
@@ -56,20 +48,20 @@
 .fd-schedule-block {
   margin-bottom: 28px;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--border, #1c2e4a);
+  border-bottom: 1px solid var(--border);
 }
 
 .fd-block-label {
   font-size: 10px;
   font-weight: 700;
-  color: #5d789f;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 16px;
 }
 
 .fd-required {
-  color: #ff4f6a;
+  color: var(--danger);
   margin-left: 2px;
 }
 
@@ -77,15 +69,15 @@
 .fd-slots-loading {
   padding: 16px;
   text-align: center;
-  color: #5d789f;
+  color: var(--text-muted);
   font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
 }
 
 .fd-slots-label {
   font-size: 12px;
   font-weight: 600;
-  color: #5d789f;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   display: block;
@@ -100,39 +92,40 @@
 
 .fd-slot-btn {
   padding: 9px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   cursor: pointer;
-  transition: all 0.18s;
-  border: 1px solid var(--border, #1c2e4a);
-  background: var(--surface, #0d1627);
-  color: var(--text, #d8e4f8);
+  transition: all var(--fast);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 6px;
 
   &:hover:not(:disabled) {
-    border-color: #4d8fff;
-    background: rgba(77, 143, 255, 0.1);
-    color: #4d8fff;
+    border-color: var(--primary);
+    background: var(--primary-muted);
+    color: var(--primary);
     transform: translateY(-1px);
   }
 
   &.fd-slot-selected {
-    background: #4d8fff;
-    border-color: #4d8fff;
+    background: var(--primary);
+    border-color: var(--primary);
     color: #fff;
-    box-shadow: 0 0 12px rgba(77, 143, 255, 0.35);
+    box-shadow: 0 0 12px var(--primary-glow);
   }
 
   &.fd-slot-taken {
     background: transparent;
-    border-color: #1c2e4a;
-    color: #2b3f5c;
+    border-color: var(--border);
+    color: var(--text-faint);
     cursor: not-allowed;
     text-decoration: line-through;
+    opacity: 0.5;
   }
 }
 
@@ -145,67 +138,51 @@
 .fd-selected-slot {
   margin-top: 14px;
   padding: 11px 16px;
-  background: rgba(139, 103, 248, 0.1);
+  background: var(--violet-muted);
   border: 1px solid rgba(139, 103, 248, 0.25);
   border-radius: 9px;
   font-size: 13px;
-  color: #ae90ff;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--violet);
+  font-family: var(--font-body);
 
   strong {
-    color: #c4adff;
     font-weight: 700;
+    opacity: 0.9;
   }
 }
 
 .fd-no-slots {
   padding: 14px 18px;
-  background: rgba(255, 79, 106, 0.08);
+  background: var(--danger-muted);
   border: 1px solid rgba(255, 79, 106, 0.2);
   border-radius: 9px;
   font-size: 13px;
-  color: #ff7a8e;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--danger);
+  font-family: var(--font-body);
 }
 
-/* ── Fields grid
-   .fd-field--full = linha inteira | .fd-field--half = meia linha
-   Desktop (≥992px):  4 colunas
-   Tablet  (768–991): 2 colunas
-   Mobile  (<768px):  1 coluna
-── */
+/* ── Fields grid ── */
 .fd-fields-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 18px 20px;
   margin-bottom: 4px;
 
-  .field {
-    margin-bottom: 0;
-  }
+  .field { margin-bottom: 0; }
 
-  .fd-field--full {
-    grid-column: span 4;
-  }
-
-  .fd-field--half {
-    grid-column: span 2;
-  }
+  .fd-field--full { grid-column: span 4; }
+  .fd-field--half { grid-column: span 2; }
 
   @media (max-width: 991px) {
     grid-template-columns: repeat(2, 1fr);
-
     .fd-field--full { grid-column: span 2; }
     .fd-field--half { grid-column: span 1; }
   }
 
   @media (max-width: 575px) {
     grid-template-columns: 1fr;
-
     .fd-field--full,
-    .fd-field--half {
-      grid-column: span 1;
-    }
+    .fd-field--half { grid-column: span 1; }
   }
 }
 
@@ -213,7 +190,7 @@
 .fd-form-footer {
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid var(--border, #1c2e4a);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -241,9 +218,7 @@
     }
   }
 
-  .fd-slots-grid {
-    gap: 6px;
-  }
+  .fd-slots-grid { gap: 6px; }
 
   .fd-slot-btn {
     padding: 8px 12px;
@@ -263,24 +238,22 @@
   font-size: 52px;
   margin-bottom: 20px;
   display: block;
-  filter: drop-shadow(0 0 16px rgba(16, 201, 138, 0.4));
+  filter: drop-shadow(0 0 16px var(--success-muted));
 }
 
 .fd-success-title {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
-  color: #d8e4f8;
+  color: var(--text);
   margin: 0 0 10px;
   letter-spacing: -0.03em;
 }
 
 .fd-success-sub {
   font-size: 14px;
-  color: #5d789f;
-  margin: 0 0 28px;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted);
+  margin: 0 auto 28px;
+  font-family: var(--font-body);
   max-width: 340px;
-  margin-left: auto;
-  margin-right: auto;
 }

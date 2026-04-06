@@ -3,8 +3,9 @@
    Dark SaaS premium with editorial typography & electric accents
    ───────────────────────────────────────────────────────────── */
 
-/* ── Design Tokens ─────────────────────────────────────────────────── */
-:root {
+/* ── Design Tokens — Dark (default) ────────────────────────────────── */
+:root,
+[data-theme='dark'] {
   /* Backgrounds */
   --bg: #060b18;
   --bg-subtle: #0a1122;
@@ -42,6 +43,77 @@
   --text-muted: #5d789f;
   --text-faint: #2b3f5c;
 
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 0 1px var(--primary), 0 0 20px var(--primary-glow);
+
+  /* Grid texture */
+  --grid-color: rgba(77, 143, 255, 0.025);
+
+  /* Header */
+  --header-bg: rgba(6, 11, 24, 0.88);
+  --header-border: rgba(28, 46, 74, 0.8);
+  --header-collapse-bg: rgba(6, 11, 24, 0.97);
+}
+
+/* ── Design Tokens — Light ──────────────────────────────────────────── */
+[data-theme='light'] {
+  /* Backgrounds */
+  --bg: #f0f4f9;
+  --bg-subtle: #e6ecf4;
+  --surface: #ffffff;
+  --surface-high: #f5f8fc;
+  --surface-hover: #edf2f8;
+
+  /* Borders */
+  --border: #d0dae8;
+  --border-strong: #b2c4d8;
+  --border-hover: #8aaac6;
+
+  /* Brand - Electric Blue (slightly deeper for contrast on light) */
+  --primary: #2b6ae8;
+  --primary-dark: #1855c8;
+  --primary-glow: rgba(43, 106, 232, 0.15);
+  --primary-muted: rgba(43, 106, 232, 0.07);
+
+  /* Semantic colors */
+  --success: #0aab72;
+  --success-dark: #088c5e;
+  --success-muted: rgba(10, 171, 114, 0.1);
+  --danger: #e02d48;
+  --danger-dark: #c01e35;
+  --danger-muted: rgba(224, 45, 72, 0.08);
+  --warning: #d98200;
+  --warning-dark: #b56b00;
+  --warning-muted: rgba(217, 130, 0, 0.09);
+  --violet: #6c44e0;
+  --violet-dark: #5535c8;
+  --violet-muted: rgba(108, 68, 224, 0.09);
+
+  /* Typography */
+  --text: #18283e;
+  --text-muted: #526b87;
+  --text-faint: #a0b4c8;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12), 0 6px 18px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 0 1px var(--primary), 0 0 20px var(--primary-glow);
+
+  /* Grid texture */
+  --grid-color: rgba(43, 106, 232, 0.03);
+
+  /* Header */
+  --header-bg: rgba(240, 244, 249, 0.92);
+  --header-border: rgba(208, 218, 232, 0.9);
+  --header-collapse-bg: rgba(240, 244, 249, 0.98);
+}
+
+/* ── Shared Design Tokens (theme-independent) ───────────────────────── */
+:root {
   /* Typography families */
   --font-display: 'Syne', sans-serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -53,12 +125,6 @@
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 24px;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 0 1px var(--primary), 0 0 20px var(--primary-glow);
 
   /* Transitions */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -89,10 +155,11 @@ body {
 
   /* Subtle grid texture */
   background-image:
-    linear-gradient(rgba(77, 143, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 143, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
   background-attachment: fixed;
+  transition: background-color var(--slow), color var(--slow);
 }
 
 h1,

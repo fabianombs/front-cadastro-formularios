@@ -29,22 +29,23 @@
 
 /* ── Card base ── */
 .template-card {
-  --tc-accent: #4d8fff;
-  --tc-glow: rgba(77, 143, 255, 0.15);
-  --tc-border: #1c2e4a;
-  --tc-bg: #0d1627;
+  /* Accent tokens por tipo — fallback: primary */
+  --tc-accent: var(--primary);
+  --tc-glow:   var(--primary-glow);
+  --tc-border: var(--border);
+  --tc-bg:     var(--surface);
 
   background: var(--tc-bg);
   border: 1px solid var(--tc-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   transition:
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.25s,
-    border-color 0.2s;
+    transform var(--slow),
+    box-shadow var(--fast),
+    border-color var(--fast);
   position: relative;
   overflow: hidden;
 
@@ -57,30 +58,30 @@
     right: 0;
     height: 2px;
     background: var(--tc-accent);
-    opacity: 0.7;
-    border-radius: 14px 14px 0 0;
+    opacity: 0.8;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
 
   &:hover {
     transform: translateY(-3px);
     border-color: var(--tc-accent);
     box-shadow:
-      0 0 0 1px rgba(77, 143, 255, 0.08),
-      0 16px 40px rgba(0, 0, 0, 0.45);
+      0 0 0 1px var(--tc-glow),
+      var(--shadow-lg);
   }
 
   /* Appointment — violet */
   &.tc-appointment {
-    --tc-accent: #8b67f8;
-    --tc-glow: rgba(139, 103, 248, 0.15);
-    --tc-border: #2a1e50;
+    --tc-accent:  var(--violet);
+    --tc-glow:    var(--violet-muted);
+    --tc-border:  var(--border);
   }
 
   /* Attendance — teal */
   &.tc-attendance {
-    --tc-accent: #10c98a;
-    --tc-glow: rgba(16, 201, 138, 0.15);
-    --tc-border: #0e3029;
+    --tc-accent:  var(--success);
+    --tc-glow:    var(--success-muted);
+    --tc-border:  var(--border);
   }
 }
 
@@ -101,7 +102,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 17px;
   flex-shrink: 0;
@@ -115,10 +116,10 @@
 }
 
 .tc-name {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   font-weight: 700;
-  color: #d8e4f8;
+  color: var(--text);
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
@@ -130,8 +131,8 @@
 .tc-stats {
   display: flex;
   align-items: center;
-  background: rgba(10, 16, 32, 0.6);
-  border: 1px solid #1c2e4a;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px 18px;
 }
@@ -144,17 +145,17 @@
   gap: 3px;
 
   .tc-stat-value {
-    font-family: 'Syne', sans-serif;
+    font-family: var(--font-display);
     font-size: 22px;
     font-weight: 700;
-    color: #d8e4f8;
+    color: var(--text);
     line-height: 1;
     letter-spacing: -0.03em;
   }
 
   .tc-stat-label {
     font-size: 10px;
-    color: #5d789f;
+    color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -164,7 +165,7 @@
 .tc-divider {
   width: 1px;
   height: 30px;
-  background: #1c2e4a;
+  background: var(--border);
   margin: 0 18px;
 }
 
@@ -181,19 +182,21 @@
   justify-content: center;
   padding: 9px 12px;
   background: var(--tc-accent);
-  color: white;
-  border-radius: 8px;
+  color: #fff;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all var(--fast);
   letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
 
   &:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.12);
     box-shadow: 0 4px 16px var(--tc-glow);
-    color: white;
+    color: #fff;
     transform: translateY(-1px);
   }
 }
@@ -205,14 +208,15 @@
   justify-content: center;
   padding: 9px 12px;
   background: transparent;
-  color: #5d789f;
-  border: 1px solid #1c2e4a;
-  border-radius: 8px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all var(--fast);
+  cursor: pointer;
 
   &:hover {
     border-color: var(--tc-accent);
@@ -223,7 +227,7 @@
 
 /* ── Recent list ── */
 .tc-recent {
-  border-top: 1px solid #1c2e4a;
+  border-top: 1px solid var(--border);
   padding-top: 14px;
   display: flex;
   flex-direction: column;
@@ -233,7 +237,7 @@
 .tc-recent-title {
   font-size: 10px;
   font-weight: 700;
-  color: #5d789f;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 4px;
@@ -244,13 +248,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  background: rgba(10, 16, 32, 0.5);
-  border: 1px solid #1c2e4a;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
   border-radius: 7px;
-  transition: background 0.15s;
+  transition: background var(--fast);
 
   &:hover {
-    background: #122038;
+    background: var(--surface-hover);
   }
 }
 
@@ -258,15 +262,16 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--tc-accent);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .tc-sub-date {
   font-size: 11px;
-  color: #5d789f;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted);
+  font-family: var(--font-body);
 }
 
+/* ── Delete button ── */
 .template-card {
   position: relative;
 }
@@ -275,10 +280,10 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #ef4444;
-  border: none;
-  color: white;
-  font-size: 14px;
+  background: var(--danger-muted);
+  border: 1px solid rgba(255, 79, 106, 0.25);
+  color: var(--danger);
+  font-size: 13px;
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -286,8 +291,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
+  transition: all var(--fast);
+  opacity: 0;
 
-.tc-delete-btn:hover {
-  background: #dc2626;
+  .template-card:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 79, 106, 0.35);
+  }
 }

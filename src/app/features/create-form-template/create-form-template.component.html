@@ -570,409 +570,370 @@
           </div>
         </div>
 
-        <!-- Seção de aparência -->
-        <div class="card" style="margin-top: 16px">
-          <div class="ap-toggle" (click)="showAppearance = !showAppearance">
-            <div>
-              <h2 class="section-title">Aparência do formulário</h2>
-              <p class="ap-toggle-sub">Personalize cores, gradientes e imagens — tudo opcional</p>
+        <!-- ══ Seção de aparência ══ -->
+        <div class="card ap-card" style="margin-top: 16px">
+
+          <!-- Toggle header -->
+          <button type="button" class="ap-toggle" (click)="showAppearance = !showAppearance">
+            <div class="ap-toggle-icon-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+              </svg>
             </div>
-            <span class="ap-toggle-icon">{{ showAppearance ? '▲' : '▼' }}</span>
-          </div>
+            <div class="ap-toggle-text">
+              <span class="ap-toggle-title">Aparência do formulário</span>
+              <span class="ap-toggle-sub">Personalize cores, gradientes e imagens — tudo opcional</span>
+            </div>
+            <svg class="ap-toggle-chevron" [class.ap-toggle-chevron--open]="showAppearance"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
 
           @if (showAppearance) {
             <div class="ap-body" formGroupName="appearance">
-              <!-- Coluna esquerda: controles -->
+
+              <!-- ══ Coluna esquerda: controles ══ -->
               <div class="ap-controls">
 
-                <!-- FUNDO -->
-                <p class="ap-section-label">Fundo</p>
+                <!-- ── 1. Fundo ── -->
+                <div class="ap-section">
+                  <p class="ap-section-label">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                    Fundo da página
+                  </p>
 
-                <div class="ap-group">
-                  <p class="ap-hint">Presets de gradiente — clique para aplicar</p>
-                  <div class="ap-presets">
+                  <!-- Presets com nome visível -->
+                  <p class="ap-hint">Clique em um preset para aplicar</p>
+                  <div class="ap-presets-grid">
                     @for (p of gradientPresets; track p.value) {
                       <button
                         type="button"
-                        class="ap-preset-swatch"
+                        class="ap-preset-tile"
                         [style.background]="p.value"
-                        [class.ap-preset-active]="templateForm.get('appearance.backgroundGradient')?.value === p.value"
+                        [class.ap-preset-tile--active]="templateForm.get('appearance.backgroundGradient')?.value === p.value"
                         (click)="applyGradientPreset(p.value)"
-                        [title]="p.label"
-                      ></button>
+                      >
+                        <span class="ap-preset-name">{{ p.label }}</span>
+                      </button>
                     }
                   </div>
-                </div>
 
-                <div class="ap-group">
-                  <label class="ap-label">Gradiente personalizado</label>
-                  <input
-                    class="ap-input"
-                    type="text"
-                    formControlName="backgroundGradient"
-                    placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  />
-                </div>
-
-                <div class="ap-row">
-                  <div class="ap-group">
+                  <!-- Cor sólida -->
+                  <div class="ap-color-field">
                     <label class="ap-label">Cor sólida de fundo</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="backgroundColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.backgroundColor')?.value || 'padrão' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="ap-group">
-                  <label class="ap-label">Imagem de fundo</label>
-                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
-                    @if (imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value; as src) {
-                      <div class="img-upload-preview">
-                        <img [src]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value" alt="Preview" />
-                        <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageUrl')" title="Remover imagem">×</button>
+                    <div class="ap-color-control">
+                      <input type="color" formControlName="backgroundColor" class="ap-color-input" />
+                      <div class="ap-color-swatch"
+                        [style.background]="templateForm.get('appearance.backgroundColor')?.value || 'transparent'"
+                        [class.ap-color-swatch--empty]="!templateForm.get('appearance.backgroundColor')?.value">
                       </div>
-                    } @else {
-                      <label class="img-upload-label">
-                        @if (uploadingField() === 'backgroundImageUrl') {
-                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
-                          <span>Enviando...</span>
-                        } @else {
-                          <span class="img-upload-icon">🖼</span>
-                          <span>Clique para anexar</span>
-                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
-                        }
-                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                          (change)="onImageFileChange('backgroundImageUrl', $event)"
-                          [disabled]="uploadingField() !== null" />
-                      </label>
-                    }
-                  </div>
-                  <p class="ap-hint" style="margin-top: 4px">Sobrepõe cor e gradiente</p>
-                </div>
-
-                <!-- CORES -->
-                <p class="ap-section-label" style="margin-top: 20px">Cores</p>
-
-                <div class="ap-colors-grid">
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Botões / destaque</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="primaryColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.primaryColor')?.value || 'padrão' }}
+                      <span class="ap-color-value">
+                        {{ templateForm.get('appearance.backgroundColor')?.value || 'Não definido' }}
                       </span>
+                      @if (templateForm.get('appearance.backgroundColor')?.value) {
+                        <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('backgroundColor')" title="Remover">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      }
                     </div>
                   </div>
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Texto do formulário</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="formTextColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.formTextColor')?.value || 'padrão' }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Fundo dos campos</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="fieldBackgroundColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'padrão' }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Texto dos campos</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="fieldTextColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.fieldTextColor')?.value || 'padrão' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- CARDS / TABELA -->
-                <p class="ap-section-label" style="margin-top: 20px">Cards e Tabela</p>
-                <p class="ap-hint">Cor de fundo e borda dos cards, tabela e área de filtros — independente do fundo da página</p>
-
-                <div class="ap-colors-grid" style="margin-top: 10px">
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Fundo dos cards / tabela</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="cardBackgroundColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.cardBackgroundColor')?.value || 'auto (glass)' }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ap-group" style="margin-bottom: 0">
-                    <label class="ap-label">Borda dos cards / tabela</label>
-                    <div class="ap-color-row">
-                      <input type="color" formControlName="cardBorderColor" class="ap-color-picker" />
-                      <span class="ap-color-hex">
-                        {{ templateForm.get('appearance.cardBorderColor')?.value || 'auto' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- IMAGENS -->
-                <p class="ap-section-label" style="margin-top: 20px">Imagens de topo e rodapé</p>
-
-                <div class="ap-group">
-                  <label class="ap-label">Imagem do topo</label>
-                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
-                    @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
-                      <div class="img-upload-preview">
-                        <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" alt="Preview header" />
-                        <button type="button" class="img-clear-btn" (click)="clearImage('headerImageUrl')" title="Remover imagem">×</button>
+                  <!-- Banner auto-contraste -->
+                  @if (hasBgSelected) {
+                    <div class="ap-contrast-banner">
+                      <div class="ap-contrast-banner__preview">
+                        <span class="ap-contrast-banner__dot" style="background: var(--warning)"></span>
+                        Fundo escuro detectado
                       </div>
-                    } @else {
-                      <label class="img-upload-label">
-                        @if (uploadingField() === 'headerImageUrl') {
-                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
-                          <span>Enviando...</span>
-                        } @else {
-                          <span class="img-upload-icon">🖼</span>
-                          <span>Clique para anexar</span>
-                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
-                        }
-                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                          (change)="onImageFileChange('headerImageUrl', $event)"
-                          [disabled]="uploadingField() !== null" />
-                      </label>
-                    }
+                      <div class="ap-contrast-banner__content">
+                        <p>Aplicar <strong>contraste automático</strong> no texto?</p>
+                        <p class="ap-contrast-banner__sub">Ajusta cor do texto e campos para garantir legibilidade.</p>
+                      </div>
+                      <button type="button" class="ap-contrast-btn" (click)="applyAutoContrast()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                        Auto contraste
+                      </button>
+                    </div>
+                  }
+
+                  <!-- Imagem de fundo -->
+                  <div class="ap-color-field">
+                    <label class="ap-label">
+                      Imagem de fundo
+                      <span class="ap-label-hint">sobrepõe cor e gradiente</span>
+                    </label>
+                    <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
+                      @if (imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value) {
+                        <div class="img-upload-preview">
+                          <img [src]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value" alt="Preview" />
+                          <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageUrl')" title="Remover imagem">×</button>
+                        </div>
+                      } @else {
+                        <label class="img-upload-label">
+                          @if (uploadingField() === 'backgroundImageUrl') {
+                            <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                            <span>Enviando...</span>
+                          } @else {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span>Clique para enviar imagem</span>
+                            <span class="img-upload-hint">JPG, PNG · máx. 5 MB</span>
+                          }
+                          <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                            (change)="onImageFileChange('backgroundImageUrl', $event)"
+                            [disabled]="uploadingField() !== null" />
+                        </label>
+                      }
+                    </div>
                   </div>
                 </div>
 
-                <div class="ap-group">
-                  <label class="ap-label">Imagem do rodapé</label>
-                  <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
-                    @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
-                      <div class="img-upload-preview">
-                        <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" alt="Preview footer" />
-                        <button type="button" class="img-clear-btn" (click)="clearImage('footerImageUrl')" title="Remover imagem">×</button>
-                      </div>
-                    } @else {
-                      <label class="img-upload-label">
-                        @if (uploadingField() === 'footerImageUrl') {
-                          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
-                          <span>Enviando...</span>
-                        } @else {
-                          <span class="img-upload-icon">🖼</span>
-                          <span>Clique para anexar</span>
-                          <span class="img-upload-hint">JPG, PNG até 5 MB</span>
+                <!-- ── 2. Texto & Botão ── -->
+                <div class="ap-section">
+                  <p class="ap-section-label">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                    Texto &amp; Botão
+                  </p>
+
+                  <div class="ap-color-row-grid">
+                    <div class="ap-color-field">
+                      <label class="ap-label">Texto do formulário</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="formTextColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.formTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.formTextColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão' }}</span>
+                        @if (templateForm.get('appearance.formTextColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('formTextColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                         }
-                        <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                          (change)="onImageFileChange('footerImageUrl', $event)"
-                          [disabled]="uploadingField() !== null" />
-                      </label>
-                    }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Cor do botão</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="primaryColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.primaryColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.primaryColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão' }}</span>
+                        @if (templateForm.get('appearance.primaryColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('primaryColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Fundo dos campos</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="fieldBackgroundColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBackgroundColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão' }}</span>
+                        @if (templateForm.get('appearance.fieldBackgroundColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBackgroundColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Texto dos campos</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="fieldTextColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldTextColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão' }}</span>
+                        @if (templateForm.get('appearance.fieldTextColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldTextColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Fundo dos cards</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="cardBackgroundColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBackgroundColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto (glass)' }}</span>
+                        @if (templateForm.get('appearance.cardBackgroundColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBackgroundColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Borda dos cards</label>
+                      <div class="ap-color-control">
+                        <input type="color" formControlName="cardBorderColor" class="ap-color-input" />
+                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBorderColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBorderColor')?.value"></div>
+                        <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto' }}</span>
+                        @if (templateForm.get('appearance.cardBorderColor')?.value) {
+                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBorderColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── 3. Imagens de topo e rodapé ── -->
+                <div class="ap-section">
+                  <p class="ap-section-label">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Imagens de topo e rodapé
+                  </p>
+
+                  <div class="ap-images-row">
+                    <div class="ap-color-field">
+                      <label class="ap-label">Topo</label>
+                      <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
+                        @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
+                          <div class="img-upload-preview">
+                            <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" alt="Preview header" />
+                            <button type="button" class="img-clear-btn" (click)="clearImage('headerImageUrl')" title="Remover imagem">×</button>
+                          </div>
+                        } @else {
+                          <label class="img-upload-label">
+                            @if (uploadingField() === 'headerImageUrl') {
+                              <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                              <span>Enviando...</span>
+                            } @else {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                              <span>Enviar topo</span>
+                            }
+                            <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                              (change)="onImageFileChange('headerImageUrl', $event)"
+                              [disabled]="uploadingField() !== null" />
+                          </label>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ap-color-field">
+                      <label class="ap-label">Rodapé</label>
+                      <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
+                        @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
+                          <div class="img-upload-preview">
+                            <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" alt="Preview footer" />
+                            <button type="button" class="img-clear-btn" (click)="clearImage('footerImageUrl')" title="Remover imagem">×</button>
+                          </div>
+                        } @else {
+                          <label class="img-upload-label">
+                            @if (uploadingField() === 'footerImageUrl') {
+                              <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                              <span>Enviando...</span>
+                            } @else {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                              <span>Enviar rodapé</span>
+                            }
+                            <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                              (change)="onImageFileChange('footerImageUrl', $event)"
+                              [disabled]="uploadingField() !== null" />
+                          </label>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
 
               </div>
 
-              <!-- Coluna direita: previews -->
+              <!-- ══ Coluna direita: preview live ══ -->
               <div class="ap-preview-col">
+                <div class="ap-preview-sticky">
 
-                <!-- ── Preview do formulário ── -->
-                <p class="ap-section-label">Preview — formulário</p>
-                <div class="ap-preview-page" [ngStyle]="previewPageStyle">
-                  @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
-                    <img
-                      [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value"
-                      class="ap-preview-img"
-                      alt=""
-                    />
-                  }
-                  <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
-                    <div class="ap-preview-form-title">
-                      {{ templateForm.get('name')?.value || 'Meu Formulário' }}
-                    </div>
+                  <p class="ap-section-label">Preview ao vivo</p>
 
-                    <div
-                      class="ap-drag-list"
-                      cdkDropList
-                      [cdkDropListData]="fields.controls"
-                      (cdkDropListDropped)="dropField($event)"
-                    >
-                      @for (field of previewFields; track field.index) {
-                        <div
-                          class="ap-drag-item"
-                          [class.ap-drag-half]="field.colSpan === 1"
-                          cdkDrag
-                        >
-                          <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
-                          <div class="ap-drag-field">
-                            <span
-                              class="ap-preview-label"
-                              [style.color]="field.fieldColor || null"
-                            >{{ field.label }}</span>
-                            <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
+                  <!-- Preview do formulário -->
+                  <div class="ap-preview-page" [ngStyle]="previewPageStyle">
+                    @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
+                      <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" class="ap-preview-img" alt="" />
+                    }
+                    <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
+                      <div class="ap-preview-form-title">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+                      <div class="ap-drag-list" cdkDropList [cdkDropListData]="fields.controls" (cdkDropListDropped)="dropField($event)">
+                        @for (field of previewFields; track field.index) {
+                          <div class="ap-drag-item" [class.ap-drag-half]="field.colSpan === 1" cdkDrag>
+                            <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
+                            <div class="ap-drag-field">
+                              <span class="ap-preview-label" [style.color]="field.fieldColor || null">{{ field.label }}</span>
+                              <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
+                            </div>
+                            <button type="button" class="ap-span-btn"
+                              [title]="field.colSpan === 2 ? 'Reduzir para ½' : 'Expandir para full'"
+                              (click)="toggleFieldSpan(field.index); $event.stopPropagation()">
+                              {{ field.colSpan === 2 ? '½' : '⬜' }}
+                            </button>
+                            <div class="ap-drag-placeholder" *cdkDragPlaceholder></div>
                           </div>
-                          <button
-                            type="button"
-                            class="ap-span-btn"
-                            [title]="field.colSpan === 2 ? 'Reduzir para ½' : 'Expandir para full'"
-                            (click)="toggleFieldSpan(field.index); $event.stopPropagation()"
-                          >{{ field.colSpan === 2 ? '½' : '⬜' }}</button>
-                          <div class="ap-drag-placeholder" *cdkDragPlaceholder></div>
+                        }
+                      </div>
+                      <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
+                    </div>
+                    @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
+                      <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" class="ap-preview-img" alt="" />
+                    }
+                  </div>
+                  <p class="ap-hint ap-hint--center">⠿ arraste campos · ½ alterna largura</p>
+
+                  <!-- Preview da listagem -->
+                  <p class="ap-section-label" style="margin-top: 16px">
+                    Preview — {{ hasAttendance ? 'lista de presença' : 'listagem' }}
+                  </p>
+                  <div class="ap-list-preview" [ngStyle]="previewListPageStyle">
+                    @if (templateForm.get('appearance.headerImageUrl')?.value) {
+                      <img [src]="templateForm.get('appearance.headerImageUrl')?.value" class="ap-preview-img" alt="" style="max-height:60px;border-radius:6px 6px 0 0" />
+                    }
+                    <div class="ap-list-name">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+
+                    @if (hasAttendance) {
+                      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                          <div style="font-size:16px;font-weight:700" [style.color]="previewAccentColor">0</div>
+                          <div style="font-size:9px;opacity:.65">Total</div>
                         </div>
-                      }
-                    </div>
-
-                    <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
-                  </div>
-                  @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
-                    <img
-                      [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value"
-                      class="ap-preview-img"
-                      alt=""
-                    />
-                  }
-                </div>
-                <p class="ap-hint" style="text-align: center; margin-top: 8px">
-                  ⠿ arraste · ½ alterna largura
-                </p>
-
-                <!-- ── Preview da listagem ── -->
-                <p class="ap-section-label" style="margin-top: 20px">
-                  Preview — {{ hasAttendance ? 'lista de presença' : 'listagem' }}
-                </p>
-                <div class="ap-list-preview" [ngStyle]="previewListPageStyle">
-                  @if (templateForm.get('appearance.headerImageUrl')?.value) {
-                    <img
-                      [src]="templateForm.get('appearance.headerImageUrl')?.value"
-                      class="ap-preview-img"
-                      alt=""
-                      style="max-height: 60px; border-radius: 6px 6px 0 0"
-                    />
-                  }
-
-                  <!-- Título -->
-                  <div class="ap-list-name">
-                    {{ templateForm.get('name')?.value || 'Meu Formulário' }}
-                  </div>
-
-                  @if (hasAttendance) {
-                    <!-- ── Preview exclusivo: lista de presença ── -->
-
-                    <!-- Stats de presença -->
-                    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                        <div style="font-size:16px;font-weight:700" [style.color]="previewAccentColor">0</div>
-                        <div style="font-size:9px;opacity:.65">Total</div>
+                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                          <div style="font-size:16px;font-weight:700;color:#10c98a">0</div>
+                          <div style="font-size:9px;opacity:.65">Presente</div>
+                        </div>
+                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                          <div style="font-size:16px;font-weight:700;color:#ff4f6a">0</div>
+                          <div style="font-size:9px;opacity:.65">Ausente</div>
+                        </div>
                       </div>
-                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                        <div style="font-size:16px;font-weight:700;color:#10c98a">0</div>
-                        <div style="font-size:9px;opacity:.65">Presente</div>
+                      <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                        <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                          @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
+                          <span>Presença</span>
+                        </div>
+                        <div class="ap-list-trow">
+                          @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
+                          <span style="display:inline-flex;align-items:center;gap:4px">
+                            <span style="width:24px;height:14px;border-radius:99px;background:#10c98a;display:inline-block"></span>
+                            <span style="font-size:9px;color:#10c98a">✓</span>
+                          </span>
+                        </div>
                       </div>
-                      <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                        <div style="font-size:16px;font-weight:700;color:#ff4f6a">0</div>
-                        <div style="font-size:9px;opacity:.65">Ausente</div>
-                      </div>
-                    </div>
-
-                    <!-- Tabela presença com toggle -->
-                    <div class="ap-list-card" [ngStyle]="previewListCardStyle">
-                      <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span>{{ f.label }}</span>
-                        }
-                        <span>Presença</span>
-                      </div>
-                      <div class="ap-list-trow">
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span class="ap-list-cell-muted">—</span>
-                        }
-                        <span style="display:inline-flex;align-items:center;gap:4px">
-                          <span style="width:28px;height:16px;border-radius:99px;background:#10c98a;display:inline-block;opacity:.85"></span>
-                          <span style="font-size:9px;color:#10c98a">✓</span>
+                    } @else {
+                      <div class="ap-list-tabs">
+                        <span [ngStyle]="previewListActiveTabStyle">
+                          {{ hasSchedule ? 'Agendamentos' : 'Respostas' }}
+                          <span [ngStyle]="previewListBadgeStyle">0</span>
                         </span>
                       </div>
-                      <div class="ap-list-trow" style="opacity:.5">
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span class="ap-list-cell-muted">—</span>
-                        }
-                        <span style="display:inline-flex;align-items:center;gap:4px">
-                          <span style="width:28px;height:16px;border-radius:99px;background:#2b3f5c;display:inline-block"></span>
-                          <span style="font-size:9px;color:#ff4f6a">✗</span>
-                        </span>
+                      <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                        <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                          @if (!hasSchedule) { <span>ID</span><span>Data</span> } @else { <span>Data</span><span>Hora</span><span>Nome</span><span>Status</span> }
+                          @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
+                        </div>
+                        <div class="ap-list-trow">
+                          @if (!hasSchedule) { <span class="ap-list-cell-muted">#1</span><span class="ap-list-cell-muted">01/04</span> }
+                          @else { <span class="ap-list-cell-muted">01/04</span><span class="ap-list-cell-muted">09:00</span><span class="ap-list-cell-muted">João</span><span style="font-size:9px;color:#10c98a;font-weight:700">OK</span> }
+                          @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
+                        </div>
                       </div>
-                    </div>
-                  } @else {
-                    <!-- ── Preview padrão: respostas / agendamentos ── -->
+                    }
 
-                    <!-- Tabs -->
-                    <div class="ap-list-tabs">
-                      <span [ngStyle]="previewListActiveTabStyle">
-                        {{ hasSchedule ? 'Agendamentos' : 'Respostas' }}
-                        <span [ngStyle]="previewListBadgeStyle">0</span>
-                      </span>
-                    </div>
+                    @if (templateForm.get('appearance.footerImageUrl')?.value) {
+                      <img [src]="templateForm.get('appearance.footerImageUrl')?.value" class="ap-preview-img" alt="" style="max-height:40px;border-radius:0 0 6px 6px" />
+                    }
+                  </div>
 
-                    <!-- Mini tabela -->
-                    <div class="ap-list-card" [ngStyle]="previewListCardStyle">
-                      <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
-                        @if (!hasSchedule) {
-                          <span>ID</span>
-                          <span>Data</span>
-                        } @else {
-                          <span>Data</span>
-                          <span>Horário</span>
-                          <span>Nome</span>
-                          <span>Status</span>
-                        }
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span>{{ f.label }}</span>
-                        }
-                      </div>
-                      <div class="ap-list-trow">
-                        @if (!hasSchedule) {
-                          <span class="ap-list-cell-muted">#1</span>
-                          <span class="ap-list-cell-muted">01/04/2025</span>
-                        } @else {
-                          <span class="ap-list-cell-muted">01/04/2025</span>
-                          <span class="ap-list-cell-muted">09:00</span>
-                          <span class="ap-list-cell-muted">João S.</span>
-                          <span style="font-size:9px;color:#10c98a;font-weight:700">AGENDADO</span>
-                        }
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span class="ap-list-cell-muted">—</span>
-                        }
-                      </div>
-                      <div class="ap-list-trow" style="opacity: .5">
-                        @if (!hasSchedule) {
-                          <span class="ap-list-cell-muted">#2</span>
-                          <span class="ap-list-cell-muted">02/04/2025</span>
-                        } @else {
-                          <span class="ap-list-cell-muted">02/04/2025</span>
-                          <span class="ap-list-cell-muted">10:00</span>
-                          <span class="ap-list-cell-muted">Maria L.</span>
-                          <span style="font-size:9px;color:#ff4f6a;font-weight:700">CANCELADO</span>
-                        }
-                        @for (f of previewFields.slice(0, 2); track f.index) {
-                          <span class="ap-list-cell-muted">—</span>
-                        }
-                      </div>
-                    </div>
-                  }
-
-                  @if (templateForm.get('appearance.footerImageUrl')?.value) {
-                    <img
-                      [src]="templateForm.get('appearance.footerImageUrl')?.value"
-                      class="ap-preview-img"
-                      alt=""
-                      style="max-height: 40px; border-radius: 0 0 6px 6px"
-                    />
-                  }
                 </div>
-
               </div>
             </div>
           }
