@@ -26,26 +26,120 @@
       @if (template.hasSchedule && template.scheduleConfig) {
         <div
           class="card"
-          style="margin-bottom: 16px; padding: 16px 20px; border-left: 4px solid #6366f1"
+          style="margin-bottom: 16px; border-left: 4px solid #6366f1"
         >
-          <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0 0 8px">
-            Configuração de agenda
-          </p>
-          <div style="display: flex; gap: 24px; flex-wrap: wrap">
-            <span style="font-size: 13px; color: #475569">
-              Horário:
-              <strong
-                >{{ template.scheduleConfig.startTime.substring(0, 5) }} –
-                {{ template.scheduleConfig.endTime.substring(0, 5) }}</strong
-              >
-            </span>
-            <span style="font-size: 13px; color: #475569">
-              Duração: <strong>{{ template.scheduleConfig.slotDurationMinutes }} min</strong>
-            </span>
-            <span style="font-size: 13px; color: #475569">
-              Agenda até: <strong>{{ template.scheduleConfig.maxDaysAhead }} dias à frente</strong>
-            </span>
+          <!-- Cabeçalho com botão de edição -->
+          <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
+            <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0">
+              Configuração de agenda
+            </p>
+            <button
+              type="button"
+              class="btn-outline"
+              style="font-size: 12px; padding: 5px 12px"
+              (click)="editingSchedule = !editingSchedule"
+            >
+              {{ editingSchedule ? 'Cancelar' : '✎ Editar agenda' }}
+            </button>
           </div>
+
+          <!-- Resumo (leitura) -->
+          @if (!editingSchedule) {
+            <div style="padding: 0 20px 14px; display: flex; gap: 24px; flex-wrap: wrap">
+              <span style="font-size: 13px; color: #475569">
+                Horário:
+                <strong>{{ template.scheduleConfig.startTime.substring(0, 5) }} – {{ template.scheduleConfig.endTime.substring(0, 5) }}</strong>
+              </span>
+              <span style="font-size: 13px; color: #475569">
+                Duração: <strong>{{ template.scheduleConfig.slotDurationMinutes }} min</strong>
+              </span>
+              <span style="font-size: 13px; color: #475569">
+                Agenda até: <strong>{{ template.scheduleConfig.maxDaysAhead }} dias à frente</strong>
+              </span>
+              <span style="font-size: 13px; color: #475569">
+                Vagas/horário: <strong>{{ template.scheduleConfig.slotCapacity }}</strong>
+              </span>
+              <span style="font-size: 13px; color: #475569">
+                Controle duplicidade:
+                <strong>
+                  @if (!template.scheduleConfig.dedupFields || template.scheduleConfig.dedupFields.length === 0) {
+                    Livre (múltiplos permitidos)
+                  } @else {
+                    por {{ template.scheduleConfig.dedupFields.join(' + ') }}
+                  }
+                </strong>
+              </span>
+            </div>
+          }
+
+          <!-- Formulário inline de edição -->
+          @if (editingSchedule) {
+            <div style="padding: 0 20px 20px" [formGroup]="scheduleConfig">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px">
+                <div class="field" style="margin-bottom: 0">
+                  <label>Horário inicial</label>
+                  <input type="time" formControlName="startTime" />
+                </div>
+                <div class="field" style="margin-bottom: 0">
+                  <label>Horário final</label>
+                  <input type="time" formControlName="endTime" />
+                </div>
+                <div class="field" style="margin-bottom: 0">
+                  <label>Duração (min)</label>
+                  <input type="number" formControlName="slotDurationMinutes" min="15" max="480" />
+                </div>
+                <div class="field" style="margin-bottom: 0">
+                  <label>Máx. dias à frente</label>
+                  <input type="number" formControlName="maxDaysAhead" min="1" max="365" />
+                </div>
+                <div class="field" style="margin-bottom: 0">
+                  <label>Vagas por horário</label>
+                  <input type="number" formControlName="slotCapacity" min="1" />
+                </div>
+                <div class="field" style="margin-bottom: 0; grid-column: span 3">
+                  <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
+                    Controle de duplicidade
+                    <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — marque quais campos identificam a pessoa</span>
+                  </label>
+                  @if (fieldLabels.length === 0) {
+                    <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
+                      Nenhum campo disponível no template.
+                    </p>
+                  } @else {
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                      @for (label of fieldLabels; track label) {
+                        <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+                                      border: 1px solid; border-radius: 20px; cursor: pointer; font-size: 12px;
+                                      transition: all 0.15s; user-select: none"
+                               [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
+                               [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
+                               [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
+                               [style.fontWeight]="isDedupField(label) ? '600' : '400'">
+                          <input type="checkbox"
+                                 [checked]="isDedupField(label)"
+                                 (change)="toggleDedupField(label, $event)"
+                                 style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
+                          {{ label }}
+                        </label>
+                      }
+                    </div>
+                    <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
+                      Sem seleção = múltiplos agendamentos livres.
+                    </p>
+                  }
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn-primary"
+                style="font-size: 13px"
+                [disabled]="savingSchedule"
+                (click)="saveScheduleConfig()"
+              >
+                {{ savingSchedule ? 'Salvando...' : 'Salvar configuração' }}
+              </button>
+            </div>
+          }
         </div>
       }
 
@@ -983,6 +1077,48 @@
                     max="365"
                     placeholder="30"
                   />
+                </div>
+                <!-- Linha 2: Vagas + Controle de duplicidade lado a lado -->
+                <div class="field" style="margin-bottom: 0">
+                  <label>Vagas por horário <span class="required">*</span></label>
+                  <input
+                    type="number"
+                    formControlName="slotCapacity"
+                    min="1"
+                    placeholder="10"
+                  />
+                </div>
+                <div class="field" style="margin-bottom: 0; grid-column: span 3">
+                  <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
+                    Controle de duplicidade
+                    <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — quais campos identificam a pessoa?</span>
+                  </label>
+                  @if (fieldLabels.length === 0) {
+                    <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
+                      Adicione campos ao formulário ao lado para configurar aqui.
+                    </p>
+                  } @else {
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                      @for (label of fieldLabels; track label) {
+                        <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+                                      border: 1px solid; border-radius: 20px; cursor: pointer; font-size: 12px;
+                                      transition: all 0.15s; user-select: none"
+                               [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
+                               [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
+                               [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
+                               [style.fontWeight]="isDedupField(label) ? '600' : '400'">
+                          <input type="checkbox"
+                                 [checked]="isDedupField(label)"
+                                 (change)="toggleDedupField(label, $event)"
+                                 style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
+                          {{ label }}
+                        </label>
+                      }
+                    </div>
+                    <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
+                      Sem seleção = múltiplos agendamentos livres.
+                    </p>
+                  }
                 </div>
               </div>
 

@@ -34,6 +34,8 @@ export class CreateTemplateComponent implements OnInit {
   public slug: string | null = null;
   public loading = false;
   public showAppearance = false;
+  public editingSchedule = false;
+  public savingSchedule = false;
 
   // Upload state: qual campo está fazendo upload e preview local
   uploadingField = signal<string | null>(null);
@@ -305,6 +307,8 @@ export class CreateTemplateComponent implements OnInit {
         endTime: ['17:00'],
         slotDurationMinutes: [60, [Validators.min(15), Validators.max(480)]],
         maxDaysAhead: [30, [Validators.min(1), Validators.max(365)]],
+        slotCapacity: [10, [Validators.required, Validators.min(1)]],
+        dedupFields: [[] as string[]],
       }),
       appearance: this.fb.group({
         backgroundColor: [''],
@@ -340,6 +344,33 @@ export class CreateTemplateComponent implements OnInit {
 
   get scheduleConfig(): FormGroup {
     return this.templateForm.get('scheduleConfig') as FormGroup;
+  }
+
+  /** Labels de todos os campos adicionados ao formulário */
+  get fieldLabels(): string[] {
+    return this.fields.controls
+      .map(fg => fg.get('label')?.value as string)
+      .filter(label => !!label?.trim());
+  }
+
+  /** Verifica se um campo está marcado como chave de dedup */
+  isDedupField(label: string): boolean {
+    const arr: string[] = this.scheduleConfig.get('dedupFields')?.value ?? [];
+    return arr.includes(label);
+  }
+
+  /** Alterna a seleção de um campo como chave de dedup */
+  toggleDedupField(label: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const ctrl = this.scheduleConfig.get('dedupFields')!;
+    const arr: string[] = [...(ctrl.value ?? [])];
+    if (checked && !arr.includes(label)) {
+      arr.push(label);
+    } else if (!checked) {
+      const idx = arr.indexOf(label);
+      if (idx >= 0) arr.splice(idx, 1);
+    }
+    ctrl.setValue(arr);
   }
 
   get previewSlots(): string[] {
@@ -497,6 +528,8 @@ export class CreateTemplateComponent implements OnInit {
             endTime: formValue.scheduleConfig.endTime + ':00',
             slotDurationMinutes: formValue.scheduleConfig.slotDurationMinutes,
             maxDaysAhead: formValue.scheduleConfig.maxDaysAhead,
+            slotCapacity: formValue.scheduleConfig.slotCapacity,
+            dedupFields: formValue.scheduleConfig.dedupFields ?? [],
           }
         : null,
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
@@ -548,6 +581,8 @@ export class CreateTemplateComponent implements OnInit {
         endTime: template.scheduleConfig.endTime.substring(0, 5),
         slotDurationMinutes: template.scheduleConfig.slotDurationMinutes,
         maxDaysAhead: template.scheduleConfig.maxDaysAhead,
+        slotCapacity: template.scheduleConfig.slotCapacity ?? 1,
+        dedupFields: template.scheduleConfig.dedupFields ?? [],
       });
     }
 
@@ -617,6 +652,36 @@ export class CreateTemplateComponent implements OnInit {
     records.forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
     this.attendanceCols = Array.from(keys);
     this.cdr.detectChanges();
+  }
+
+  saveScheduleConfig() {
+    if (!this.template) return;
+    this.savingSchedule = true;
+
+    const sc = this.scheduleConfig.value;
+    const config = {
+      startTime: sc.startTime + ':00',
+      endTime: sc.endTime + ':00',
+      slotDurationMinutes: sc.slotDurationMinutes,
+      maxDaysAhead: sc.maxDaysAhead,
+      slotCapacity: sc.slotCapacity > 0 ? sc.slotCapacity : 1,
+      dedupFields: sc.dedupFields ?? [],
+    };
+
+    this.templateService.updateScheduleConfig(this.template.id, config).subscribe({
+      next: (res) => {
+        this.template = res;
+        this.loadTemplateToForm(res);
+        this.editingSchedule = false;
+        this.savingSchedule = false;
+        this.messages.success('Configuração de agenda atualizada!');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.messages.error(err.error?.message ?? 'Erro ao salvar configuração.');
+        this.savingSchedule = false;
+      },
+    });
   }
 
   exportAttendance() {

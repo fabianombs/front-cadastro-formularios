@@ -74,9 +74,18 @@
                         [disabled]="!slot.available"
                         [ngStyle]="selectedSlot() === slot.time ? submitBtnStyle() : {}"
                       >
-                        {{ formatTime(slot.time) }}
-                        @if (!slot.available) {
-                          <span class="fd-slot-tag">Ocupado</span>
+                        <span class="fd-slot-time">{{ formatTime(slot.time) }}</span>
+                        <span class="fd-slot-vacancy" [class.fd-slot-vacancy--full]="!slot.available">
+                          {{ vacancyLabel(slot) }}
+                        </span>
+                        @if (slot.capacity > 1) {
+                          <span class="fd-slot-bar">
+                            <span
+                              class="fd-slot-bar-fill"
+                              [style.width.%]="occupancyPercent(slot)"
+                              [class.fd-slot-bar-fill--full]="!slot.available"
+                            ></span>
+                          </span>
                         }
                       </button>
                     }
@@ -124,6 +133,17 @@
                   />
                 </div>
               }
+            </div>
+          }
+
+          <!-- Alerta de erro de agendamento (duplicidade, slot cheio, etc.) -->
+          @if (bookingError()) {
+            <div class="fd-booking-error">
+              <span class="fd-booking-error__icon">⚠</span>
+              <div>
+                <strong class="fd-booking-error__title">Não foi possível agendar</strong>
+                <p class="fd-booking-error__msg">{{ bookingError() }}</p>
+              </div>
             </div>
           }
 
