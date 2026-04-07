@@ -73,7 +73,7 @@
                 }
               </td>
               <td class="td-actions">
-                <button class="btn-table-danger" (click)="deleteClient(client.id)">Excluir</button>
+                <button class="btn-table-danger" (click)="deleteClient(client.id, client.name)">Excluir</button>
               </td>
             </ng-template>
           </app-data-table>
@@ -102,3 +102,15 @@
     }
   }
 </app-page-shell>
+
+<!-- Modal de confirmação de exclusão -->
+<app-confirm-modal
+  [open]="deleteModalOpen()"
+  title="Excluir cliente"
+  [message]="'Tem certeza que deseja excluir o cliente \'' + deleteTargetName() + '\'? Todos os formulários vinculados também serão excluídos.'"
+  confirmLabel="Excluir"
+  confirmVariant="danger"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+/>

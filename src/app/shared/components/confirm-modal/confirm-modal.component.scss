@@ -1,0 +1,153 @@
+/* ── Backdrop ── */
+.cm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: cm-fade-in 0.18s ease;
+  padding: 16px;
+}
+
+/* ── Dialog box ── */
+.cm-dialog {
+  background: var(--surface, #0f1932);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-md, 12px);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  animation: cm-slide-up 0.2s ease;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.cm-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+.cm-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--primary, #4d8fff);
+
+  &--danger {
+    color: #ef4444;
+  }
+}
+
+.cm-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text, #d8e4f8);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.cm-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, rgba(216, 228, 248, 0.55));
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Body ── */
+.cm-body {
+  padding: 18px 20px;
+}
+
+.cm-message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted, rgba(216, 228, 248, 0.65));
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+/* ── Footer ── */
+.cm-footer {
+  padding: 14px 20px 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+/* ── Danger button override ── */
+.btn-danger {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #fff !important;
+
+  &:hover:not(:disabled) {
+    background-color: #dc2626 !important;
+    border-color: #dc2626 !important;
+  }
+}
+
+/* ── Spinner inside button ── */
+.cm-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cm-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* ── Keyframes ── */
+@keyframes cm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cm-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes cm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .cm-footer {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

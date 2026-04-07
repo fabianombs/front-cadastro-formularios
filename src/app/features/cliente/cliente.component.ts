@@ -2,24 +2,34 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientService, Client } from '../../core/services/client.service';
+import { MessageService } from '../../core/services/message.service';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import {
   DataTableComponent,
   DataTableColumn,
 } from '../../shared/components/data-table/data-table.component';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, PageShellComponent, PageHeaderComponent, DataTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PageShellComponent,
+    PageHeaderComponent,
+    DataTableComponent,
+    ConfirmModalComponent,
+  ],
   templateUrl: './cliente.component.html',
 })
 export class ClienteComponent implements OnInit {
   private service = inject(ClientService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private messages = inject(MessageService);
 
   clients = signal<Client[]>([]);
   loading = signal(true);
@@ -28,6 +38,12 @@ export class ClienteComponent implements OnInit {
   readonly size = 10;
   totalPages = signal(0);
   totalElements = signal(0);
+
+  // ── Modal de confirmação ──
+  deleteModalOpen = signal(false);
+  deleteTargetId = signal<number | null>(null);
+  deleteTargetName = signal('');
+  deleting = signal(false);
 
   clientColumns: DataTableColumn[] = [
     { key: 'id', label: 'ID', width: '60px' },
@@ -105,11 +121,34 @@ export class ClienteComponent implements OnInit {
     this.router.navigate(['/clients/new']);
   }
 
-  deleteClient(id: number) {
-    if (!confirm('Excluir cliente?')) return;
+  deleteClient(id: number, name: string): void {
+    this.deleteTargetId.set(id);
+    this.deleteTargetName.set(name);
+    this.deleteModalOpen.set(true);
+  }
 
-    this.service.delete(id).subscribe(() => {
-      this.loadClients();
+  onDeleteConfirmed(): void {
+    const id = this.deleteTargetId();
+    if (id === null) return;
+
+    this.deleting.set(true);
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.messages.success('Cliente excluído com sucesso');
+        this.deleteModalOpen.set(false);
+        this.deleting.set(false);
+        this.loadClients();
+      },
+      error: () => {
+        this.messages.error('Erro ao excluir cliente');
+        this.deleting.set(false);
+      },
     });
+  }
+
+  onDeleteCancelled(): void {
+    this.deleteModalOpen.set(false);
+    this.deleteTargetId.set(null);
+    this.deleteTargetName.set('');
   }
 }
