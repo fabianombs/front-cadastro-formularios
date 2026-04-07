@@ -36,6 +36,13 @@ export interface ScheduleConfig {
   endTime: string;
   slotDurationMinutes: number;
   maxDaysAhead: number;
+  slotCapacity: number;
+  /**
+   * Campos usados como chave de deduplicação.
+   * Array vazio = múltiplos agendamentos permitidos.
+   * Ex: ["CPF"] ou ["Nome", "CPF"]
+   */
+  dedupFields: string[];
 }
 
 export interface FormTemplate {
@@ -75,6 +82,8 @@ export interface CreateFormSubmissionRequest {
 export interface SlotInfo {
   time: string; // "HH:mm:ss"
   available: boolean;
+  bookedCount: number;
+  capacity: number;
 }
 
 export interface AvailableSlotsResponse {

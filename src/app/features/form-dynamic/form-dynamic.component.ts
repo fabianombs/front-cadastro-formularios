@@ -38,6 +38,7 @@ export class FormDynamicComponent implements OnInit {
   public availableSlots = signal<SlotInfo[]>([]);
   public selectedSlot = signal<string>('');
   public loadingSlots = signal<boolean>(false);
+  public bookingError = signal<string>('');
 
   public get minDate(): string {
     return new Date().toISOString().split('T')[0];
@@ -223,6 +224,7 @@ export class FormDynamicComponent implements OnInit {
     this.selectedDate.set(date);
     this.selectedSlot.set('');
     this.availableSlots.set([]);
+    this.bookingError.set('');
 
     if (!date) return;
 
@@ -246,6 +248,7 @@ export class FormDynamicComponent implements OnInit {
   selectSlot(slot: SlotInfo): void {
     if (!slot.available) return;
     this.selectedSlot.set(slot.time);
+    this.bookingError.set('');
   }
 
   formatTime(time: string): string {
@@ -321,24 +324,21 @@ export class FormDynamicComponent implements OnInit {
 
     this.service.bookAppointment(payload).subscribe({
       next: () => {
+        this.bookingError.set('');
         this.messages.success('Agendamento realizado com sucesso!');
         this.submitted.set(true);
-
         this.form.reset();
-
-        // só limpa o slot selecionado
         this.selectedSlot.set('');
-
-        // opcional: recarrega horários da mesma data
-        const template = this.template();
-        const date = this.selectedDate();
-
-        if (template && date) {
-          this.service.getAvailableSlots(template.id, date).subscribe(res => {
-            this.availableSlots.set(res.slots);
-          });
-        }
-      }
+        this.selectedDate.set('');
+        this.availableSlots.set([]);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        const msg: string = err.error?.message ?? 'Erro ao realizar agendamento.';
+        this.messages.error(msg);
+        this.bookingError.set(msg);
+        this.cdr.detectChanges();
+      },
     });
 
   }
@@ -361,5 +361,26 @@ export class FormDynamicComponent implements OnInit {
 
   public getControl(index: number): FormControl {
     return this.form.get(`field_${index}`) as FormControl;
+  }
+
+  /** Texto de vagas restantes para exibir em cada slot */
+  vacancyLabel(slot: SlotInfo): string {
+    if (!slot.available) return 'Lotado';
+    // Guard: campos podem chegar undefined em backends antigos
+    const capacity = slot.capacity ?? 0;
+    const booked = slot.bookedCount ?? 0;
+    if (capacity <= 1) return 'Disponível';
+    const remaining = capacity - booked;
+    if (remaining <= 0) return 'Lotado';
+    if (remaining === 1) return '1 vaga';
+    return `${remaining} vagas`;
+  }
+
+  /** Percentual de ocupação para a barra visual (0–100) */
+  occupancyPercent(slot: SlotInfo): number {
+    const capacity = slot.capacity ?? 0;
+    const booked = slot.bookedCount ?? 0;
+    if (capacity <= 0) return slot.available ? 0 : 100;
+    return Math.min(100, Math.round((booked / capacity) * 100));
   }
 }
