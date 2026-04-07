@@ -1,169 +1,186 @@
 <app-page-shell>
   @if (loading) {
-    <div class="loading-center"><div class="spinner"></div></div>
+  <div class="loading-center">
+    <div class="spinner"></div>
+  </div>
   }
 
   @if (!loading) {
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- VIEW MODE                                                  -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    @if (slug && template) {
-      <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
-        <a page-actions routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
-      </app-page-header>
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- VIEW MODE                                                  -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  @if (slug && template) {
+  <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
+    <a page-actions routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
+  </app-page-header>
 
-      <!-- Link público -->
-      <div class="card" style="margin-bottom: 16px; padding: 16px 20px">
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 4px">
-          Link público para preenchimento
-        </p>
-        <a [routerLink]="formLink" style="font-size: 14px; font-weight: 600; color: #3b82f6">
-          {{ formLink }}
-        </a>
-      </div>
+  <!-- Links públicos -->
+  <div class="card" style="margin-bottom: 16px; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+    <p
+      style="font-size: 12px; font-weight: 600; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: .05em;">
+      Links públicos
+    </p>
 
-      <!-- Resumo agenda -->
-      @if (template.hasSchedule && template.scheduleConfig) {
-        <div
-          class="card"
-          style="margin-bottom: 16px; border-left: 4px solid #6366f1"
-        >
-          <!-- Cabeçalho com botão de edição -->
-          <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
-            <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0">
-              Configuração de agenda
-            </p>
-            <button
-              type="button"
-              class="btn-outline"
-              style="font-size: 12px; padding: 5px 12px"
-              (click)="editingSchedule = !editingSchedule"
-            >
-              {{ editingSchedule ? 'Cancelar' : '✎ Editar agenda' }}
-            </button>
-          </div>
+    <!-- Link de preenchimento / agendamento — oculto para lista de presença pura -->
+    @if (!template.hasAttendance) {
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: #94a3b8; white-space: nowrap; min-width: 120px;">
+        {{ template.hasSchedule ? 'Agendamento' : 'Preenchimento' }}
+      </span>
+      <a [routerLink]="slugLink"
+        style="flex: 1; font-size: 13px; font-weight: 600; color: #3b82f6; word-break: break-all;">
+        {{ slugLink }}
+      </a>
+      <button type="button" class="btn-outline" style="font-size: 12px; padding: 4px 10px; white-space: nowrap;"
+        (click)="copyLink(slugLink)">
+        Copiar
+      </button>
+    </div>
+    }
 
-          <!-- Resumo (leitura) -->
-          @if (!editingSchedule) {
-            <div style="padding: 0 20px 14px; display: flex; gap: 24px; flex-wrap: wrap">
-              <span style="font-size: 13px; color: #475569">
-                Horário:
-                <strong>{{ template.scheduleConfig.startTime.substring(0, 5) }} – {{ template.scheduleConfig.endTime.substring(0, 5) }}</strong>
-              </span>
-              <span style="font-size: 13px; color: #475569">
-                Duração: <strong>{{ template.scheduleConfig.slotDurationMinutes }} min</strong>
-              </span>
-              <span style="font-size: 13px; color: #475569">
-                Agenda até: <strong>{{ template.scheduleConfig.maxDaysAhead }} dias à frente</strong>
-              </span>
-              <span style="font-size: 13px; color: #475569">
-                Vagas/horário: <strong>{{ template.scheduleConfig.slotCapacity }}</strong>
-              </span>
-              <span style="font-size: 13px; color: #475569">
-                Controle duplicidade:
-                <strong>
-                  @if (!template.scheduleConfig.dedupFields || template.scheduleConfig.dedupFields.length === 0) {
-                    Livre (múltiplos permitidos)
-                  } @else {
-                    por {{ template.scheduleConfig.dedupFields.join(' + ') }}
-                  }
-                </strong>
-              </span>
-            </div>
+    <!-- Link da lista — sempre visível -->
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: #94a3b8; white-space: nowrap; min-width: 120px;">
+        {{ template.hasSchedule ? 'Ver agenda' : template.hasAttendance ? 'Lista de presença' : 'Ver respostas' }}
+      </span>
+      <a [routerLink]="listLink"
+        style="flex: 1; font-size: 13px; font-weight: 600; color: #3b82f6; word-break: break-all;">
+        {{ listLink }}
+      </a>
+      <button type="button" class="btn-outline" style="font-size: 12px; padding: 4px 10px; white-space: nowrap;"
+        (click)="copyLink(listLink)">
+        Copiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Resumo agenda -->
+  @if (template.hasSchedule && template.scheduleConfig) {
+  <div class="card" style="margin-bottom: 16px; border-left: 4px solid #6366f1">
+    <!-- Cabeçalho com botão de edição -->
+    <div
+      style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
+      <p style="font-size: 13px; font-weight: 600; color: #6366f1; margin: 0">
+        Configuração de agenda
+      </p>
+      <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px"
+        (click)="editingSchedule = !editingSchedule">
+        {{ editingSchedule ? 'Cancelar' : '✎ Editar agenda' }}
+      </button>
+    </div>
+
+    <!-- Resumo (leitura) -->
+    @if (!editingSchedule) {
+    <div style="padding: 0 20px 14px; display: flex; gap: 24px; flex-wrap: wrap">
+      <span style="font-size: 13px; color: #475569">
+        Horário:
+        <strong>{{ template.scheduleConfig.startTime.substring(0, 5) }} – {{
+          template.scheduleConfig.endTime.substring(0, 5) }}</strong>
+      </span>
+      <span style="font-size: 13px; color: #475569">
+        Duração: <strong>{{ template.scheduleConfig.slotDurationMinutes }} min</strong>
+      </span>
+      <span style="font-size: 13px; color: #475569">
+        Agenda até: <strong>{{ template.scheduleConfig.maxDaysAhead }} dias à frente</strong>
+      </span>
+      <span style="font-size: 13px; color: #475569">
+        Vagas/horário: <strong>{{ template.scheduleConfig.slotCapacity }}</strong>
+      </span>
+      <span style="font-size: 13px; color: #475569">
+        Controle duplicidade:
+        <strong>
+          @if (!template.scheduleConfig.dedupFields || template.scheduleConfig.dedupFields.length === 0) {
+          Livre (múltiplos permitidos)
+          } @else {
+          por {{ template.scheduleConfig.dedupFields.join(' + ') }}
           }
+        </strong>
+      </span>
+    </div>
+    }
 
-          <!-- Formulário inline de edição -->
-          @if (editingSchedule) {
-            <div style="padding: 0 20px 20px" [formGroup]="scheduleConfig">
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px">
-                <div class="field" style="margin-bottom: 0">
-                  <label>Horário inicial</label>
-                  <input type="time" formControlName="startTime" />
-                </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Horário final</label>
-                  <input type="time" formControlName="endTime" />
-                </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Duração (min)</label>
-                  <input type="number" formControlName="slotDurationMinutes" min="15" max="480" />
-                </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Máx. dias à frente</label>
-                  <input type="number" formControlName="maxDaysAhead" min="1" max="365" />
-                </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Vagas por horário</label>
-                  <input type="number" formControlName="slotCapacity" min="1" />
-                </div>
-                <div class="field" style="margin-bottom: 0; grid-column: span 3">
-                  <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
-                    Controle de duplicidade
-                    <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — marque quais campos identificam a pessoa</span>
-                  </label>
-                  @if (fieldLabels.length === 0) {
-                    <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
-                      Nenhum campo disponível no template.
-                    </p>
-                  } @else {
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                      @for (label of fieldLabels; track label) {
-                        <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+    <!-- Formulário inline de edição -->
+    @if (editingSchedule) {
+    <div style="padding: 0 20px 20px" [formGroup]="scheduleConfig">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px">
+        <div class="field" style="margin-bottom: 0">
+          <label>Horário inicial</label>
+          <input type="time" formControlName="startTime" />
+        </div>
+        <div class="field" style="margin-bottom: 0">
+          <label>Horário final</label>
+          <input type="time" formControlName="endTime" />
+        </div>
+        <div class="field" style="margin-bottom: 0">
+          <label>Duração (min)</label>
+          <input type="number" formControlName="slotDurationMinutes" min="15" max="480" />
+        </div>
+        <div class="field" style="margin-bottom: 0">
+          <label>Máx. dias à frente</label>
+          <input type="number" formControlName="maxDaysAhead" min="1" max="365" />
+        </div>
+        <div class="field" style="margin-bottom: 0">
+          <label>Vagas por horário</label>
+          <input type="number" formControlName="slotCapacity" min="1" />
+        </div>
+        <div class="field" style="margin-bottom: 0; grid-column: span 3">
+          <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
+            Controle de duplicidade
+            <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — marque quais campos identificam a
+              pessoa</span>
+          </label>
+          @if (fieldLabels.length === 0) {
+          <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
+            Nenhum campo disponível no template.
+          </p>
+          } @else {
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            @for (label of fieldLabels; track label) {
+            <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
                                       border: 1px solid; border-radius: 20px; cursor: pointer; font-size: 12px;
                                       transition: all 0.15s; user-select: none"
-                               [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
-                               [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
-                               [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
-                               [style.fontWeight]="isDedupField(label) ? '600' : '400'">
-                          <input type="checkbox"
-                                 [checked]="isDedupField(label)"
-                                 (change)="toggleDedupField(label, $event)"
-                                 style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
-                          {{ label }}
-                        </label>
-                      }
-                    </div>
-                    <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
-                      Sem seleção = múltiplos agendamentos livres.
-                    </p>
-                  }
-                </div>
-              </div>
-              <button
-                type="button"
-                class="btn-primary"
-                style="font-size: 13px"
-                [disabled]="savingSchedule"
-                (click)="saveScheduleConfig()"
-              >
-                {{ savingSchedule ? 'Salvando...' : 'Salvar configuração' }}
-              </button>
-            </div>
+              [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
+              [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
+              [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
+              [style.fontWeight]="isDedupField(label) ? '600' : '400'">
+              <input type="checkbox" [checked]="isDedupField(label)" (change)="toggleDedupField(label, $event)"
+                style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
+              {{ label }}
+            </label>
+            }
+          </div>
+          <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
+            Sem seleção = múltiplos agendamentos livres.
+          </p>
           }
         </div>
-      }
+      </div>
+      <button type="button" class="btn-primary" style="font-size: 13px" [disabled]="savingSchedule"
+        (click)="saveScheduleConfig()">
+        {{ savingSchedule ? 'Salvando...' : 'Salvar configuração' }}
+      </button>
+    </div>
+    }
+  </div>
+  }
 
-      <!-- Lista de presença (view) -->
-      @if (importingAttendance) {
-        <div
-          class="card"
-          style="
+  <!-- Lista de presença (view) -->
+  @if (importingAttendance) {
+  <div class="card" style="
             margin-bottom: 16px;
             padding: 24px;
             text-align: center;
             color: #64748b;
             font-size: 13px;
-          "
-        >
-          <div class="spinner" style="margin: 0 auto 8px"></div>
-          Importando lista de presença...
-        </div>
-      }
+          ">
+    <div class="spinner" style="margin: 0 auto 8px"></div>
+    Importando lista de presença...
+  </div>
+  }
 
-      @if (!importingAttendance && attendanceRecords.length > 0) {
-        <div class="card" style="margin-bottom: 16px; border-left: 4px solid #10b981">
-          <div
-            style="
+  @if (!importingAttendance && attendanceRecords.length > 0) {
+  <div class="card" style="margin-bottom: 16px; border-left: 4px solid #10b981">
+    <div style="
               padding: 14px 20px;
               display: flex;
               justify-content: space-between;
@@ -171,38 +188,29 @@
               border-bottom: 1px solid #e2e8f0;
               flex-wrap: wrap;
               gap: 10px;
-            "
-          >
-            <div>
-              <p style="font-size: 14px; font-weight: 700; color: #065f46; margin: 0">
-                Lista de presença
-                <span
-                  style="
+            ">
+      <div>
+        <p style="font-size: 14px; font-weight: 700; color: #065f46; margin: 0">
+          Lista de presença
+          <span style="
                     background: #d1fae5;
                     color: #065f46;
                     border-radius: 99px;
                     padding: 2px 10px;
                     font-size: 11px;
                     margin-left: 8px;
-                  "
-                  >{{ attendanceRecords.length }} registros</span
-                >
-              </p>
-              <p style="font-size: 12px; color: #94a3b8; margin: 3px 0 0">
-                Gerencie e marque presenças em "Ver respostas"
-              </p>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap">
-              <button
-                type="button"
-                class="btn-outline"
-                style="font-size: 12px; padding: 6px 12px"
-                (click)="exportAttendance()"
-              >
-                ⬇ Exportar Excel
-              </button>
-              <label
-                style="
+                  ">{{ attendanceRecords.length }} registros</span>
+        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 3px 0 0">
+          Gerencie e marque presenças em "Ver respostas"
+        </p>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <button type="button" class="btn-outline" style="font-size: 12px; padding: 6px 12px"
+          (click)="exportAttendance()">
+          ⬇ Exportar Excel
+        </button>
+        <label style="
                   cursor: pointer;
                   display: inline-flex;
                   align-items: center;
@@ -214,33 +222,24 @@
                   font-size: 12px;
                   font-weight: 600;
                   color: #334155;
-                "
-                onmouseover="
+                " onmouseover="
                   this.style.borderColor = '#10b981';
                   this.style.color = '#065f46';
-                "
-                onmouseout="
+                " onmouseout="
                   this.style.borderColor = '#e2e8f0';
                   this.style.color = '#334155';
-                "
-              >
-                🔄 Reimportar planilha
-                <input
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  style="display: none"
-                  (change)="onAttendanceFileChange($event)"
-                />
-              </label>
-            </div>
-          </div>
-          <div style="overflow-x: auto; max-height: 260px; overflow-y: auto">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px">
-              <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1">
-                <tr>
-                  @for (col of attendanceCols; track col) {
-                    <th
-                      style="
+                ">
+          🔄 Reimportar planilha
+          <input type="file" accept=".xlsx,.xls,.csv" style="display: none" (change)="onAttendanceFileChange($event)" />
+        </label>
+      </div>
+    </div>
+    <div style="overflow-x: auto; max-height: 260px; overflow-y: auto">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+        <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1">
+          <tr>
+            @for (col of attendanceCols; track col) {
+            <th style="
                         padding: 8px 14px;
                         text-align: left;
                         font-size: 11px;
@@ -250,195 +249,160 @@
                         letter-spacing: 0.04em;
                         border-bottom: 1px solid #e2e8f0;
                         white-space: nowrap;
-                      "
-                    >
-                      {{ col }}
-                    </th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (r of attendanceRecords; track r.id) {
-                  <tr style="border-bottom: 1px solid #f1f5f9">
-                    @for (col of attendanceCols; track col) {
-                      <td style="padding: 8px 14px; color: #334155; white-space: nowrap">
-                        {{ r.rowData[col] || '-' }}
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
-
-      <!-- Campos do formulário -->
-      <div class="card">
-        <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0">
-          <h2 style="font-size: 15px">Campos do formulário</h2>
-        </div>
-        <div style="padding: 8px 0">
-          @for (f of template.fields; track f.id) {
-            <div class="field-row">
-              <div class="field-row-info">
-                <span class="field-row-label">{{ f.label }}</span>
-                <span class="badge badge-gray">{{ f.type }}</span>
-              </div>
-              @if (f.required) {
-                <span class="badge badge-red">Obrigatório</span>
-              }
-            </div>
+                      ">
+              {{ col }}
+            </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of attendanceRecords; track r.id) {
+          <tr style="border-bottom: 1px solid #f1f5f9">
+            @for (col of attendanceCols; track col) {
+            <td style="padding: 8px 14px; color: #334155; white-space: nowrap">
+              {{ r.rowData[col] || '-' }}
+            </td>
+            }
+          </tr>
           }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+
+  <!-- Campos do formulário -->
+  <div class="card">
+    <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0">
+      <h2 style="font-size: 15px">Campos do formulário</h2>
+    </div>
+    <div style="padding: 8px 0">
+      @for (f of template.fields; track f.id) {
+      <div class="field-row">
+        <div class="field-row-info">
+          <span class="field-row-label">{{ f.label }}</span>
+          <span class="badge badge-gray">{{ f.type }}</span>
         </div>
+        @if (f.required) {
+        <span class="badge badge-red">Obrigatório</span>
+        }
       </div>
-    }
+      }
+    </div>
+  </div>
+  }
 
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- CREATE MODE                                                -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    @if (!slug) {
-      <app-page-header title="Criar formulário" subtitle="Configure o template e os campos do formulário"></app-page-header>
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- CREATE MODE                                                -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  @if (!slug) {
+  <app-page-header title="Criar formulário" subtitle="Configure o template e os campos do formulário"></app-page-header>
 
-      <form [formGroup]="templateForm" (ngSubmit)="submit()">
-        <div class="form-grid">
-          <!-- Coluna esquerda: configuração geral -->
-          <div class="form-section card">
-            <div class="section-header">
-              <h2 class="section-title">Configuração geral</h2>
-            </div>
-            <div class="section-body">
-              <div class="field">
-                <label>Cliente <span class="required">*</span></label>
-                <select formControlName="clientId">
-                  <option [ngValue]="null" disabled>Selecione um cliente</option>
-                  @for (c of clients; track c.id) {
-                    <option [ngValue]="c.id">{{ c.name }}</option>
-                  }
-                </select>
-              </div>
+  <form [formGroup]="templateForm" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <!-- Coluna esquerda: configuração geral -->
+      <div class="form-section card">
+        <div class="section-header">
+          <h2 class="section-title">Configuração geral</h2>
+        </div>
+        <div class="section-body">
+          <div class="field">
+            <label>Cliente <span class="required">*</span></label>
+            <select formControlName="clientId">
+              <option [ngValue]="null" disabled>Selecione um cliente</option>
+              @for (c of clients; track c.id) {
+              <option [ngValue]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
 
-              <app-form-field
-                [control]="nameControl"
-                label="Nome do template"
-                id="template-name"
-                placeholder="Ex: Formulário de atendimento"
-                [required]="true"
-              />
+          <app-form-field [control]="nameControl" label="Nome do template" id="template-name"
+            placeholder="Ex: Formulário de atendimento" [required]="true" />
 
-              <!-- Toggle: agenda -->
-              <div class="field" style="margin-top: 8px">
-                <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
-                  <input
-                    type="checkbox"
-                    formControlName="hasSchedule"
-                    style="width: 16px; height: 16px; cursor: pointer"
-                  />
-                  <span>Habilitar agendamento por horário</span>
-                </label>
-                <small
-                  style="
+          <!-- Toggle: agenda -->
+          <div class="field" style="margin-top: 8px">
+            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+              <input type="checkbox" formControlName="hasSchedule" style="width: 16px; height: 16px; cursor: pointer" />
+              <span>Habilitar agendamento por horário</span>
+            </label>
+            <small style="
                     display: block;
                     margin-top: 4px;
                     color: #94a3b8;
                     font-size: 12px;
                     padding-left: 26px;
-                  "
-                >
-                  Permite definir um range de horários com slots por atendimento
-                </small>
-              </div>
+                  ">
+              Permite definir um range de horários com slots por atendimento
+            </small>
+          </div>
 
-              <!-- Toggle: lista de presença -->
-              <div class="field" style="margin-top: 4px">
-                <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
-                  <input
-                    type="checkbox"
-                    formControlName="hasAttendance"
-                    style="width: 16px; height: 16px; cursor: pointer"
-                  />
-                  <span>Habilitar lista de presença</span>
-                </label>
-                <small
-                  style="
+          <!-- Toggle: lista de presença -->
+          <div class="field" style="margin-top: 4px">
+            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+              <input type="checkbox" formControlName="hasAttendance"
+                style="width: 16px; height: 16px; cursor: pointer" />
+              <span>Habilitar lista de presença</span>
+            </label>
+            <small style="
                     display: block;
                     margin-top: 4px;
                     color: #94a3b8;
                     font-size: 12px;
                     padding-left: 26px;
-                  "
-                >
-                  Importe uma planilha Excel com os participantes para controle de presença
-                </small>
-              </div>
+                  ">
+              Importe uma planilha Excel com os participantes para controle de presença
+            </small>
+          </div>
 
-              <!-- Upload da planilha (aparece ao habilitar) -->
-              @if (hasAttendance) {
-                <div
-                  style="
+          <!-- Upload da planilha (aparece ao habilitar) -->
+          @if (hasAttendance) {
+          <div style="
                     margin-top: 12px;
                     padding: 14px 16px;
                     background: #f0fdf4;
                     border: 1px dashed #6ee7b7;
                     border-radius: 10px;
-                  "
-                >
-                  @if (!pendingAttendanceFileName) {
-                    <label
-                      style="
+                  ">
+            @if (!pendingAttendanceFileName) {
+            <label style="
                         cursor: pointer;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         gap: 8px;
                         padding: 8px 0;
-                      "
-                    >
-                      <span style="font-size: 28px">📂</span>
-                      <span style="font-size: 13px; font-weight: 600; color: #065f46"
-                        >Clique para selecionar a planilha</span
-                      >
-                      <span style="font-size: 11px; color: #94a3b8"
-                        >Formatos aceitos: .xlsx, .xls, .csv</span
-                      >
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        style="display: none"
-                        (change)="onPendingFileChange($event)"
-                      />
-                    </label>
-                  }
+                      ">
+              <span style="font-size: 28px">📂</span>
+              <span style="font-size: 13px; font-weight: 600; color: #065f46">Clique para selecionar a planilha</span>
+              <span style="font-size: 11px; color: #94a3b8">Formatos aceitos: .xlsx, .xls, .csv</span>
+              <input type="file" accept=".xlsx,.xls,.csv" style="display: none"
+                (change)="onPendingFileChange($event)" />
+            </label>
+            }
 
-                  @if (parsingFile) {
-                    <div
-                      style="text-align: center; color: #64748b; font-size: 13px; padding: 8px 0"
-                    >
-                      Lendo arquivo...
-                    </div>
-                  }
+            @if (parsingFile) {
+            <div style="text-align: center; color: #64748b; font-size: 13px; padding: 8px 0">
+              Lendo arquivo...
+            </div>
+            }
 
-                  @if (pendingAttendanceFileName && !parsingFile) {
-                    <div>
-                      <div
-                        style="
+            @if (pendingAttendanceFileName && !parsingFile) {
+            <div>
+              <div style="
                           display: flex;
                           align-items: center;
                           justify-content: space-between;
                           margin-bottom: 10px;
                           flex-wrap: wrap;
                           gap: 8px;
-                        "
-                      >
-                        <div style="font-size: 13px; color: #065f46">
-                          <strong>{{ pendingAttendanceFileName }}</strong>
-                          <span style="margin-left: 8px; color: #64748b"
-                            >{{ pendingAttendanceRows.length }} registros encontrados</span
-                          >
-                        </div>
-                        <div style="display: flex; gap: 6px">
-                          <label
-                            style="
+                        ">
+                <div style="font-size: 13px; color: #065f46">
+                  <strong>{{ pendingAttendanceFileName }}</strong>
+                  <span style="margin-left: 8px; color: #64748b">{{ pendingAttendanceRows.length }} registros
+                    encontrados</span>
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <label style="
                               cursor: pointer;
                               font-size: 11px;
                               font-weight: 600;
@@ -447,20 +411,12 @@
                               border: 1px solid #e2e8f0;
                               padding: 4px 10px;
                               border-radius: 6px;
-                            "
-                          >
-                            Trocar arquivo
-                            <input
-                              type="file"
-                              accept=".xlsx,.xls,.csv"
-                              style="display: none"
-                              (change)="onPendingFileChange($event)"
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            (click)="clearPendingFile()"
-                            style="
+                            ">
+                    Trocar arquivo
+                    <input type="file" accept=".xlsx,.xls,.csv" style="display: none"
+                      (change)="onPendingFileChange($event)" />
+                  </label>
+                  <button type="button" (click)="clearPendingFile()" style="
                               font-size: 11px;
                               font-weight: 600;
                               color: #ef4444;
@@ -469,37 +425,31 @@
                               padding: 4px 10px;
                               border-radius: 6px;
                               cursor: pointer;
-                            "
-                          >
-                            Remover
-                          </button>
-                        </div>
-                      </div>
+                            ">
+                    Remover
+                  </button>
+                </div>
+              </div>
 
-                      <!-- Preview das primeiras linhas -->
-                      @if (pendingAttendanceCols.length > 0) {
-                        <div
-                          style="
+              <!-- Preview das primeiras linhas -->
+              @if (pendingAttendanceCols.length > 0) {
+              <div style="
                             overflow-x: auto;
                             max-height: 180px;
                             overflow-y: auto;
                             border-radius: 6px;
                             border: 1px solid #d1fae5;
-                          "
-                        >
-                          <table
-                            style="
+                          ">
+                <table style="
                               width: 100%;
                               border-collapse: collapse;
                               font-size: 12px;
                               background: #fff;
-                            "
-                          >
-                            <thead style="position: sticky; top: 0; background: #ecfdf5">
-                              <tr>
-                                @for (col of pendingAttendanceCols; track col) {
-                                  <th
-                                    style="
+                            ">
+                  <thead style="position: sticky; top: 0; background: #ecfdf5">
+                    <tr>
+                      @for (col of pendingAttendanceCols; track col) {
+                      <th style="
                                       padding: 6px 10px;
                                       text-align: left;
                                       font-weight: 700;
@@ -509,132 +459,101 @@
                                       letter-spacing: 0.04em;
                                       border-bottom: 1px solid #d1fae5;
                                       white-space: nowrap;
-                                    "
-                                  >
-                                    {{ col }}
-                                  </th>
-                                }
-                              </tr>
-                            </thead>
-                            <tbody>
-                              @for (row of pendingAttendanceRows.slice(0, 5); track $index) {
-                                <tr style="border-bottom: 1px solid #f0fdf4">
-                                  @for (col of pendingAttendanceCols; track col) {
-                                    <td
-                                      style="padding: 5px 10px; color: #334155; white-space: nowrap"
-                                    >
-                                      {{ row[col] || '-' }}
-                                    </td>
-                                  }
-                                </tr>
-                              }
-                              @if (pendingAttendanceRows.length > 5) {
-                                <tr>
-                                  <td
-                                    [attr.colspan]="pendingAttendanceCols.length"
-                                    style="
+                                    ">
+                        {{ col }}
+                      </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of pendingAttendanceRows.slice(0, 5); track $index) {
+                    <tr style="border-bottom: 1px solid #f0fdf4">
+                      @for (col of pendingAttendanceCols; track col) {
+                      <td style="padding: 5px 10px; color: #334155; white-space: nowrap">
+                        {{ row[col] || '-' }}
+                      </td>
+                      }
+                    </tr>
+                    }
+                    @if (pendingAttendanceRows.length > 5) {
+                    <tr>
+                      <td [attr.colspan]="pendingAttendanceCols.length" style="
                                       padding: 6px 10px;
                                       text-align: center;
                                       font-size: 11px;
                                       color: #94a3b8;
                                       font-style: italic;
-                                    "
-                                  >
-                                    + {{ pendingAttendanceRows.length - 5 }} registros adicionais...
-                                  </td>
-                                </tr>
-                              }
-                            </tbody>
-                          </table>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
+                                    ">
+                        + {{ pendingAttendanceRows.length - 5 }} registros adicionais...
+                      </td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
               }
             </div>
+            }
           </div>
+          }
+        </div>
+      </div>
 
-          <!-- Coluna direita: campos -->
-          <div class="form-section card">
-            <div
-              class="section-header"
-              style="display: flex; justify-content: space-between; align-items: center"
-            >
-              <h2 class="section-title">Campos do formulário</h2>
-              <button
-                type="button"
-                class="btn-outline"
-                style="font-size: 12px; padding: 5px 12px"
-                (click)="addField()"
-              >
-                + Adicionar campo
-              </button>
-            </div>
-            <div class="section-body">
-              @if (fields.length === 0) {
-                <div class="empty-state" style="padding: 32px 16px">
-                  <div class="empty-icon" style="font-size: 28px">📝</div>
-                  <p style="font-size: 13px">Nenhum campo adicionado</p>
-                  <small>Clique em "Adicionar campo" para começar</small>
+      <!-- Coluna direita: campos -->
+      <div class="form-section card">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center">
+          <h2 class="section-title">Campos do formulário</h2>
+          <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px" (click)="addField()">
+            + Adicionar campo
+          </button>
+        </div>
+        <div class="section-body">
+          @if (fields.length === 0) {
+          <div class="empty-state" style="padding: 32px 16px">
+            <div class="empty-icon" style="font-size: 28px">📝</div>
+            <p style="font-size: 13px">Nenhum campo adicionado</p>
+            <small>Clique em "Adicionar campo" para começar</small>
+          </div>
+          }
+
+          <div formArrayName="fields" cdkDropList [cdkDropListData]="fields.controls"
+            (cdkDropListDropped)="dropField($event)" class="fields-drop-list">
+            @for (f of fields.controls; track $index) {
+            <div [formGroupName]="$index" class="field-item" cdkDrag>
+              <div class="field-item-header">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span class="drag-handle" cdkDragHandle title="Arrastar para reordenar">⠿</span>
+                  <span class="field-item-number">Campo {{ $index + 1 }}</span>
                 </div>
-              }
-
-              <div
-                formArrayName="fields"
-                cdkDropList
-                [cdkDropListData]="fields.controls"
-                (cdkDropListDropped)="dropField($event)"
-                class="fields-drop-list"
-              >
-                @for (f of fields.controls; track $index) {
-                  <div [formGroupName]="$index" class="field-item" cdkDrag>
-                    <div class="field-item-header">
-                      <div style="display: flex; align-items: center; gap: 8px">
-                        <span class="drag-handle" cdkDragHandle title="Arrastar para reordenar">⠿</span>
-                        <span class="field-item-number">Campo {{ $index + 1 }}</span>
-                      </div>
-                      <div style="display: flex; gap: 6px; align-items: center">
-                        <button
-                          type="button"
-                          class="btn-span-toggle"
-                          [class.active]="f.get('colSpan')?.value === 1"
-                          (click)="toggleFieldSpan($index)"
-                          [title]="f.get('colSpan')?.value === 2 ? 'Clique para meia largura' : 'Clique para largura total'"
-                        >
-                          {{ f.get('colSpan')?.value === 2 ? '⬜ Full' : '▪▪ ½' }}
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-danger"
-                          style="padding: 4px 10px; font-size: 11px"
-                          (click)="removeField($index)"
-                        >
-                          Remover
-                        </button>
-                      </div>
-                    </div>
-                    <div class="cdk-drag-placeholder-custom" *cdkDragPlaceholder></div>
-                    <div class="field-item-body">
-                      <div class="field" style="margin-bottom: 12px">
-                        <label>Label</label>
-                        <input
-                          type="text"
-                          formControlName="label"
-                          placeholder="Ex: Nome completo"
-                        />
-                      </div>
-                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px">
-                        <div class="field" style="margin-bottom: 0">
-                          <label>Tipo</label>
-                          <select formControlName="type">
-                            <option value="text">Texto</option>
-                            <option value="email">Email</option>
-                            <option value="number">Número</option>
-                            <option value="date">Data</option>
-                          </select>
-                        </div>
-                        <!-- <div class="field" style="margin-bottom: 0">
+                <div style="display: flex; gap: 6px; align-items: center">
+                  <button type="button" class="btn-span-toggle" [class.active]="f.get('colSpan')?.value === 1"
+                    (click)="toggleFieldSpan($index)"
+                    [title]="f.get('colSpan')?.value === 2 ? 'Clique para meia largura' : 'Clique para largura total'">
+                    {{ f.get('colSpan')?.value === 2 ? '⬜ Full' : '▪▪ ½' }}
+                  </button>
+                  <button type="button" class="btn-danger" style="padding: 4px 10px; font-size: 11px"
+                    (click)="removeField($index)">
+                    Remover
+                  </button>
+                </div>
+              </div>
+              <div class="cdk-drag-placeholder-custom" *cdkDragPlaceholder></div>
+              <div class="field-item-body">
+                <div class="field" style="margin-bottom: 12px">
+                  <label>Label</label>
+                  <input type="text" formControlName="label" placeholder="Ex: Nome completo" />
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px">
+                  <div class="field" style="margin-bottom: 0">
+                    <label>Tipo</label>
+                    <select formControlName="type">
+                      <option value="text">Texto</option>
+                      <option value="email">Email</option>
+                      <option value="number">Número</option>
+                      <option value="date">Data</option>
+                    </select>
+                  </div>
+                  <!-- <div class="field" style="margin-bottom: 0">
                           <label>Cor do campo</label>
                           <div style="display: flex; align-items: center; gap: 8px">
                             <input
@@ -647,518 +566,603 @@
                             </span>
                           </div>
                         </div> -->
-                        <div class="field" style="margin-bottom: 0">
-                          <label>&nbsp;</label>
-                          <label class="checkbox-label">
-                            <input type="checkbox" formControlName="required" />
-                            <span>Obrigatório</span>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
+                  <div class="field" style="margin-bottom: 0">
+                    <label>&nbsp;</label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" formControlName="required" />
+                      <span>Obrigatório</span>
+                    </label>
                   </div>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Seção de aparência ══ -->
+    <div class="card ap-card" style="margin-top: 16px">
+
+      <!-- Toggle header -->
+      <button type="button" class="ap-toggle" (click)="showAppearance = !showAppearance">
+        <div class="ap-toggle-icon-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.07 4.93A10 10 0 1 0 4.93 19.07M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+        </div>
+        <div class="ap-toggle-text">
+          <span class="ap-toggle-title">Aparência do formulário</span>
+          <span class="ap-toggle-sub">Personalize cores, gradientes e imagens — tudo opcional</span>
+        </div>
+        <svg class="ap-toggle-chevron" [class.ap-toggle-chevron--open]="showAppearance" width="16" height="16"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      @if (showAppearance) {
+      <div class="ap-body" formGroupName="appearance">
+
+        <!-- ══ Coluna esquerda: controles ══ -->
+        <div class="ap-controls">
+
+          <!-- ── 1. Fundo ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+              </svg>
+              Fundo da página
+            </p>
+
+            <!-- Presets com nome visível -->
+            <p class="ap-hint">Clique em um preset para aplicar</p>
+            <div class="ap-presets-grid">
+              @for (p of gradientPresets; track p.value) {
+              <button type="button" class="ap-preset-tile" [style.background]="p.value"
+                [class.ap-preset-tile--active]="templateForm.get('appearance.backgroundGradient')?.value === p.value"
+                (click)="applyGradientPreset(p.value)">
+                <span class="ap-preset-name">{{ p.label }}</span>
+              </button>
+              }
+            </div>
+
+            <!-- Cor sólida -->
+            <div class="ap-color-field">
+              <label class="ap-label">Cor sólida de fundo</label>
+              <div class="ap-color-control">
+                <input type="color" formControlName="backgroundColor" class="ap-color-input"
+                  (input)="onColorLiveChange('backgroundColor', $event)" />
+                <div class="ap-color-swatch"
+                  [style.background]="templateForm.get('appearance.backgroundColor')?.value || 'transparent'"
+                  [class.ap-color-swatch--empty]="!templateForm.get('appearance.backgroundColor')?.value">
+                </div>
+                <span class="ap-color-value">
+                  {{ templateForm.get('appearance.backgroundColor')?.value || 'Não definido' }}
+                </span>
+                @if (templateForm.get('appearance.backgroundColor')?.value) {
+                <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('backgroundColor')"
+                  title="Remover">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+                }
+              </div>
+            </div>
+
+            <!-- Banner auto-contraste -->
+            @if (hasBgSelected) {
+            <div class="ap-contrast-banner">
+              <div class="ap-contrast-banner__preview">
+                <span class="ap-contrast-banner__dot" style="background: var(--warning)"></span>
+                Fundo escuro detectado
+              </div>
+              <div class="ap-contrast-banner__content">
+                <p>Aplicar <strong>contraste automático</strong> no texto?</p>
+                <p class="ap-contrast-banner__sub">Ajusta cor do texto e campos para garantir legibilidade.</p>
+              </div>
+              <button type="button" class="ap-contrast-btn" (click)="applyAutoContrast()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                </svg>
+                Auto contraste
+              </button>
+            </div>
+            }
+
+            <!-- Imagem de fundo -->
+            <div class="ap-color-field">
+              <label class="ap-label">
+                Imagem de fundo
+                <span class="ap-label-hint">sobrepõe cor e gradiente</span>
+              </label>
+              <div class="img-upload-area"
+                [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
+                @if (imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value) {
+                <div class="img-upload-preview">
+                  <img
+                    [src]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value"
+                    alt="Preview" />
+                  <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageUrl')"
+                    title="Remover imagem">×</button>
+                </div>
+                } @else {
+                <label class="img-upload-label">
+                  @if (uploadingField() === 'backgroundImageUrl') {
+                  <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                  <span>Enviando...</span>
+                  } @else {
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" style="opacity:.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <span>Clique para enviar imagem</span>
+                  <span class="img-upload-hint">JPG, PNG · máx. 5 MB</span>
+                  }
+                  <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                    (change)="onImageFileChange('backgroundImageUrl', $event)" [disabled]="uploadingField() !== null" />
+                </label>
                 }
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- ══ Seção de aparência ══ -->
-        <div class="card ap-card" style="margin-top: 16px">
-
-          <!-- Toggle header -->
-          <button type="button" class="ap-toggle" (click)="showAppearance = !showAppearance">
-            <div class="ap-toggle-icon-wrap">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          <!-- ── 2. Texto & Botão ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <polyline points="4 7 4 4 20 4 20 7" />
+                <line x1="9" y1="20" x2="15" y2="20" />
+                <line x1="12" y1="4" x2="12" y2="20" />
               </svg>
-            </div>
-            <div class="ap-toggle-text">
-              <span class="ap-toggle-title">Aparência do formulário</span>
-              <span class="ap-toggle-sub">Personalize cores, gradientes e imagens — tudo opcional</span>
-            </div>
-            <svg class="ap-toggle-chevron" [class.ap-toggle-chevron--open]="showAppearance"
-              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
+              Texto &amp; Botão
+            </p>
 
-          @if (showAppearance) {
-            <div class="ap-body" formGroupName="appearance">
-
-              <!-- ══ Coluna esquerda: controles ══ -->
-              <div class="ap-controls">
-
-                <!-- ── 1. Fundo ── -->
-                <div class="ap-section">
-                  <p class="ap-section-label">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                    Fundo da página
-                  </p>
-
-                  <!-- Presets com nome visível -->
-                  <p class="ap-hint">Clique em um preset para aplicar</p>
-                  <div class="ap-presets-grid">
-                    @for (p of gradientPresets; track p.value) {
-                      <button
-                        type="button"
-                        class="ap-preset-tile"
-                        [style.background]="p.value"
-                        [class.ap-preset-tile--active]="templateForm.get('appearance.backgroundGradient')?.value === p.value"
-                        (click)="applyGradientPreset(p.value)"
-                      >
-                        <span class="ap-preset-name">{{ p.label }}</span>
-                      </button>
-                    }
-                  </div>
-
-                  <!-- Cor sólida -->
-                  <div class="ap-color-field">
-                    <label class="ap-label">Cor sólida de fundo</label>
-                    <div class="ap-color-control">
-                      <input type="color" formControlName="backgroundColor" class="ap-color-input"
-                        (input)="onColorLiveChange('backgroundColor', $event)" />
-                      <div class="ap-color-swatch"
-                        [style.background]="templateForm.get('appearance.backgroundColor')?.value || 'transparent'"
-                        [class.ap-color-swatch--empty]="!templateForm.get('appearance.backgroundColor')?.value">
-                      </div>
-                      <span class="ap-color-value">
-                        {{ templateForm.get('appearance.backgroundColor')?.value || 'Não definido' }}
-                      </span>
-                      @if (templateForm.get('appearance.backgroundColor')?.value) {
-                        <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('backgroundColor')" title="Remover">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- Banner auto-contraste -->
-                  @if (hasBgSelected) {
-                    <div class="ap-contrast-banner">
-                      <div class="ap-contrast-banner__preview">
-                        <span class="ap-contrast-banner__dot" style="background: var(--warning)"></span>
-                        Fundo escuro detectado
-                      </div>
-                      <div class="ap-contrast-banner__content">
-                        <p>Aplicar <strong>contraste automático</strong> no texto?</p>
-                        <p class="ap-contrast-banner__sub">Ajusta cor do texto e campos para garantir legibilidade.</p>
-                      </div>
-                      <button type="button" class="ap-contrast-btn" (click)="applyAutoContrast()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-                        Auto contraste
-                      </button>
-                    </div>
+            <div class="ap-color-row-grid">
+              <div class="ap-color-field">
+                <label class="ap-label">Texto do formulário</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="formTextColor" class="ap-color-input"
+                    (input)="onColorLiveChange('formTextColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.formTextColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.formTextColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão'
+                    }}</span>
+                  @if (templateForm.get('appearance.formTextColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('formTextColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
                   }
-
-                  <!-- Imagem de fundo -->
-                  <div class="ap-color-field">
-                    <label class="ap-label">
-                      Imagem de fundo
-                      <span class="ap-label-hint">sobrepõe cor e gradiente</span>
-                    </label>
-                    <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
-                      @if (imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value) {
-                        <div class="img-upload-preview">
-                          <img [src]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value" alt="Preview" />
-                          <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageUrl')" title="Remover imagem">×</button>
-                        </div>
-                      } @else {
-                        <label class="img-upload-label">
-                          @if (uploadingField() === 'backgroundImageUrl') {
-                            <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
-                            <span>Enviando...</span>
-                          } @else {
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            <span>Clique para enviar imagem</span>
-                            <span class="img-upload-hint">JPG, PNG · máx. 5 MB</span>
-                          }
-                          <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                            (change)="onImageFileChange('backgroundImageUrl', $event)"
-                            [disabled]="uploadingField() !== null" />
-                        </label>
-                      }
-                    </div>
-                  </div>
                 </div>
-
-                <!-- ── 2. Texto & Botão ── -->
-                <div class="ap-section">
-                  <p class="ap-section-label">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-                    Texto &amp; Botão
-                  </p>
-
-                  <div class="ap-color-row-grid">
-                    <div class="ap-color-field">
-                      <label class="ap-label">Texto do formulário</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="formTextColor" class="ap-color-input"
-                          (input)="onColorLiveChange('formTextColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.formTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.formTextColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão' }}</span>
-                        @if (templateForm.get('appearance.formTextColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('formTextColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Cor do botão</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="primaryColor" class="ap-color-input"
-                          (input)="onColorLiveChange('primaryColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.primaryColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.primaryColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão' }}</span>
-                        @if (templateForm.get('appearance.primaryColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('primaryColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Fundo dos campos</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="fieldBackgroundColor" class="ap-color-input"
-                          (input)="onColorLiveChange('fieldBackgroundColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBackgroundColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão' }}</span>
-                        @if (templateForm.get('appearance.fieldBackgroundColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBackgroundColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Texto dos campos</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="fieldTextColor" class="ap-color-input"
-                          (input)="onColorLiveChange('fieldTextColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.fieldTextColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldTextColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão' }}</span>
-                        @if (templateForm.get('appearance.fieldTextColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldTextColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Fundo dos cards</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="cardBackgroundColor" class="ap-color-input"
-                          (input)="onColorLiveChange('cardBackgroundColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBackgroundColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBackgroundColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto (glass)' }}</span>
-                        @if (templateForm.get('appearance.cardBackgroundColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBackgroundColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Borda dos cards</label>
-                      <div class="ap-color-control">
-                        <input type="color" formControlName="cardBorderColor" class="ap-color-input"
-                          (input)="onColorLiveChange('cardBorderColor', $event)" />
-                        <div class="ap-color-swatch" [style.background]="templateForm.get('appearance.cardBorderColor')?.value || 'transparent'" [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBorderColor')?.value"></div>
-                        <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto' }}</span>
-                        @if (templateForm.get('appearance.cardBorderColor')?.value) {
-                          <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBorderColor')" title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ── 3. Imagens de topo e rodapé ── -->
-                <div class="ap-section">
-                  <p class="ap-section-label">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Imagens de topo e rodapé
-                  </p>
-
-                  <div class="ap-images-row">
-                    <div class="ap-color-field">
-                      <label class="ap-label">Topo</label>
-                      <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
-                        @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
-                          <div class="img-upload-preview">
-                            <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" alt="Preview header" />
-                            <button type="button" class="img-clear-btn" (click)="clearImage('headerImageUrl')" title="Remover imagem">×</button>
-                          </div>
-                        } @else {
-                          <label class="img-upload-label">
-                            @if (uploadingField() === 'headerImageUrl') {
-                              <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
-                              <span>Enviando...</span>
-                            } @else {
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                              <span>Enviar topo</span>
-                            }
-                            <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                              (change)="onImageFileChange('headerImageUrl', $event)"
-                              [disabled]="uploadingField() !== null" />
-                          </label>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="ap-color-field">
-                      <label class="ap-label">Rodapé</label>
-                      <div class="img-upload-area" [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
-                        @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
-                          <div class="img-upload-preview">
-                            <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" alt="Preview footer" />
-                            <button type="button" class="img-clear-btn" (click)="clearImage('footerImageUrl')" title="Remover imagem">×</button>
-                          </div>
-                        } @else {
-                          <label class="img-upload-label">
-                            @if (uploadingField() === 'footerImageUrl') {
-                              <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
-                              <span>Enviando...</span>
-                            } @else {
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                              <span>Enviar rodapé</span>
-                            }
-                            <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
-                              (change)="onImageFileChange('footerImageUrl', $event)"
-                              [disabled]="uploadingField() !== null" />
-                          </label>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
               </div>
 
-              <!-- ══ Coluna direita: preview live ══ -->
-              <div class="ap-preview-col">
-                <div class="ap-preview-sticky">
+              <div class="ap-color-field">
+                <label class="ap-label">Cor do botão</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="primaryColor" class="ap-color-input"
+                    (input)="onColorLiveChange('primaryColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.primaryColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.primaryColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão'
+                    }}</span>
+                  @if (templateForm.get('appearance.primaryColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('primaryColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
+                  }
+                </div>
+              </div>
 
-                  <p class="ap-section-label">Preview ao vivo</p>
+              <div class="ap-color-field">
+                <label class="ap-label">Fundo dos campos</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="fieldBackgroundColor" class="ap-color-input"
+                    (input)="onColorLiveChange('fieldBackgroundColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.fieldBackgroundColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBackgroundColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão'
+                    }}</span>
+                  @if (templateForm.get('appearance.fieldBackgroundColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBackgroundColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
+                  }
+                </div>
+              </div>
 
-                  <!-- Preview do formulário -->
-                  <div class="ap-preview-page" [ngStyle]="previewPageStyle">
-                    @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
-                      <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value" class="ap-preview-img" alt="" />
-                    }
-                    <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
-                      <div class="ap-preview-form-title">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
-                      <div class="ap-drag-list" cdkDropList [cdkDropListData]="fields.controls" (cdkDropListDropped)="dropField($event)">
-                        @for (field of previewFields; track field.index) {
-                          <div class="ap-drag-item" [class.ap-drag-half]="field.colSpan === 1" cdkDrag>
-                            <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
-                            <div class="ap-drag-field">
-                              <span class="ap-preview-label" [style.color]="field.fieldColor || null">{{ field.label }}</span>
-                              <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
-                            </div>
-                            <button type="button" class="ap-span-btn"
-                              [title]="field.colSpan === 2 ? 'Reduzir para ½' : 'Expandir para full'"
-                              (click)="toggleFieldSpan(field.index); $event.stopPropagation()">
-                              {{ field.colSpan === 2 ? '½' : '⬜' }}
-                            </button>
-                            <div class="ap-drag-placeholder" *cdkDragPlaceholder></div>
-                          </div>
-                        }
-                      </div>
-                      <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
-                    </div>
-                    @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
-                      <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value" class="ap-preview-img" alt="" />
-                    }
-                  </div>
-                  <p class="ap-hint ap-hint--center">⠿ arraste campos · ½ alterna largura</p>
+              <div class="ap-color-field">
+                <label class="ap-label">Texto dos campos</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="fieldTextColor" class="ap-color-input"
+                    (input)="onColorLiveChange('fieldTextColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.fieldTextColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldTextColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão'
+                    }}</span>
+                  @if (templateForm.get('appearance.fieldTextColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldTextColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
+                  }
+                </div>
+              </div>
 
-                  <!-- Preview da listagem -->
-                  <p class="ap-section-label" style="margin-top: 16px">
-                    Preview — {{ hasAttendance ? 'lista de presença' : 'listagem' }}
-                  </p>
-                  <div class="ap-list-preview" [ngStyle]="previewListPageStyle">
-                    @if (templateForm.get('appearance.headerImageUrl')?.value) {
-                      <img [src]="templateForm.get('appearance.headerImageUrl')?.value" class="ap-preview-img" alt="" style="max-height:60px;border-radius:6px 6px 0 0" />
-                    }
-                    <div class="ap-list-name">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+              <div class="ap-color-field">
+                <label class="ap-label">Fundo dos cards</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="cardBackgroundColor" class="ap-color-input"
+                    (input)="onColorLiveChange('cardBackgroundColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.cardBackgroundColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBackgroundColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto
+                    (glass)' }}</span>
+                  @if (templateForm.get('appearance.cardBackgroundColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBackgroundColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
+                  }
+                </div>
+              </div>
 
-                    @if (hasAttendance) {
-                      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                          <div style="font-size:16px;font-weight:700" [style.color]="previewAccentColor">0</div>
-                          <div style="font-size:9px;opacity:.65">Total</div>
-                        </div>
-                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                          <div style="font-size:16px;font-weight:700;color:#10c98a">0</div>
-                          <div style="font-size:9px;opacity:.65">Presente</div>
-                        </div>
-                        <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
-                          <div style="font-size:16px;font-weight:700;color:#ff4f6a">0</div>
-                          <div style="font-size:9px;opacity:.65">Ausente</div>
-                        </div>
-                      </div>
-                      <div class="ap-list-card" [ngStyle]="previewListCardStyle">
-                        <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
-                          @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
-                          <span>Presença</span>
-                        </div>
-                        <div class="ap-list-trow">
-                          @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
-                          <span style="display:inline-flex;align-items:center;gap:4px">
-                            <span style="width:24px;height:14px;border-radius:99px;background:#10c98a;display:inline-block"></span>
-                            <span style="font-size:9px;color:#10c98a">✓</span>
-                          </span>
-                        </div>
-                      </div>
-                    } @else {
-                      <div class="ap-list-tabs">
-                        <span [ngStyle]="previewListActiveTabStyle">
-                          {{ hasSchedule ? 'Agendamentos' : 'Respostas' }}
-                          <span [ngStyle]="previewListBadgeStyle">0</span>
-                        </span>
-                      </div>
-                      <div class="ap-list-card" [ngStyle]="previewListCardStyle">
-                        <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
-                          @if (!hasSchedule) { <span>ID</span><span>Data</span> } @else { <span>Data</span><span>Hora</span><span>Nome</span><span>Status</span> }
-                          @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
-                        </div>
-                        <div class="ap-list-trow">
-                          @if (!hasSchedule) { <span class="ap-list-cell-muted">#1</span><span class="ap-list-cell-muted">01/04</span> }
-                          @else { <span class="ap-list-cell-muted">01/04</span><span class="ap-list-cell-muted">09:00</span><span class="ap-list-cell-muted">João</span><span style="font-size:9px;color:#10c98a;font-weight:700">OK</span> }
-                          @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
-                        </div>
-                      </div>
-                    }
-
-                    @if (templateForm.get('appearance.footerImageUrl')?.value) {
-                      <img [src]="templateForm.get('appearance.footerImageUrl')?.value" class="ap-preview-img" alt="" style="max-height:40px;border-radius:0 0 6px 6px" />
-                    }
-                  </div>
-
+              <div class="ap-color-field">
+                <label class="ap-label">Borda dos cards</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="cardBorderColor" class="ap-color-input"
+                    (input)="onColorLiveChange('cardBorderColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.cardBorderColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBorderColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto'
+                    }}</span>
+                  @if (templateForm.get('appearance.cardBorderColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBorderColor')"
+                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg></button>
+                  }
                 </div>
               </div>
             </div>
-          }
+          </div>
+
+          <!-- ── 3. Imagens de topo e rodapé ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              Imagens de topo e rodapé
+            </p>
+
+            <div class="ap-images-row">
+              <div class="ap-color-field">
+                <label class="ap-label">Topo</label>
+                <div class="img-upload-area"
+                  [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
+                  @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
+                  <div class="img-upload-preview">
+                    <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value"
+                      alt="Preview header" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('headerImageUrl')"
+                      title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'headerImageUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" style="opacity:.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Enviar topo</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('headerImageUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+
+              <div class="ap-color-field">
+                <label class="ap-label">Rodapé</label>
+                <div class="img-upload-area"
+                  [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
+                  @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
+                  <div class="img-upload-preview">
+                    <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value"
+                      alt="Preview footer" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('footerImageUrl')"
+                      title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'footerImageUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" style="opacity:.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Enviar rodapé</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('footerImageUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Seção de configuração de agenda -->
-        @if (hasSchedule) {
-          <div class="card" style="margin-top: 16px" formGroupName="scheduleConfig">
-            <div class="section-header" style="border-left: 4px solid #6366f1; padding-left: 16px">
-              <h2 class="section-title" style="color: #6366f1">Configuração de agenda</h2>
-              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0">
-                Define o range de horários e a duração de cada atendimento
-              </p>
+        <!-- ══ Coluna direita: preview live ══ -->
+        <div class="ap-preview-col">
+          <div class="ap-preview-sticky">
+
+            <p class="ap-section-label">Preview ao vivo</p>
+
+            <!-- Preview do formulário -->
+            <div class="ap-preview-page" [ngStyle]="previewPageStyle">
+              @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
+              <img [src]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value"
+                class="ap-preview-img" alt="" />
+              }
+              <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
+                <div class="ap-preview-form-title">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+                <div class="ap-drag-list" cdkDropList [cdkDropListData]="fields.controls"
+                  (cdkDropListDropped)="dropField($event)">
+                  @for (field of previewFields; track field.index) {
+                  <div class="ap-drag-item" [class.ap-drag-half]="field.colSpan === 1" cdkDrag>
+                    <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
+                    <div class="ap-drag-field">
+                      <span class="ap-preview-label" [style.color]="field.fieldColor || null">{{ field.label }}</span>
+                      <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
+                    </div>
+                    <button type="button" class="ap-span-btn"
+                      [title]="field.colSpan === 2 ? 'Reduzir para ½' : 'Expandir para full'"
+                      (click)="toggleFieldSpan(field.index); $event.stopPropagation()">
+                      {{ field.colSpan === 2 ? '½' : '⬜' }}
+                    </button>
+                    <div class="ap-drag-placeholder" *cdkDragPlaceholder></div>
+                  </div>
+                  }
+                </div>
+                <button class="ap-preview-btn" [ngStyle]="previewBtnStyle">Enviar</button>
+              </div>
+              @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {
+              <img [src]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value"
+                class="ap-preview-img" alt="" />
+              }
             </div>
-            <div class="section-body">
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px">
-                <div class="field" style="margin-bottom: 0">
-                  <label>Horário inicial <span class="required">*</span></label>
-                  <input type="time" formControlName="startTime" />
+            <p class="ap-hint ap-hint--center">⠿ arraste campos · ½ alterna largura</p>
+
+            <!-- Preview da listagem -->
+            <p class="ap-section-label" style="margin-top: 16px">
+              Preview — {{ hasAttendance ? 'lista de presença' : 'listagem' }}
+            </p>
+            <div class="ap-list-preview" [ngStyle]="previewListPageStyle">
+              @if (templateForm.get('appearance.headerImageUrl')?.value) {
+              <img [src]="templateForm.get('appearance.headerImageUrl')?.value" class="ap-preview-img" alt=""
+                style="max-height:60px;border-radius:6px 6px 0 0" />
+              }
+              <div class="ap-list-name">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+
+              @if (hasAttendance) {
+              <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                  <div style="font-size:16px;font-weight:700" [style.color]="previewAccentColor">0</div>
+                  <div style="font-size:9px;opacity:.65">Total</div>
                 </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Horário final <span class="required">*</span></label>
-                  <input type="time" formControlName="endTime" />
+                <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                  <div style="font-size:16px;font-weight:700;color:#10c98a">0</div>
+                  <div style="font-size:9px;opacity:.65">Presente</div>
                 </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Duração por slot (min) <span class="required">*</span></label>
-                  <input
-                    type="number"
-                    formControlName="slotDurationMinutes"
-                    min="15"
-                    max="480"
-                    placeholder="60"
-                  />
+                <div [ngStyle]="previewListCardStyle" style="flex:1;min-width:60px;padding:6px 10px;text-align:center">
+                  <div style="font-size:16px;font-weight:700;color:#ff4f6a">0</div>
+                  <div style="font-size:9px;opacity:.65">Ausente</div>
                 </div>
-                <div class="field" style="margin-bottom: 0">
-                  <label>Máx. dias à frente <span class="required">*</span></label>
-                  <input
-                    type="number"
-                    formControlName="maxDaysAhead"
-                    min="1"
-                    max="365"
-                    placeholder="30"
-                  />
+              </div>
+              <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                  @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
+                  <span>Presença</span>
                 </div>
-                <!-- Linha 2: Vagas + Controle de duplicidade lado a lado -->
-                <div class="field" style="margin-bottom: 0">
-                  <label>Vagas por horário <span class="required">*</span></label>
-                  <input
-                    type="number"
-                    formControlName="slotCapacity"
-                    min="1"
-                    placeholder="10"
-                  />
+                <div class="ap-list-trow">
+                  @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
+                  <span style="display:inline-flex;align-items:center;gap:4px">
+                    <span
+                      style="width:24px;height:14px;border-radius:99px;background:#10c98a;display:inline-block"></span>
+                    <span style="font-size:9px;color:#10c98a">✓</span>
+                  </span>
                 </div>
-                <div class="field" style="margin-bottom: 0; grid-column: span 3">
-                  <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
-                    Controle de duplicidade
-                    <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — quais campos identificam a pessoa?</span>
-                  </label>
-                  @if (fieldLabels.length === 0) {
-                    <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
-                      Adicione campos ao formulário ao lado para configurar aqui.
-                    </p>
-                  } @else {
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                      @for (label of fieldLabels; track label) {
-                        <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+              </div>
+              } @else {
+              <div class="ap-list-tabs">
+                <span [ngStyle]="previewListActiveTabStyle">
+                  {{ hasSchedule ? 'Agendamentos' : 'Respostas' }}
+                  <span [ngStyle]="previewListBadgeStyle">0</span>
+                </span>
+              </div>
+              <div class="ap-list-card" [ngStyle]="previewListCardStyle">
+                <div class="ap-list-thead" [ngStyle]="previewListHeaderStyle">
+                  @if (!hasSchedule) { <span>ID</span><span>Data</span> } @else {
+                  <span>Data</span><span>Hora</span><span>Nome</span><span>Status</span> }
+                  @for (f of previewFields.slice(0, 2); track f.index) { <span>{{ f.label }}</span> }
+                </div>
+                <div class="ap-list-trow">
+                  @if (!hasSchedule) { <span class="ap-list-cell-muted">#1</span><span
+                    class="ap-list-cell-muted">01/04</span> }
+                  @else { <span class="ap-list-cell-muted">01/04</span><span
+                    class="ap-list-cell-muted">09:00</span><span class="ap-list-cell-muted">João</span><span
+                    style="font-size:9px;color:#10c98a;font-weight:700">OK</span> }
+                  @for (f of previewFields.slice(0, 2); track f.index) { <span class="ap-list-cell-muted">—</span> }
+                </div>
+              </div>
+              }
+
+              @if (templateForm.get('appearance.footerImageUrl')?.value) {
+              <img [src]="templateForm.get('appearance.footerImageUrl')?.value" class="ap-preview-img" alt=""
+                style="max-height:40px;border-radius:0 0 6px 6px" />
+              }
+            </div>
+
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Seção de configuração de agenda -->
+    @if (hasSchedule) {
+    <div class="card" style="margin-top: 16px" formGroupName="scheduleConfig">
+      <div class="section-header" style="border-left: 4px solid #6366f1; padding-left: 16px">
+        <h2 class="section-title" style="color: #6366f1">Configuração de agenda</h2>
+        <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0">
+          Define o range de horários e a duração de cada atendimento
+        </p>
+      </div>
+      <div class="section-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px">
+          <div class="field" style="margin-bottom: 0">
+            <label>Horário inicial <span class="required">*</span></label>
+            <input type="time" formControlName="startTime" />
+          </div>
+          <div class="field" style="margin-bottom: 0">
+            <label>Horário final <span class="required">*</span></label>
+            <input type="time" formControlName="endTime" />
+          </div>
+          <div class="field" style="margin-bottom: 0">
+            <label>Duração por slot (min) <span class="required">*</span></label>
+            <input type="number" formControlName="slotDurationMinutes" min="15" max="480" placeholder="60" />
+          </div>
+          <div class="field" style="margin-bottom: 0">
+            <label>Máx. dias à frente <span class="required">*</span></label>
+            <input type="number" formControlName="maxDaysAhead" min="1" max="365" placeholder="30" />
+          </div>
+          <!-- Linha 2: Vagas + Controle de duplicidade lado a lado -->
+          <div class="field" style="margin-bottom: 0">
+            <label>Vagas por horário <span class="required">*</span></label>
+            <input type="number" formControlName="slotCapacity" min="1" placeholder="10" />
+          </div>
+          <div class="field" style="margin-bottom: 0; grid-column: span 3">
+            <label style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block">
+              Controle de duplicidade
+              <span style="font-size: 11px; font-weight: 400; color: #94a3b8"> — quais campos identificam a
+                pessoa?</span>
+            </label>
+            @if (fieldLabels.length === 0) {
+            <p style="font-size: 12px; color: #94a3b8; font-style: italic; margin: 0">
+              Adicione campos ao formulário ao lado para configurar aqui.
+            </p>
+            } @else {
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              @for (label of fieldLabels; track label) {
+              <label style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
                                       border: 1px solid; border-radius: 20px; cursor: pointer; font-size: 12px;
                                       transition: all 0.15s; user-select: none"
-                               [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
-                               [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
-                               [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
-                               [style.fontWeight]="isDedupField(label) ? '600' : '400'">
-                          <input type="checkbox"
-                                 [checked]="isDedupField(label)"
-                                 (change)="toggleDedupField(label, $event)"
-                                 style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
-                          {{ label }}
-                        </label>
-                      }
-                    </div>
-                    <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
-                      Sem seleção = múltiplos agendamentos livres.
-                    </p>
-                  }
-                </div>
-              </div>
+                [style.borderColor]="isDedupField(label) ? '#6366f1' : '#e2e8f0'"
+                [style.background]="isDedupField(label) ? '#ede9fe' : '#f8fafc'"
+                [style.color]="isDedupField(label) ? '#5b21b6' : '#64748b'"
+                [style.fontWeight]="isDedupField(label) ? '600' : '400'">
+                <input type="checkbox" [checked]="isDedupField(label)" (change)="toggleDedupField(label, $event)"
+                  style="width: 13px; height: 13px; accent-color: #6366f1; cursor: pointer" />
+                {{ label }}
+              </label>
+              }
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 6px 0 0">
+              Sem seleção = múltiplos agendamentos livres.
+            </p>
+            }
+          </div>
+        </div>
 
-              @if (previewSlots.length > 0) {
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0">
-                  <p style="font-size: 13px; color: #475569; margin: 0 0 10px">
-                    Preview dos horários gerados
-                    <span style="font-weight: 600; color: #6366f1"
-                      >({{ previewSlots.length }} slots por dia)</span
-                    >
-                  </p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                    @for (slot of previewSlots; track slot) {
-                      <span
-                        style="
+        @if (previewSlots.length > 0) {
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0">
+          <p style="font-size: 13px; color: #475569; margin: 0 0 10px">
+            Preview dos horários gerados
+            <span style="font-weight: 600; color: #6366f1">({{ previewSlots.length }} slots por dia)</span>
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            @for (slot of previewSlots; track slot) {
+            <span style="
                           background: #ede9fe;
                           color: #5b21b6;
                           padding: 4px 10px;
                           border-radius: 20px;
                           font-size: 12px;
                           font-weight: 600;
-                        "
-                      >
-                        {{ slot }}
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
+                        ">
+              {{ slot }}
+            </span>
+            }
           </div>
-        }
-
-        <!-- Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
-            Criar template
-          </button>
         </div>
-      </form>
+        }
+      </div>
+    </div>
     }
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
+        Criar template
+      </button>
+    </div>
+  </form>
+  }
   }
 </app-page-shell>

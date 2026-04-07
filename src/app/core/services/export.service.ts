@@ -59,10 +59,21 @@ export class ExportService {
   // ─────────────────────────────────────────────
   // LISTA DE PRESENÇA (AttendanceRecord)
   // ─────────────────────────────────────────────
-  exportAttendance(records: AttendanceRecord[], templateName: string): void {
+  exportAttendance(
+    records: AttendanceRecord[],
+    templateName: string,
+    templateFieldLabels: string[] = [],
+  ): void {
     if (!records.length) return;
 
-    const dataCols = this.getAttendanceCols(records);
+    // Campos do template entram primeiro (garantidos mesmo se ainda vazios),
+    // depois qualquer coluna extra vinda da planilha que não esteja no template.
+    const fromTemplate = new Set(templateFieldLabels);
+    const fromData = this.getAttendanceCols(records);
+    const dataCols = [
+      ...templateFieldLabels,
+      ...fromData.filter((c) => !fromTemplate.has(c)),
+    ];
 
     const rows = records.map((r) => {
       const row: Record<string, string> = {};

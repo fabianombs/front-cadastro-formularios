@@ -116,8 +116,18 @@ export class TemplateListComponent implements OnInit {
   attendance = signal<AttendanceRecord[]>([]);
   attendanceCols = computed<string[]>(() => {
     const keys = new Set<string>();
+    // 1º: campos definidos no template (ordem garantida, sempre visíveis)
+    this.template()?.fields?.forEach((f) => keys.add(f.label));
+    // 2º: colunas extras vindas da planilha que não estão no template
     this.attendance().forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
     return Array.from(keys);
+  });
+
+  /** Labels dos campos do template — essas colunas são editáveis na tabela */
+  templateFieldLabels = computed<Set<string>>(() => {
+    const labels = new Set<string>();
+    this.template()?.fields?.forEach((f) => labels.add(f.label));
+    return labels;
   });
   attendanceStats = computed(() => ({
     total: this.attTotalElements(),
@@ -618,6 +628,20 @@ export class TemplateListComponent implements OnInit {
       });
   }
 
+  saveRowField(record: AttendanceRecord, colKey: string, value: string): void {
+    const current = record.rowData?.[colKey] ?? '';
+    if (value === current) return; // sem alteração, ignora
+
+    const updatedRowData = { ...(record.rowData ?? {}), [colKey]: value };
+
+    this.service.updateAttendanceRowData(record.id, updatedRowData).subscribe({
+      next: (updated) => {
+        this.attendance.update((list) => list.map((r) => (r.id === record.id ? updated : r)));
+      },
+      error: () => this.messages.error('Erro ao salvar campo.'),
+    });
+  }
+
   // ── Exports ──────────────────────────────────────────────────
   exportSubmissionsXlsx() {
     const t = this.template();
@@ -634,7 +658,8 @@ export class TemplateListComponent implements OnInit {
   exportAttendanceXlsx() {
     const t = this.template();
     if (!t) return;
-    this.exporter.exportAttendance(this.filteredAttendance(), t.name);
+    const fieldLabels = (t.fields ?? []).map((f) => f.label);
+    this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels);
   }
 
   doDelete(id: number) {

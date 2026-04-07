@@ -438,7 +438,20 @@
           <!-- CAMPOS DINÂMICOS -->
           @for (col of attendanceDataColumns(); track col.key) {
           <td>
-            {{ r.rowData?.[col.key] ?? '-' }}
+            @if (templateFieldLabels().has(col.key)) {
+              <!-- Campo do template: editável inline, salva no blur -->
+              <input
+                type="text"
+                class="notes-input"
+                [value]="r.rowData?.[col.key] ?? ''"
+                (click)="$event.stopPropagation()"
+                (blur)="saveRowField(r, col.key, $any($event.target).value)"
+                placeholder="—"
+              />
+            } @else {
+              <!-- Coluna da planilha: somente leitura -->
+              {{ r.rowData?.[col.key] ?? '—' }}
+            }
           </td>
           }
 
