@@ -153,6 +153,14 @@ export class FormTemplateService {
     return this.http.post<FormTemplate>(`${this.apiUrl}/create/${clientId}`, payload);
   }
 
+  updateScheduleConfig(templateId: number, config: ScheduleConfig): Observable<FormTemplate> {
+    return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/schedule-config`, config);
+  }
+
+  deleteTemplate(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
   getAllTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {
     return this.http.get<PageResponse<FormTemplate>>(`${this.apiUrl}?page=${page}&size=${size}`);
   }

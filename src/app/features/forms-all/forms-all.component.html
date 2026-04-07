@@ -49,7 +49,7 @@
 
     <div class="template-card" [class.tc-appointment]="t.hasSchedule" [class.tc-attendance]="!t.hasSchedule && t.attendanceTotal > 0">
       <!-- BOTÃO EXCLUIR -->
-      <button class="tc-delete-btn" (click)="deleteTemplate(t.id, $event)">
+      <button class="tc-delete-btn" (click)="deleteTemplate(t.id, t.name, $event)">
         ✕
       </button>
       <!-- HEADER -->
@@ -139,3 +139,15 @@
   <app-pagination [pagination]="templatesPagination()" (pageChange)="goToPage($event)" />
   }
 </app-page-shell>
+
+<!-- Modal de confirmação de exclusão -->
+<app-confirm-modal
+  [open]="deleteModalOpen()"
+  title="Excluir formulário"
+  [message]="'Tem certeza que deseja excluir o formulário \'' + deleteTargetName() + '\'? Esta ação não pode ser desfeita.'"
+  confirmLabel="Excluir"
+  confirmVariant="danger"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+/>

@@ -1,0 +1,41 @@
+@if (open) {
+  <div class="cm-backdrop" (click)="onBackdropClick($event)">
+    <div class="cm-dialog" role="dialog" aria-modal="true">
+      <!-- Header -->
+      <div class="cm-header">
+        <span class="cm-icon" [class.cm-icon--danger]="confirmVariant === 'danger'">
+          {{ confirmVariant === 'danger' ? '⚠' : 'ℹ' }}
+        </span>
+        <h2 class="cm-title">{{ title }}</h2>
+        <button class="cm-close-btn" (click)="onCancel()" [disabled]="loading" aria-label="Fechar">
+          ✕
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="cm-body">
+        <p class="cm-message">{{ message }}</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="cm-footer">
+        <button class="btn-outline" (click)="onCancel()" [disabled]="loading">
+          Cancelar
+        </button>
+        <button
+          class="btn-primary"
+          [class.btn-danger]="confirmVariant === 'danger'"
+          (click)="onConfirm()"
+          [disabled]="loading"
+        >
+          @if (loading) {
+            <span class="cm-spinner"></span>
+            Aguarde...
+          } @else {
+            {{ confirmLabel }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
