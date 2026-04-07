@@ -739,9 +739,19 @@ export class CreateTemplateComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  get formLink(): string {
-    const slug = this.template?.slug ?? '';
-    if (this.template?.hasAttendance) return `/forms/${slug}/list`;
-    return `/forms/${slug}`;
+  get slugLink(): string {
+    return `/forms/${this.template?.slug ?? ''}`;
+  }
+
+  get listLink(): string {
+    return `/forms/${this.template?.slug ?? ''}/list`;
+  }
+
+  copyLink(path: string): void {
+    const url = window.location.origin + path;
+    navigator.clipboard.writeText(url).then(
+      () => this.messages.success('Link copiado!'),
+      () => this.messages.error('Não foi possível copiar o link.'),
+    );
   }
 }
