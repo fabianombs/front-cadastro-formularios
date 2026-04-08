@@ -9,7 +9,7 @@
   <!-- ══════════════════════════════════════════════════════════ -->
   <!-- VIEW MODE                                                  -->
   <!-- ══════════════════════════════════════════════════════════ -->
-  @if (slug && template) {
+  @if (slug && template && !editMode) {
   <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
     <a page-actions routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
   </app-page-header>
@@ -295,8 +295,11 @@
   <!-- ══════════════════════════════════════════════════════════ -->
   <!-- CREATE MODE                                                -->
   <!-- ══════════════════════════════════════════════════════════ -->
-  @if (!slug) {
-  <app-page-header title="Criar formulário" subtitle="Configure o template e os campos do formulário"></app-page-header>
+  @if (!slug || editMode) {
+  <app-page-header
+    [title]="editMode ? 'Editar formulário' : 'Criar formulário'"
+    [subtitle]="editMode ? ('Editando: ' + template?.name) : 'Configure o template e os campos do formulário'">
+  </app-page-header>
 
   <form [formGroup]="templateForm" (ngSubmit)="submit()">
     <div class="form-grid">
@@ -1159,10 +1162,18 @@
     <!-- Actions -->
     <div class="form-actions">
       <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
-        Criar template
+        {{ editMode ? 'Atualizar template' : 'Criar template' }}
       </button>
     </div>
   </form>
   }
   }
 </app-page-shell>
+
+@if (imagePositionConfig) {
+  <app-image-position-modal
+    [config]="imagePositionConfig"
+    (confirmed)="onImagePositionConfirmed($event)"
+    (cancelled)="onImagePositionCancelled()">
+  </app-image-position-modal>
+}

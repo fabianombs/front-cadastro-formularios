@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../core/services/dashboard.service';
 import { FormTemplateService } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
+import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
@@ -30,6 +31,9 @@ export class FormsAllComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private templateService = inject(FormTemplateService);
   private messages = inject(MessageService);
+  private auth = inject(AuthService);
+
+  isAdmin = computed(() => this.auth.isAdmin());
 
   templates = signal<TemplateStatResponse[]>([]);
   loading = signal(true);

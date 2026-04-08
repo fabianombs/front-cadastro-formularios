@@ -1,0 +1,160 @@
+<div class="ipm-backdrop" (click)="onBackdropClick($event)">
+  <div class="ipm-shell" role="dialog" aria-modal="true">
+
+    <!-- ── Header ─────────────────────────────────────── -->
+    <div class="ipm-header">
+      <div class="ipm-title">
+        <svg class="ipm-title-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>Posicionar imagem</span>
+        @if (config?.label) {
+          <span class="ipm-field-badge">{{ config!.label }}</span>
+        }
+      </div>
+      <button class="ipm-close-btn" type="button" (click)="cancel()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── Hint bar ────────────────────────────────────── -->
+    <div class="ipm-hint">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Arraste para reposicionar · Scroll para zoom
+    </div>
+
+    <!-- ── Stage / Crop area ──────────────────────────── -->
+    <div class="ipm-stage">
+      <div
+        #cropArea
+        class="ipm-crop-area"
+        [style.aspect-ratio]="cropAspectRatio"
+        [style.background]="cropAreaBg"
+        [class.ipm-crop-area--dragging]="isDragging"
+        [class.ipm-crop-area--ready]="imageReady"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp()"
+        (pointercancel)="onPointerUp()"
+        (wheel)="onWheel($event)">
+
+        <!-- Skeleton loader -->
+        @if (!imageReady) {
+          <div class="ipm-skeleton">
+            <div class="ipm-skeleton-pulse"></div>
+            <span class="ipm-skeleton-text">Carregando imagem…</span>
+          </div>
+        }
+
+        <!-- Image -->
+        @if (config) {
+          <img
+            #img
+            [src]="config.dataUrl"
+            [style]="imgStyle"
+            [class.ipm-img--ready]="imageReady"
+            (load)="onImageLoad($event)"
+            draggable="false"
+            alt="Imagem para posicionar" />
+        }
+
+        <!-- Crop frame overlay -->
+        <div class="ipm-frame">
+          <div class="ipm-corner ipm-corner--tl"></div>
+          <div class="ipm-corner ipm-corner--tr"></div>
+          <div class="ipm-corner ipm-corner--bl"></div>
+          <div class="ipm-corner ipm-corner--br"></div>
+          <!-- Rule-of-thirds grid -->
+          <div class="ipm-grid">
+            <div class="ipm-grid-line ipm-grid-line--v1"></div>
+            <div class="ipm-grid-line ipm-grid-line--v2"></div>
+            <div class="ipm-grid-line ipm-grid-line--h1"></div>
+            <div class="ipm-grid-line ipm-grid-line--h2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Controls ───────────────────────────────────── -->
+    <div class="ipm-controls">
+      <!-- Zoom strip -->
+      <div class="ipm-zoom-strip">
+        <button
+          type="button"
+          class="ipm-zoom-btn"
+          (click)="zoomOut()"
+          [disabled]="scale <= MIN_SCALE"
+          title="Reduzir (−)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+
+        <div class="ipm-zoom-track">
+          <div
+            class="ipm-zoom-fill"
+            [style.width.%]="zoomFillPercent">
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="ipm-zoom-btn"
+          (click)="zoomIn()"
+          [disabled]="scale >= MAX_SCALE"
+          title="Ampliar (+)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+
+        <span class="ipm-zoom-value">{{ scalePercent }}<span class="ipm-zoom-pct">%</span></span>
+
+        <button type="button" class="ipm-fit-btn" (click)="resetView()" title="Ajustar à moldura">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+          Ajustar
+        </button>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="ipm-actions">
+        <button type="button" class="ipm-btn-cancel" (click)="cancel()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="ipm-btn-confirm"
+          (click)="confirmCrop()"
+          [disabled]="!imageReady || exporting">
+          @if (exporting) {
+            <span class="ipm-spinner"></span>
+            Processando…
+          } @else {
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Confirmar
+          }
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

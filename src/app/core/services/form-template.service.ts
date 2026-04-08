@@ -65,6 +65,11 @@ export interface CreateFormTemplateRequest {
   appearance?: TemplateAppearance | null;
 }
 
+export interface UpdateFormTemplateRequest {
+  name: string;
+  fields: { label: string; type: string; required: boolean; fieldColor?: string; colSpan: number }[];
+}
+
 export interface FormSubmission {
   id: number;
   templateId: number;
@@ -160,6 +165,10 @@ export class FormTemplateService {
 
   createTemplate(clientId: number, payload: CreateFormTemplateRequest): Observable<FormTemplate> {
     return this.http.post<FormTemplate>(`${this.apiUrl}/create/${clientId}`, payload);
+  }
+
+  updateTemplate(id: number, payload: UpdateFormTemplateRequest): Observable<FormTemplate> {
+    return this.http.put<FormTemplate>(`${this.apiUrl}/${id}`, payload);
   }
 
   updateScheduleConfig(templateId: number, config: ScheduleConfig): Observable<FormTemplate> {
