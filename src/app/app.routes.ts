@@ -63,6 +63,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'form-builder/:slug',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          import('./features/create-form-template/create-form-template.component').then(
+            (m) => m.CreateTemplateComponent,
+          ),
+      },
+      {
         path: 'form-builder',
         canActivate: [authGuard],
         data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
