@@ -24,7 +24,17 @@
   </div>
   }
 
-  @if (!loading()) {
+  @if (!loading() && !template()) {
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">⚠️</div>
+      <p>Formulário não encontrado</p>
+      <small>O link pode estar inválido ou o formulário foi removido.</small>
+    </div>
+  </div>
+  }
+
+  @if (!loading() && template()) {
   <!-- ══ TABS + PAGE SIZE ══════════════════════════════════ -->
   <div style="
         display: flex;
@@ -42,7 +52,7 @@
           padding: 4px;
           flex-wrap: wrap;
         ">
-      @if (template()!.hasSchedule) {
+      @if (template()?.hasSchedule) {
       <button (click)="changeTab('appointments')"
         [class]="activeTab() === 'appointments' ? 'tab-btn tab-btn--active' : 'tab-btn'"
         [ngStyle]="tabActiveStyle('appointments')">

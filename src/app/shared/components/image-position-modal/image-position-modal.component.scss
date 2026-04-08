@@ -1,0 +1,437 @@
+// ═══════════════════════════════════════════════════════════════
+// Image Position Modal — Dark Studio Aesthetic
+// ═══════════════════════════════════════════════════════════════
+
+:host {
+  display: block;
+}
+
+// ── Backdrop ────────────────────────────────────────────────────
+
+.ipm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 7, 16, 0.88);
+  backdrop-filter: blur(12px) saturate(0.6);
+  -webkit-backdrop-filter: blur(12px) saturate(0.6);
+  padding: 20px;
+  animation: ipm-backdrop-in 0.2s ease;
+}
+
+@keyframes ipm-backdrop-in {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to   { opacity: 1; }
+}
+
+// ── Shell ────────────────────────────────────────────────────────
+
+.ipm-shell {
+  width: 100%;
+  max-width: 840px;
+  background: #0d1120;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(77, 143, 255, 0.08),
+    0 40px 80px rgba(0, 0, 0, 0.7),
+    0 0 120px rgba(77, 143, 255, 0.04);
+  animation: ipm-shell-in 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+@keyframes ipm-shell-in {
+  from { transform: scale(0.95) translateY(8px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+// ── Header ───────────────────────────────────────────────────────
+
+.ipm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+}
+
+.ipm-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: #c8d8f0;
+  letter-spacing: -0.01em;
+}
+
+.ipm-title-icon {
+  color: rgba(77, 143, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.ipm-field-badge {
+  background: rgba(77, 143, 255, 0.12);
+  color: rgba(77, 143, 255, 0.9);
+  border: 1px solid rgba(77, 143, 255, 0.18);
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+}
+
+.ipm-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(200, 216, 240, 0.4);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: #c8d8f0;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+// ── Hint ─────────────────────────────────────────────────────────
+
+.ipm-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 20px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 11px;
+  color: rgba(93, 120, 159, 0.8);
+  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  flex-shrink: 0;
+
+  svg { flex-shrink: 0; opacity: 0.6; }
+}
+
+// ── Stage ─────────────────────────────────────────────────────────
+
+.ipm-stage {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  background:
+    repeating-conic-gradient(
+      rgba(255, 255, 255, 0.025) 0% 25%,
+      transparent 0% 50%
+    ) 0 0 / 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Crop area ─────────────────────────────────────────────────────
+
+.ipm-crop-area {
+  position: relative;
+  width: 100%;
+  // aspect-ratio definido dinamicamente via [style.aspect-ratio] no template
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #070c1a;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow:
+    0 0 0 1px rgba(77, 143, 255, 0.2),
+    0 4px 32px rgba(0, 0, 0, 0.5);
+  /* background vem do [style.background] dinâmico no template */
+
+  &--dragging {
+    cursor: grabbing;
+  }
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────
+
+.ipm-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.ipm-skeleton-pulse {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(77, 143, 255, 0.15);
+  border-top-color: rgba(77, 143, 255, 0.6);
+  animation: ipm-spin 0.8s linear infinite;
+}
+
+.ipm-skeleton-text {
+  font-size: 11px;
+  color: rgba(93, 120, 159, 0.6);
+  font-family: var(--font-body, sans-serif);
+}
+
+@keyframes ipm-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Image ─────────────────────────────────────────────────────────
+
+img.ipm-img--ready {
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+img:not(.ipm-img--ready) {
+  opacity: 0;
+}
+
+// ── Crop frame overlay ────────────────────────────────────────────
+
+.ipm-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+// Corner handles
+.ipm-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(77, 143, 255, 0.8);
+  border-style: solid;
+
+  &--tl { top: 0; left: 0; border-width: 2px 0 0 2px; border-radius: 2px 0 0 0; }
+  &--tr { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 2px 0 0; }
+  &--bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-radius: 0 0 0 2px; }
+  &--br { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 2px 0; }
+}
+
+// Rule-of-thirds grid (subtle, shows on hover)
+.ipm-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  .ipm-crop-area:hover & { opacity: 1; }
+}
+
+.ipm-grid-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.07);
+
+  &--v1 { left: 33.33%; top: 0; bottom: 0; width: 1px; }
+  &--v2 { left: 66.66%; top: 0; bottom: 0; width: 1px; }
+  &--h1 { top: 33.33%; left: 0; right: 0; height: 1px; }
+  &--h2 { top: 66.66%; left: 0; right: 0; height: 1px; }
+}
+
+// ── Controls bar ──────────────────────────────────────────────────
+
+.ipm-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+// ── Zoom strip ────────────────────────────────────────────────────
+
+.ipm-zoom-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ipm-zoom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(200, 216, 240, 0.7);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(77, 143, 255, 0.12);
+    border-color: rgba(77, 143, 255, 0.3);
+    color: #7fb3ff;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+.ipm-zoom-track {
+  position: relative;
+  width: 100px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 99px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ipm-zoom-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(77, 143, 255, 0.6);
+  border-radius: 99px;
+  transition: width 0.08s;
+}
+
+.ipm-zoom-value {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(200, 216, 240, 0.6);
+  min-width: 42px;
+  text-align: right;
+}
+
+.ipm-zoom-pct {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.ipm-fit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(200, 216, 240, 0.5);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: var(--font-body, sans-serif);
+  font-weight: 500;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(200, 216, 240, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// ── Action buttons ────────────────────────────────────────────────
+
+.ipm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ipm-btn-cancel {
+  padding: 7px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(200, 216, 240, 0.5);
+  font-size: 13px;
+  font-family: var(--font-body, sans-serif);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(200, 216, 240, 0.8);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.ipm-btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border: 1px solid rgba(77, 143, 255, 0.4);
+  border-radius: 8px;
+  background: rgba(77, 143, 255, 0.15);
+  color: #7fb3ff;
+  font-size: 13px;
+  font-family: var(--font-body, sans-serif);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: rgba(77, 143, 255, 0.25);
+    border-color: rgba(77, 143, 255, 0.6);
+    color: #a8ccff;
+    box-shadow: 0 0 16px rgba(77, 143, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────
+
+.ipm-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(127, 179, 255, 0.2);
+  border-top-color: #7fb3ff;
+  border-radius: 50%;
+  animation: ipm-spin 0.7s linear infinite;
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+
+@media (max-width: 600px) {
+  .ipm-stage { padding: 12px; }
+  .ipm-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+  .ipm-zoom-strip { justify-content: center; }
+  .ipm-actions { justify-content: flex-end; }
+  .ipm-zoom-track { width: 80px; }
+}

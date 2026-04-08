@@ -78,6 +78,9 @@
       <div class="tc-actions">
         <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Agendar</a>
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver agenda</a>
+        @if (isAdmin()) {
+          <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
+        }
       </div>
 
       <div class="tc-summary">
@@ -101,6 +104,9 @@
 
       <div class="tc-actions">
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
+        @if (isAdmin()) {
+          <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
+        }
       </div>
 
       <div class="tc-summary">
@@ -125,6 +131,9 @@
       <div class="tc-actions">
         <a [routerLink]="['/forms', t.slug]" class="tc-btn-primary">Preencher</a>
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
+        @if (isAdmin()) {
+          <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
+        }
       </div>
 
       <div class="tc-summary">

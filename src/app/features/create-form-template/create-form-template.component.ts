@@ -5,24 +5,29 @@ import {
   FormTemplateService,
   FormTemplate,
   CreateFormTemplateRequest,
+  UpdateFormTemplateRequest,
   AttendanceRecord,
 } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
 import { ClientService, Client } from '../../core/services/client.service';
 import { ExportService } from '../../core/services/export.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { switchMap, of } from 'rxjs';
+
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { map } from 'rxjs/operators';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AbstractControl } from '@angular/forms';
 import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
+import {
+  ImagePositionModalComponent,
+  ImagePositionConfig,
+} from '../../shared/components/image-position-modal/image-position-modal.component';
 
 @Component({
   selector: 'app-create-template',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent, FormFieldComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent, FormFieldComponent, ImagePositionModalComponent],
   templateUrl: './create-form-template.component.html',
   styleUrls: ['./create-form-template.component.scss'],
 })
@@ -33,6 +38,7 @@ export class CreateTemplateComponent implements OnInit {
   public template: FormTemplate | null = null;
   public slug: string | null = null;
   public loading = false;
+  public editMode = false;
   public showAppearance = false;
   public editingSchedule = false;
   public savingSchedule = false;
@@ -40,6 +46,16 @@ export class CreateTemplateComponent implements OnInit {
   // Upload state: qual campo está fazendo upload e preview local
   uploadingField = signal<string | null>(null);
   imagePreviews: Record<string, string> = {};
+
+  // Image position modal
+  imagePositionConfig: ImagePositionConfig | null = null;
+  private pendingImageInput: HTMLInputElement | null = null;
+
+  private readonly CANVAS_DIMS: Record<string, { w: number; h: number; label: string }> = {
+    backgroundImageUrl: { w: 1200, h: 400, label: 'Fundo' },
+    headerImageUrl:     { w: 1200, h: 220, label: 'Topo' },
+    footerImageUrl:     { w: 1200, h: 180, label: 'Rodapé' },
+  };
 
   private messages = inject(MessageService);
 
@@ -60,7 +76,7 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
   }
 
-  /** Upload de imagem (header / footer / background) */
+  /** Abre o modal de posicionamento ao selecionar uma imagem */
   onImageFileChange(
     field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl',
     event: Event,
@@ -69,21 +85,60 @@ export class CreateTemplateComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
 
-    // Preview local imediato
+    this.pendingImageInput = input;
+
     const reader = new FileReader();
     reader.onload = () => {
-      this.imagePreviews[field] = reader.result as string;
+      const dims = this.CANVAS_DIMS[field];
+      this.imagePositionConfig = {
+        field,
+        dataUrl: reader.result as string,
+        canvasWidth: dims.w,
+        canvasHeight: dims.h,
+        label: dims.label,
+        fillColor: this.resolveFillColor(),
+      };
       this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
+  }
 
-    // Enviar para o backend
+  /**
+   * Resolve a cor de fundo ativa no formulário de aparência.
+   * Prioridade: backgroundColor > primeira cor do backgroundGradient > branco.
+   */
+  private resolveFillColor(): string {
+    const bg = this.templateForm.get('appearance.backgroundColor')?.value;
+    // Usa apenas a cor de fundo sólida definida pelo usuário.
+    // Gradientes e valores ausentes não geram cor automática — fill neutro transparente.
+    return bg || 'transparent';
+  }
+
+  /** Usuário confirmou o posicionamento — recebe o blob recortado e faz upload */
+  onImagePositionConfirmed(event: { blob: Blob; field: string }): void {
+    const field = event.field as 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl';
+    const isPng  = event.blob.type === 'image/png';
+    const croppedFile = new File(
+      [event.blob],
+      isPng ? 'image.png' : 'image.jpg',
+      { type: event.blob.type },
+    );
+
+    this.imagePositionConfig = null;
+
+    // Preview imediato com blob URL
+    const blobUrl = URL.createObjectURL(event.blob);
+    this.imagePreviews[field] = blobUrl;
+    this.cdr.detectChanges();
+
+    // Upload para o backend
     this.uploadingField.set(field);
-    this.templateService.uploadImage(file).subscribe({
+    this.templateService.uploadImage(croppedFile).subscribe({
       next: ({ url }) => {
+        URL.revokeObjectURL(blobUrl);
+        this.imagePreviews[field] = url;
         this.templateForm.get(`appearance.${field}`)?.setValue(url);
         this.uploadingField.set(null);
-        // Se era backgroundImage, limpar gradiente/cor
         if (field === 'backgroundImageUrl') {
           this.templateForm.get('appearance.backgroundGradient')?.setValue('');
           this.templateForm.get('appearance.backgroundColor')?.setValue('');
@@ -91,13 +146,24 @@ export class CreateTemplateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
+        URL.revokeObjectURL(blobUrl);
         this.uploadingField.set(null);
-        this.messages.error('Erro ao enviar imagem. Tente novamente.');
         this.imagePreviews[field] = '';
-        input.value = '';
+        if (this.pendingImageInput) this.pendingImageInput.value = '';
+        this.messages.error('Erro ao enviar imagem. Tente novamente.');
         this.cdr.detectChanges();
       },
     });
+  }
+
+  /** Usuário cancelou o modal — limpa tudo sem fazer upload */
+  onImagePositionCancelled(): void {
+    this.imagePositionConfig = null;
+    if (this.pendingImageInput) {
+      this.pendingImageInput.value = '';
+      this.pendingImageInput = null;
+    }
+    this.cdr.detectChanges();
   }
 
   clearImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
@@ -400,31 +466,25 @@ export class CreateTemplateComponent implements OnInit {
   ngOnInit(): void {
     this.loadClients();
 
-    this.route.params
-      .pipe(
-        switchMap((params) => {
-          const slugParam = params['slug'];
-          if (slugParam) {
-            this.slug = slugParam;
-            this.loading = true;
-            return this.templateService.getTemplateBySlug(slugParam);
-          }
-          return of(null);
-        }),
-      )
-      .subscribe({
-        next: (res: FormTemplate | null) => {
-          if (res) {
-            this.template = res;
-            this.loadTemplateToForm(res);
-            this.loadAttendance(res.id);
-          }
+    const slugParam = this.route.snapshot.params['slug'];
+    if (slugParam) {
+      this.slug = slugParam;
+      this.editMode = true;
+      this.loading = true;
+      this.templateService.getTemplateBySlug(slugParam).subscribe({
+        next: (res) => {
+          this.template = res;
+          this.loadTemplateToForm(res);
+          this.templateForm.get('clientId')?.disable();
           this.loading = false;
+          this.cdr.detectChanges();
         },
         error: () => {
           this.loading = false;
+          this.cdr.detectChanges();
         },
       });
+    }
   }
 
   addField() {
@@ -535,6 +595,37 @@ export class CreateTemplateComponent implements OnInit {
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
     };
 
+    // ── MODO EDIÇÃO ─────────────────────────────────────────────
+    if (this.template) {
+      const updatePayload: UpdateFormTemplateRequest = {
+        name: formValue.name,
+        fields: formValue.fields.map((f: any) => ({
+          label: f.label,
+          type: f.type,
+          required: f.required,
+          ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
+          colSpan: f.colSpan ?? 2,
+        })),
+      };
+
+      this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
+        next: (res: FormTemplate) => {
+          this.template = res;
+          this.loadTemplateToForm(res);
+          this.editMode = false;
+          this.messages.success('Template atualizado com sucesso!');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.messages.error(
+            `Erro ao atualizar template (${err.status}): ${err.error?.message ?? 'Verifique o console'}`,
+          );
+        },
+      });
+      return;
+    }
+
+    // ── MODO CRIAÇÃO ─────────────────────────────────────────────
     this.templateService.createTemplate(payload.clientId, payload).subscribe({
       next: (res: FormTemplate) => {
         this.template = res;
