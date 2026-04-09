@@ -3,6 +3,29 @@
     <a page-actions routerLink="/form-builder" class="btn-primary">+ Novo formulário</a>
   </app-page-header>
 
+  <!-- Busca -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nome ou cliente..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+      @if (searchQuery()) {
+        <button class="search-clear" (click)="clearSearch()" title="Limpar busca">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      }
+    </div>
+  </div>
+
   <!-- Loading -->
   @if (loading()) {
   <div class="loading-center">
@@ -10,7 +33,7 @@
   </div>
   }
 
-  <!-- Empty -->
+  <!-- Empty (sem templates) -->
   @if (!loading() && templates().length === 0) {
   <div class="card">
     <div class="empty-state">
@@ -21,8 +44,19 @@
   </div>
   }
 
+  <!-- Empty (busca sem resultado) -->
+  @if (!loading() && templates().length > 0 && filteredTemplates().length === 0) {
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p>Nenhum formulário encontrado</p>
+      <small>Tente buscar por outro nome ou cliente</small>
+    </div>
+  </div>
+  }
+
   <!-- Conteúdo -->
-  @if (!loading() && templates().length > 0) {
+  @if (!loading() && filteredTemplates().length > 0) {
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card">
@@ -45,7 +79,7 @@
 
   <!-- Cards -->
   <div class="templates-grid">
-    @for (t of templates(); track t.id) {
+    @for (t of filteredTemplates(); track t.id) {
 
     <div class="template-card" [class.tc-appointment]="t.hasSchedule" [class.tc-attendance]="!t.hasSchedule && t.attendanceTotal > 0">
       <!-- BOTÃO EXCLUIR -->
