@@ -156,6 +156,7 @@ export class TemplateListComponent implements OnInit {
     this.service.getTemplateBySlug(slug).subscribe({
       next: (t) => {
         this.template.set(t);
+        if (t.appearance?.fontFamily) this.loadGoogleFont(t.appearance.fontFamily);
         // 🔥 se existir attendance mesmo com flag errada, usa ela
         this.resolveTemplateType(t); // 👈 usa esse cara
         this.loadActiveTabData();
@@ -695,6 +696,16 @@ export class TemplateListComponent implements OnInit {
 
   // ── Appearance ───────────────────────────────────────────────
 
+  private loadGoogleFont(family: string): void {
+    const id = `gf-${family.replace(/\s+/g, '-').toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:wght@400;500;600;700&display=swap`;
+    document.head.appendChild(link);
+  }
+
   /** Apenas o background — usado no overlay fixo que cobre o viewport inteiro */
   bgOnlyStyle = computed(() => {
     const a = this.template()?.appearance;
@@ -717,6 +728,7 @@ export class TemplateListComponent implements OnInit {
     const a = this.template()?.appearance;
     const style: Record<string, string> = {};
     if (a?.formTextColor) style['color'] = a.formTextColor;
+    if (a?.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
     const accent = this.accentColor();
     style['--accent'] = accent;
     // Sobrescreve CSS vars globais da tabela para seguir o tema do template

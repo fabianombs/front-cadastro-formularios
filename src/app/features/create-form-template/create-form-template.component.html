@@ -870,7 +870,85 @@
             </div>
           </div>
 
-          <!-- ── 3. Imagens de topo e rodapé ── -->
+          <!-- ── 3. Tipografia ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <path d="M4 7V4h16v3" /><path d="M9 20h6" /><path d="M12 4v16" />
+              </svg>
+              Tipografia
+            </p>
+
+            <!-- Família tipográfica -->
+            <div class="ap-group">
+              <label class="ap-label">Família tipográfica</label>
+              <p class="ap-hint">Clique duas vezes para deselecionar</p>
+              <div class="ap-font-pills">
+                @for (opt of fontOptions; track opt.value) {
+                <button type="button" class="ap-font-pill"
+                  [class.active]="templateForm.get('appearance.fontFamily')?.value === opt.value"
+                  [style.font-family]="opt.value ? opt.value + ', sans-serif' : 'inherit'"
+                  (click)="setFont(opt)">
+                  {{ opt.label }}
+                </button>
+                }
+              </div>
+            </div>
+
+            <!-- Título do formulário -->
+            <div class="ap-group">
+              <label class="ap-label">Título do formulário</label>
+              <div class="ap-font-size-picker">
+                @for (opt of titleFontSizes; track opt.px) {
+                <button type="button" class="ap-font-size-btn"
+                  [class.active]="templateForm.get('appearance.titleFontSize')?.value === opt.px"
+                  [style.font-size]="opt.uiSize"
+                  (click)="setFontSize('titleFontSize', opt.px)"
+                  [title]="opt.px">{{ opt.label }}</button>
+                }
+                @if (templateForm.get('appearance.titleFontSize')?.value) {
+                <span class="ap-font-size-value">{{ templateForm.get('appearance.titleFontSize')?.value }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Labels dos campos -->
+            <div class="ap-group">
+              <label class="ap-label">Labels dos campos</label>
+              <div class="ap-font-size-picker">
+                @for (opt of labelFontSizes; track opt.px) {
+                <button type="button" class="ap-font-size-btn"
+                  [class.active]="templateForm.get('appearance.labelFontSize')?.value === opt.px"
+                  [style.font-size]="opt.uiSize"
+                  (click)="setFontSize('labelFontSize', opt.px)"
+                  [title]="opt.px">{{ opt.label }}</button>
+                }
+                @if (templateForm.get('appearance.labelFontSize')?.value) {
+                <span class="ap-font-size-value">{{ templateForm.get('appearance.labelFontSize')?.value }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Botão de envio -->
+            <div class="ap-group" style="margin-bottom: 0">
+              <label class="ap-label">Botão de envio</label>
+              <div class="ap-font-size-picker">
+                @for (opt of buttonFontSizes; track opt.px) {
+                <button type="button" class="ap-font-size-btn"
+                  [class.active]="templateForm.get('appearance.buttonFontSize')?.value === opt.px"
+                  [style.font-size]="opt.uiSize"
+                  (click)="setFontSize('buttonFontSize', opt.px)"
+                  [title]="opt.px">{{ opt.label }}</button>
+                }
+                @if (templateForm.get('appearance.buttonFontSize')?.value) {
+                <span class="ap-font-size-value">{{ templateForm.get('appearance.buttonFontSize')?.value }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 4. Imagens de topo e rodapé ── -->
           <div class="ap-section">
             <p class="ap-section-label">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -964,14 +1042,14 @@
                 class="ap-preview-img" alt="" />
               }
               <div class="ap-preview-card" [ngStyle]="previewFormCardStyle">
-                <div class="ap-preview-form-title">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
+                <div class="ap-preview-form-title" [ngStyle]="previewTitleStyle">{{ templateForm.get('name')?.value || 'Meu Formulário' }}</div>
                 <div class="ap-drag-list" cdkDropList [cdkDropListData]="fields.controls"
                   (cdkDropListDropped)="dropField($event)">
                   @for (field of previewFields; track field.index) {
                   <div class="ap-drag-item" [class.ap-drag-half]="field.colSpan === 1" cdkDrag>
                     <span cdkDragHandle class="ap-drag-handle" title="Arrastar">⠿</span>
                     <div class="ap-drag-field">
-                      <span class="ap-preview-label" [style.color]="field.fieldColor || null">{{ field.label }}</span>
+                      <span class="ap-preview-label" [style.color]="field.fieldColor || null" [ngStyle]="previewLabelStyle">{{ field.label }}</span>
                       <div class="ap-preview-input" [ngStyle]="previewInputStyle"></div>
                     </div>
                     <button type="button" class="ap-span-btn"

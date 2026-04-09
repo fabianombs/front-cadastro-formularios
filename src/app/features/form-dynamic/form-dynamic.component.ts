@@ -72,6 +72,9 @@ export class FormDynamicComponent implements OnInit {
         next: (template) => {
           this.template.set(template);
           this.buildForm(template.fields);
+          if (template.appearance?.fontFamily) {
+            this.loadGoogleFont(template.appearance.fontFamily);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -85,6 +88,17 @@ export class FormDynamicComponent implements OnInit {
   // =====================
   // APPEARANCE STYLES
   // =====================
+
+  private loadGoogleFont(family: string): void {
+    const weights = '400;500;600;700';
+    const id = `gf-${family.replace(/\s+/g, '-').toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:wght@${weights}&display=swap`;
+    document.head.appendChild(link);
+  }
 
   pageStyle = computed(() => {
     const a = this.template()?.appearance;
@@ -100,6 +114,7 @@ export class FormDynamicComponent implements OnInit {
       style['backgroundColor'] = a.backgroundColor;
     }
     if (a.formTextColor) style['color'] = a.formTextColor;
+    if (a.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
 
     // ── CSS custom properties para componentes filhos ────────────
     const hasBg = !!(a.backgroundGradient || a.backgroundImageUrl || a.backgroundColor);
@@ -182,15 +197,31 @@ export class FormDynamicComponent implements OnInit {
     return null;
   });
 
+  titleStyle = computed(() => {
+    const a = this.template()?.appearance;
+    const style: Record<string, string> = {};
+    if (a?.titleFontSize) style['font-size'] = a.titleFontSize;
+    if (a?.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
+    if (a?.formTextColor) style['color'] = a.formTextColor;
+    return style;
+  });
+
   submitBtnStyle = computed(() => {
+    const a = this.template()?.appearance;
     const color = this.resolvedAccentColor();
-    if (!color) return {};
-    return { 'background-color': color, 'border-color': color };
+    const style: Record<string, string> = {};
+    if (color) { style['background-color'] = color; style['border-color'] = color; }
+    if (a?.buttonFontSize) style['font-size'] = a.buttonFontSize;
+    if (a?.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
+    return style;
   });
 
   fieldLabelStyle(fieldColor?: string): Record<string, string> {
-    if (!fieldColor) return {};
-    return { color: fieldColor };
+    const a = this.template()?.appearance;
+    const style: Record<string, string> = {};
+    if (fieldColor) style['color'] = fieldColor;
+    if (a?.labelFontSize) style['font-size'] = a.labelFontSize;
+    return style;
   }
 
   private buildForm(fields: FormField[]) {

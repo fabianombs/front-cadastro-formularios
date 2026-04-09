@@ -1009,3 +1009,83 @@
   text-align: center;
   margin-bottom: 12px;
 }
+
+/* ── Font size picker ── */
+.ap-font-size-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ap-font-size-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--fast);
+  padding: 0;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-muted);
+  }
+
+  &.active {
+    border-color: var(--primary);
+    background: var(--primary-muted);
+    color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+}
+
+.ap-font-size-value {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  margin-left: 6px;
+}
+
+/* ── Font family pills ── */
+.ap-font-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ap-font-pill {
+  padding: 5px 13px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: all var(--fast);
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-muted);
+  }
+
+  &.active {
+    border-color: var(--primary);
+    background: var(--primary-muted);
+    color: var(--primary);
+    font-weight: 700;
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+}

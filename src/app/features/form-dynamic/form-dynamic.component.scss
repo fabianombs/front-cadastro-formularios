@@ -1,10 +1,39 @@
 .fd-page {
   min-height: 100vh;
-  padding-top: 32px;
-  padding-bottom: 32px;
+  padding: 40px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .page-header {
     padding-bottom: 20px;
+  }
+}
+
+.fd-container {
+  width: 100%;
+  max-width: 680px;
+
+  /* Tablet */
+  @media (max-width: 767px) {
+    max-width: 100%;
+  }
+}
+
+/* ── Responsive page padding ── */
+@media (max-width: 767px) {
+  .fd-page {
+    padding: 24px 12px 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fd-page {
+    padding: 16px 0 28px;
+  }
+
+  .fd-container {
+    padding: 0 12px;
   }
 }
 

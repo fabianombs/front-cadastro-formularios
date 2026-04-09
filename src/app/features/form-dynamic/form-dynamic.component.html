@@ -1,173 +1,179 @@
-<div class="page fd-page" [ngStyle]="pageStyle()">
+<div class="fd-page" [ngStyle]="pageStyle()">
   @if (loading()) {
-    <div class="loading-center"><div class="spinner"></div></div>
+    <div class="fd-container">
+      <div class="loading-center"><div class="spinner"></div></div>
+    </div>
   }
 
   @if (template()) {
-    <!-- Header image -->
-    @if (template()?.appearance?.headerImageUrl) {
-      <img
-        [src]="template()!.appearance!.headerImageUrl"
-        class="fd-header-img"
-        alt="Cabeçalho"
-      />
-    }
+    <div class="fd-container">
 
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">{{ template()?.name }}</h1>
-        <p class="page-subtitle">
-          @if (template()?.hasSchedule) {
-            Escolha uma data e horário disponível para atendimento
-          } @else {
-            Preencha todos os campos e clique em Enviar
-          }
-        </p>
-      </div>
-    </div>
+      <!-- Header image -->
+      @if (template()?.appearance?.headerImageUrl) {
+        <img
+          [src]="template()!.appearance!.headerImageUrl"
+          class="fd-header-img"
+          alt="Cabeçalho"
+        />
+      }
 
-    <div class="card" [ngStyle]="formCardStyle()">
-      <div class="fd-section-header">
-        <span class="fd-section-title">
-          @if (template()?.hasSchedule) {
-            Agendamento
-          } @else {
-            Dados do formulário
-          }
-        </span>
-        <span class="badge badge-blue">{{ template()?.clientName }}</span>
-      </div>
-      <div class="fd-section-body">
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <!-- SEÇÃO DE AGENDAMENTO -->
-          @if (template()?.hasSchedule) {
-            <div class="fd-schedule-block">
-              <p class="fd-block-label">Selecione data e horário</p>
-
-              <div class="field" style="max-width: 240px">
-                <label>Data do atendimento <span class="fd-required">*</span></label>
-                <input
-                  type="date"
-                  [min]="minDate"
-                  [max]="maxDate"
-                  [value]="selectedDate()"
-                  (change)="onDateChange($event)"
-                  [ngStyle]="fieldInputStyle()"
-                />
-              </div>
-
-              @if (loadingSlots()) {
-                <div class="fd-slots-loading">Carregando horários...</div>
-              }
-
-              @if (!loadingSlots() && selectedDate() && availableSlots().length > 0) {
-                <div>
-                  <label class="fd-slots-label">Horários disponíveis</label>
-                  <div class="fd-slots-grid">
-                    @for (slot of availableSlots(); track slot.time) {
-                      <button
-                        type="button"
-                        class="fd-slot-btn"
-                        [class.fd-slot-selected]="selectedSlot() === slot.time"
-                        [class.fd-slot-taken]="!slot.available"
-                        (click)="selectSlot(slot)"
-                        [disabled]="!slot.available"
-                        [ngStyle]="selectedSlot() === slot.time ? submitBtnStyle() : {}"
-                      >
-                        <span class="fd-slot-time">{{ formatTime(slot.time) }}</span>
-                        <span class="fd-slot-vacancy" [class.fd-slot-vacancy--full]="!slot.available">
-                          {{ vacancyLabel(slot) }}
-                        </span>
-                        @if (slot.capacity > 1) {
-                          <span class="fd-slot-bar">
-                            <span
-                              class="fd-slot-bar-fill"
-                              [style.width.%]="occupancyPercent(slot)"
-                              [class.fd-slot-bar-fill--full]="!slot.available"
-                            ></span>
-                          </span>
-                        }
-                      </button>
-                    }
-                  </div>
-
-                  @if (selectedSlot()) {
-                    <div class="fd-selected-slot">
-                      Horário selecionado:
-                      <strong
-                        >{{ selectedDate() | date: 'dd/MM/yyyy' }} às
-                        {{ formatTime(selectedSlot()) }}</strong
-                      >
-                    </div>
-                  }
-                </div>
-              }
-
-              @if (!loadingSlots() && selectedDate() && availableSlots().length === 0) {
-                <div class="fd-no-slots">Nenhum horário disponível para esta data.</div>
-              }
-            </div>
-          }
-
-          <!-- CAMPOS DO FORMULÁRIO -->
-          @if (formFields().length > 0) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" [ngStyle]="titleStyle()">{{ template()?.name }}</h1>
+          <p class="page-subtitle">
             @if (template()?.hasSchedule) {
-              <p class="fd-block-label">Dados do solicitante</p>
+              Escolha uma data e horário disponível para atendimento
+            } @else {
+              Preencha todos os campos e clique em Enviar
             }
+          </p>
+        </div>
+      </div>
 
-            <div class="fd-fields-grid">
-              @for (fg of formFields(); track fg.value.label; let i = $index) {
-                <div
-                  [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
-                  [class.fd-field--half]="fg.value.colSpan === 1"
-                >
-                  <app-form-field
-                    [control]="getControl(i)"
-                    [label]="fg.value.label"
-                    [id]="'field-' + i"
-                    [type]="fg.value.type"
-                    [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
-                    [required]="fg.value.required"
-                    [inputStyle]="fieldInputStyle()"
-                    [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"
+      <div class="card" [ngStyle]="formCardStyle()">
+        <div class="fd-section-header">
+          <span class="fd-section-title">
+            @if (template()?.hasSchedule) {
+              Agendamento
+            } @else {
+              Dados do formulário
+            }
+          </span>
+          <span class="badge badge-blue">{{ template()?.clientName }}</span>
+        </div>
+        <div class="fd-section-body">
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <!-- SEÇÃO DE AGENDAMENTO -->
+            @if (template()?.hasSchedule) {
+              <div class="fd-schedule-block">
+                <p class="fd-block-label">Selecione data e horário</p>
+
+                <div class="field" style="max-width: 240px">
+                  <label>Data do atendimento <span class="fd-required">*</span></label>
+                  <input
+                    type="date"
+                    [min]="minDate"
+                    [max]="maxDate"
+                    [value]="selectedDate()"
+                    (change)="onDateChange($event)"
+                    [ngStyle]="fieldInputStyle()"
                   />
                 </div>
-              }
-            </div>
-          }
 
-          <!-- Alerta de erro de agendamento (duplicidade, slot cheio, etc.) -->
-          @if (bookingError()) {
-            <div class="fd-booking-error">
-              <span class="fd-booking-error__icon">⚠</span>
-              <div>
-                <strong class="fd-booking-error__title">Não foi possível agendar</strong>
-                <p class="fd-booking-error__msg">{{ bookingError() }}</p>
+                @if (loadingSlots()) {
+                  <div class="fd-slots-loading">Carregando horários...</div>
+                }
+
+                @if (!loadingSlots() && selectedDate() && availableSlots().length > 0) {
+                  <div>
+                    <label class="fd-slots-label">Horários disponíveis</label>
+                    <div class="fd-slots-grid">
+                      @for (slot of availableSlots(); track slot.time) {
+                        <button
+                          type="button"
+                          class="fd-slot-btn"
+                          [class.fd-slot-selected]="selectedSlot() === slot.time"
+                          [class.fd-slot-taken]="!slot.available"
+                          (click)="selectSlot(slot)"
+                          [disabled]="!slot.available"
+                          [ngStyle]="selectedSlot() === slot.time ? submitBtnStyle() : {}"
+                        >
+                          <span class="fd-slot-time">{{ formatTime(slot.time) }}</span>
+                          <span class="fd-slot-vacancy" [class.fd-slot-vacancy--full]="!slot.available">
+                            {{ vacancyLabel(slot) }}
+                          </span>
+                          @if (slot.capacity > 1) {
+                            <span class="fd-slot-bar">
+                              <span
+                                class="fd-slot-bar-fill"
+                                [style.width.%]="occupancyPercent(slot)"
+                                [class.fd-slot-bar-fill--full]="!slot.available"
+                              ></span>
+                            </span>
+                          }
+                        </button>
+                      }
+                    </div>
+
+                    @if (selectedSlot()) {
+                      <div class="fd-selected-slot">
+                        Horário selecionado:
+                        <strong
+                          >{{ selectedDate() | date: 'dd/MM/yyyy' }} às
+                          {{ formatTime(selectedSlot()) }}</strong
+                        >
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (!loadingSlots() && selectedDate() && availableSlots().length === 0) {
+                  <div class="fd-no-slots">Nenhum horário disponível para esta data.</div>
+                }
               </div>
-            </div>
-          }
+            }
 
-          <div class="fd-form-footer">
-            <a routerLink="/" class="btn-outline">Cancelar</a>
-            <button type="submit" class="btn-primary" [ngStyle]="submitBtnStyle()">
+            <!-- CAMPOS DO FORMULÁRIO -->
+            @if (formFields().length > 0) {
               @if (template()?.hasSchedule) {
-                Confirmar agendamento
-              } @else {
-                Enviar resposta
+                <p class="fd-block-label">Dados do solicitante</p>
               }
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
 
-    <!-- Footer image -->
-    @if (template()?.appearance?.footerImageUrl) {
-      <img
-        [src]="template()!.appearance!.footerImageUrl"
-        class="fd-footer-img"
-        alt="Rodapé"
-      />
-    }
+              <div class="fd-fields-grid">
+                @for (fg of formFields(); track fg.value.label; let i = $index) {
+                  <div
+                    [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
+                    [class.fd-field--half]="fg.value.colSpan === 1"
+                  >
+                    <app-form-field
+                      [control]="getControl(i)"
+                      [label]="fg.value.label"
+                      [id]="'field-' + i"
+                      [type]="fg.value.type"
+                      [placeholder]="'Informe ' + fg.value.label.toLowerCase()"
+                      [required]="fg.value.required"
+                      [inputStyle]="fieldInputStyle()"
+                      [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"
+                    />
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Alerta de erro de agendamento (duplicidade, slot cheio, etc.) -->
+            @if (bookingError()) {
+              <div class="fd-booking-error">
+                <span class="fd-booking-error__icon">⚠</span>
+                <div>
+                  <strong class="fd-booking-error__title">Não foi possível agendar</strong>
+                  <p class="fd-booking-error__msg">{{ bookingError() }}</p>
+                </div>
+              </div>
+            }
+
+            <div class="fd-form-footer">
+              <a routerLink="/" class="btn-outline">Cancelar</a>
+              <button type="submit" class="btn-primary" [ngStyle]="submitBtnStyle()">
+                @if (template()?.hasSchedule) {
+                  Confirmar agendamento
+                } @else {
+                  Enviar resposta
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Footer image -->
+      @if (template()?.appearance?.footerImageUrl) {
+        <img
+          [src]="template()!.appearance!.footerImageUrl"
+          class="fd-footer-img"
+          alt="Rodapé"
+        />
+      }
+
+    </div>
   }
 </div>

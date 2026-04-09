@@ -5,6 +5,7 @@ import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   PaginationComponent,
   SpringPage,
@@ -18,6 +19,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     PaginationComponent,
     PageShellComponent,
@@ -38,8 +40,21 @@ export class FormsAllComponent implements OnInit {
   templates = signal<TemplateStatResponse[]>([]);
   loading = signal(true);
 
+  searchQuery = signal('');
+
+  filteredTemplates = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.templates();
+    return this.templates().filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        (t.clientName ?? '').toLowerCase().includes(q),
+    );
+  });
+
   page = signal(0);
   readonly size = 10;
+  readonly searchSize = 500;
   totalPages = signal(0);
   totalElements = signal(0);
   summary = signal<DashboardSummary | null>(null);
@@ -67,8 +82,11 @@ export class FormsAllComponent implements OnInit {
 
   loadTemplates(): void {
     this.loading.set(true);
+    const isSearching = !!this.searchQuery().trim();
+    const size = isSearching ? this.searchSize : this.size;
+    const page = isSearching ? 0 : this.page();
 
-    this.dashboardService.getSummary(this.page(), this.size).subscribe({
+    this.dashboardService.getSummary(page, size).subscribe({
       next: (summary) => {
         this.summary.set(summary);
         this.templates.set(summary.templates ?? []);
@@ -81,6 +99,18 @@ export class FormsAllComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+    this.page.set(0);
+    this.loadTemplates();
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.page.set(0);
+    this.loadTemplates();
   }
 
   isAttendanceCard(template: TemplateStatResponse): boolean {
