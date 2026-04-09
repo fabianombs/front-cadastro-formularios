@@ -19,7 +19,7 @@
 
       <div class="page-header">
         <div>
-          <h1 class="page-title">{{ template()?.name }}</h1>
+          <h1 class="page-title" [ngStyle]="titleStyle()">{{ template()?.name }}</h1>
           <p class="page-subtitle">
             @if (template()?.hasSchedule) {
               Escolha uma data e horário disponível para atendimento

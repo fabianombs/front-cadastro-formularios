@@ -59,6 +59,69 @@ export class CreateTemplateComponent implements OnInit {
 
   private messages = inject(MessageService);
 
+  readonly fontOptions = [
+    { label: 'Padrão', value: '', weights: '' },
+    { label: 'Inter', value: 'Inter', weights: '400;500;600;700' },
+    { label: 'Poppins', value: 'Poppins', weights: '400;500;600;700' },
+    { label: 'Roboto', value: 'Roboto', weights: '400;500;700' },
+    { label: 'Montserrat', value: 'Montserrat', weights: '400;500;700;800' },
+    { label: 'Lato', value: 'Lato', weights: '400;700' },
+    { label: 'Playfair', value: 'Playfair Display', weights: '400;700' },
+    { label: 'Space Grotesk', value: 'Space Grotesk', weights: '400;500;700' },
+  ];
+
+  private loadGoogleFont(family: string, weights: string): void {
+    if (!family) return;
+    const id = `gf-${family.replace(/\s+/g, '-').toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:wght@${weights}&display=swap`;
+    document.head.appendChild(link);
+  }
+
+  setFont(opt: { value: string; weights: string }): void {
+    const ctrl = this.templateForm.get('appearance.fontFamily');
+    if (ctrl?.value === opt.value) {
+      ctrl.setValue('');
+    } else {
+      if (opt.value) this.loadGoogleFont(opt.value, opt.weights);
+      ctrl?.setValue(opt.value);
+    }
+    this.cdr.detectChanges();
+  }
+
+  readonly titleFontSizes = [
+    { label: 'P', px: '14px', uiSize: '12px' },
+    { label: 'M', px: '18px', uiSize: '15px' },
+    { label: 'G', px: '22px', uiSize: '18px' },
+    { label: 'GG', px: '28px', uiSize: '22px' },
+  ];
+
+  readonly labelFontSizes = [
+    { label: 'P', px: '10px', uiSize: '10px' },
+    { label: 'M', px: '12px', uiSize: '12px' },
+    { label: 'G', px: '14px', uiSize: '14px' },
+    { label: 'GG', px: '16px', uiSize: '16px' },
+  ];
+
+  readonly buttonFontSizes = [
+    { label: 'P', px: '10px', uiSize: '10px' },
+    { label: 'M', px: '13px', uiSize: '12px' },
+    { label: 'G', px: '15px', uiSize: '14px' },
+    { label: 'GG', px: '17px', uiSize: '16px' },
+  ];
+
+  setFontSize(field: 'titleFontSize' | 'labelFontSize' | 'buttonFontSize', px: string) {
+    const ctrl = this.templateForm.get(`appearance.${field}`);
+    if (ctrl?.value === px) {
+      ctrl.setValue('');
+    } else {
+      ctrl?.setValue(px);
+    }
+  }
+
   readonly gradientPresets = [
     { label: 'Meia-noite', value: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' },
     { label: 'Oceano', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
@@ -206,6 +269,7 @@ export class CreateTemplateComponent implements OnInit {
       style['backgroundPosition'] = 'center';
     } else if (a.backgroundColor) style['backgroundColor'] = a.backgroundColor;
     if (a.formTextColor) style['color'] = a.formTextColor;
+    if (a.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
     return style;
   }
 
@@ -236,8 +300,31 @@ export class CreateTemplateComponent implements OnInit {
 
   get previewBtnStyle(): Record<string, string> {
     const a = this.templateForm.get('appearance')?.value ?? {};
-    if (!a.primaryColor) return {};
-    return { 'background-color': a.primaryColor, 'border-color': a.primaryColor };
+    const style: Record<string, string> = {};
+    if (a.primaryColor) {
+      style['background-color'] = a.primaryColor;
+      style['border-color'] = a.primaryColor;
+    }
+    if (a.buttonFontSize) style['font-size'] = a.buttonFontSize;
+    if (a.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
+    return style;
+  }
+
+  get previewTitleStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const style: Record<string, string> = {};
+    if (a.titleFontSize) style['font-size'] = a.titleFontSize;
+    if (a.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
+    if (a.formTextColor) style['color'] = a.formTextColor;
+    return style;
+  }
+
+  get previewLabelStyle(): Record<string, string> {
+    const a = this.templateForm.get('appearance')?.value ?? {};
+    const style: Record<string, string> = {};
+    if (a.labelFontSize) style['font-size'] = a.labelFontSize;
+    if (a.fontFamily) style['font-family'] = `'${a.fontFamily}', sans-serif`;
+    return style;
   }
 
   // ── PREVIEW DA LISTAGEM ──────────────────────────────────────
@@ -413,6 +500,10 @@ export class CreateTemplateComponent implements OnInit {
         fieldTextColor: [''],
         cardBackgroundColor: [''],
         cardBorderColor: [''],
+        titleFontSize: [''],
+        labelFontSize: [''],
+        buttonFontSize: [''],
+        fontFamily: [''],
       }),
     });
   }
@@ -706,6 +797,10 @@ export class CreateTemplateComponent implements OnInit {
 
     if (template.appearance) {
       this.templateForm.get('appearance')?.patchValue(template.appearance);
+      if (template.appearance.fontFamily) {
+        const opt = this.fontOptions.find(o => o.value === template.appearance!.fontFamily);
+        if (opt?.weights) this.loadGoogleFont(opt.value, opt.weights);
+      }
     }
 
     this.fields.clear();

@@ -19,6 +19,14 @@ export interface TemplateAppearance {
   cardBackgroundColor?: string;
   /** Cor da borda dos cards e tabelas */
   cardBorderColor?: string;
+  /** Tamanho da fonte do título do formulário (ex: "18px") */
+  titleFontSize?: string;
+  /** Tamanho da fonte dos labels dos campos (ex: "13px") */
+  labelFontSize?: string;
+  /** Tamanho da fonte do botão de envio (ex: "13px") */
+  buttonFontSize?: string;
+  /** Família tipográfica (ex: "Poppins") — carregada do Google Fonts */
+  fontFamily?: string;
 }
 
 export interface FormField {
