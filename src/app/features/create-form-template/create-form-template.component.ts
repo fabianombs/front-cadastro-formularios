@@ -71,9 +71,11 @@ export class CreateTemplateComponent implements OnInit {
   ];
 
   applyGradientPreset(value: string) {
+    this.deleteSessionImage('backgroundImageUrl');
     this.templateForm.get('appearance.backgroundGradient')?.setValue(value);
     this.templateForm.get('appearance.backgroundColor')?.setValue('');
     this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
+    this.imagePreviews['backgroundImageUrl'] = '';
   }
 
   /** Abre o modal de posicionamento ao selecionar uma imagem */
@@ -126,6 +128,10 @@ export class CreateTemplateComponent implements OnInit {
 
     this.imagePositionConfig = null;
 
+    // Captura a URL anterior ANTES de sobrescrever com blob (pode ser uma URL real de sessão)
+    const prevSessionUrl = this.imagePreviews[field];
+    const savedUrl = this.template?.appearance?.[field];
+
     // Preview imediato com blob URL
     const blobUrl = URL.createObjectURL(event.blob);
     this.imagePreviews[field] = blobUrl;
@@ -136,6 +142,10 @@ export class CreateTemplateComponent implements OnInit {
     this.templateService.uploadImage(croppedFile).subscribe({
       next: ({ url }) => {
         URL.revokeObjectURL(blobUrl);
+        // Se havia uma imagem de sessão (URL real, não blob) ocupando o slot, deletá-la
+        if (prevSessionUrl && !prevSessionUrl.startsWith('blob:') && prevSessionUrl !== url && prevSessionUrl !== savedUrl) {
+          this.templateService.deleteImage(prevSessionUrl).subscribe({ error: () => {} });
+        }
         this.imagePreviews[field] = url;
         this.templateForm.get(`appearance.${field}`)?.setValue(url);
         this.uploadingField.set(null);
@@ -167,8 +177,23 @@ export class CreateTemplateComponent implements OnInit {
   }
 
   clearImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
+    this.deleteSessionImage(field);
     this.templateForm.get(`appearance.${field}`)?.setValue('');
     this.imagePreviews[field] = '';
+  }
+
+  /**
+   * Deleta imediatamente do servidor uma imagem que foi enviada nesta sessão
+   * (ou seja, que está em imagePreviews mas ainda não foi salva no template em banco).
+   * Imagens já salvas são gerenciadas pelo backend em updateTemplate via tryDeleteOrphanedImage.
+   */
+  private deleteSessionImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
+    const sessionUrl = this.imagePreviews[field];
+    const savedUrl = this.template?.appearance?.[field];
+    // Ignora blob URLs (preview local antes do upload terminar) — só deleta URLs reais do servidor
+    if (sessionUrl && !sessionUrl.startsWith('blob:') && sessionUrl !== savedUrl) {
+      this.templateService.deleteImage(sessionUrl).subscribe({ error: () => {} });
+    }
   }
 
   get previewPageStyle(): Record<string, string> {
@@ -567,9 +592,10 @@ export class CreateTemplateComponent implements OnInit {
 
     const formValue = this.templateForm.value;
     const rawAppearance = formValue.appearance ?? {};
+    const IMAGE_FIELDS = new Set(['backgroundImageUrl', 'headerImageUrl', 'footerImageUrl']);
     const appearance: Record<string, string> = {};
     Object.keys(rawAppearance).forEach((k) => {
-      if (rawAppearance[k]) appearance[k] = rawAppearance[k];
+      if (rawAppearance[k] || IMAGE_FIELDS.has(k)) appearance[k] = rawAppearance[k] ?? '';
     });
 
     const payload: CreateFormTemplateRequest = {
@@ -606,6 +632,7 @@ export class CreateTemplateComponent implements OnInit {
           ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
           colSpan: f.colSpan ?? 2,
         })),
+        appearance: Object.keys(appearance).length > 0 ? appearance : null,
       };
 
       this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
@@ -823,6 +850,7 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.get(`appearance.${controlName}`)?.setValue(hex, { emitEvent: false });
     // Ao escolher cor sólida de fundo, remove gradiente e imagem para não sobrepor
     if (controlName === 'backgroundColor' && hex) {
+      this.deleteSessionImage('backgroundImageUrl');
       this.templateForm.get('appearance.backgroundGradient')?.setValue('', { emitEvent: false });
       this.templateForm.get('appearance.backgroundImageUrl')?.setValue('', { emitEvent: false });
       this.imagePreviews['backgroundImageUrl'] = '';

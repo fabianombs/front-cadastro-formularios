@@ -68,6 +68,7 @@ export interface CreateFormTemplateRequest {
 export interface UpdateFormTemplateRequest {
   name: string;
   fields: { label: string; type: string; required: boolean; fieldColor?: string; colSpan: number }[];
+  appearance?: Partial<TemplateAppearance> | null;
 }
 
 export interface FormSubmission {
@@ -159,6 +160,12 @@ export class FormTemplateService {
     const form = new FormData();
     form.append('file', file);
     return this.http.post<{ url: string }>(`${this.uploadsUrl}/image`, form);
+  }
+
+  deleteImage(url: string): Observable<void> {
+    return this.http.delete<void>(`${this.uploadsUrl}/image`, {
+      body: { url },
+    });
   }
 
   // ================= TEMPLATES =================
