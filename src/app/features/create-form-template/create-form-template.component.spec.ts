@@ -1,27 +1,34 @@
-/* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { ComponentFixture } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { importProvidersFrom } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+import { CreateTemplateComponent } from './create-form-template.component';
 
-import { CreateFormTemplateComponent } from './create-form-template.component';
+describe('CreateTemplateComponent', () => {
+  let component: CreateTemplateComponent;
+  let fixture: ComponentFixture<CreateTemplateComponent>;
 
-describe('CreateFormTemplateComponent', () => {
-  let component: CreateFormTemplateComponent;
-  let fixture: ComponentFixture<CreateFormTemplateComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [CreateFormTemplateComponent],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [CreateTemplateComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: '**', redirectTo: '' }]),
+        importProvidersFrom(BrowserAnimationsModule, ToastrModule.forRoot()),
+      ],
     }).compileComponents();
-  }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(CreateFormTemplateComponent);
+    fixture = TestBed.createComponent(CreateTemplateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('deve ser criado', () => {
     expect(component).toBeTruthy();
   });
 });
