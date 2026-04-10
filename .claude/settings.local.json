@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(xargs grep:*)",
-      "Bash(find D:Projetosfrontapp-forms-clients/src -type f \\\\\\(-name *.ts -o -name *.scss -o -name *.css -o -name *.html \\\\\\))"
+      "Bash(find D:Projetosfrontapp-forms-clients/src -type f \\\\\\(-name *.ts -o -name *.scss -o -name *.css -o -name *.html \\\\\\))",
+      "Read(//d/Projetos/back/poc-fabiano/**)",
+      "Bash(ls mvnw*)",
+      "Bash(./mvnw flyway:repair -q)",
+      "Bash(mysql -u root -proot teste_fabiano_cadastro2 -e \"DELETE FROM flyway_schema_history WHERE version = '23' AND success = 0;\")",
+      "Bash(where mysql:*)",
+      "Read(//c/Program Files/MySQL/**)",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql\" -u root -proot teste_fabiano_cadastro2 -e \"DELETE FROM flyway_schema_history WHERE version = '23' AND success = 0;\")"
     ]
   }
 }

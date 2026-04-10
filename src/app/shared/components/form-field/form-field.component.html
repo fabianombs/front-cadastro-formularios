@@ -7,13 +7,26 @@
   </label>
 
   <div class="input-wrapper">
-    <input
-      [id]="id"
-      [formControl]="control"
-      [placeholder]="placeholder"
-      [type]="type"
-      [ngStyle]="inputStyle"
-    />
+    @if (type === 'select') {
+      <select
+        [id]="id"
+        [formControl]="control"
+        [ngStyle]="inputStyle"
+      >
+        <option value="" disabled>{{ placeholder || 'Selecione uma opção' }}</option>
+        @for (opt of options; track opt) {
+          <option [value]="opt">{{ opt }}</option>
+        }
+      </select>
+    } @else {
+      <input
+        [id]="id"
+        [formControl]="control"
+        [placeholder]="placeholder"
+        [type]="type"
+        [ngStyle]="inputStyle"
+      />
+    }
   </div>
 
   @if (control.invalid && control.touched) {

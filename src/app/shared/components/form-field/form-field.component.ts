@@ -18,6 +18,8 @@ export class FormFieldComponent {
   @Input() type: string = 'text';
   @Input() required = false;
 
+  /** Opções para campos do tipo select */
+  @Input() options: string[] = [];
   /** Estilos inline aplicados ao <input> — usado para aparência dinâmica de formulários */
   @Input() inputStyle: Record<string, string> = {};
   /** Estilos inline aplicados ao <label> — usado para cor de texto personalizada */

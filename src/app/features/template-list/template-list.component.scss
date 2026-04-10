@@ -562,7 +562,8 @@
   }
 }
 
-.notes-input {
+.notes-input,
+.notes-select {
   border: 1px solid var(--border, #1c2e4a);
   border-radius: 6px;
   padding: 5px 9px;
@@ -573,6 +574,24 @@
   background: var(--bg-subtle, #0a1020);
   color: var(--text, #d8e4f8);
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.notes-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235d789f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+  cursor: pointer;
+
+  option {
+    background: var(--surface, #0f1c2e);
+    color: var(--text, #d8e4f8);
+  }
+}
+
+.notes-input {
 
   &::placeholder {
     color: var(--text-faint, #2b3f5c);
