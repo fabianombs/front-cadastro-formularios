@@ -1,28 +1,26 @@
-/* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
-
+import { TestBed } from '@angular/core/testing';
+import { ComponentFixture } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { FormFieldComponent } from './form-field.component';
 
 describe('FormFieldComponent', () => {
   let component: FormFieldComponent;
   let fixture: ComponentFixture<FormFieldComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ FormFieldComponent ]
-    })
-    .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FormFieldComponent, ReactiveFormsModule],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(FormFieldComponent);
     component = fixture.componentInstance;
+    // Inputs obrigatórios do componente
+    component.label = 'Campo teste';
+    component.control = new FormControl('');
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('deve ser criado', () => {
     expect(component).toBeTruthy();
   });
 });
