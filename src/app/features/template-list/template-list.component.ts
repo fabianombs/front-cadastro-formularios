@@ -4,6 +4,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import {
   FormTemplateService,
   FormTemplate,
+  FormField,
   FormSubmission,
   AppointmentResponse,
   AttendanceRecord,
@@ -128,6 +129,13 @@ export class TemplateListComponent implements OnInit {
     const labels = new Set<string>();
     this.template()?.fields?.forEach((f) => labels.add(f.label));
     return labels;
+  });
+
+  /** Mapa label → campo do template, para acessar type e options na tabela */
+  templateFieldMap = computed(() => {
+    const map = new Map<string, FormField>();
+    this.template()?.fields?.forEach((f) => map.set(f.label, f));
+    return map;
   });
   attendanceStats = computed(() => ({
     total: this.attTotalElements(),

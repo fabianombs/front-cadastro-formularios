@@ -611,8 +611,29 @@ export class CreateTemplateComponent implements OnInit {
         required: [false],
         fieldColor: [''],
         colSpan: [2],
+        options: this.fb.array([]),
       }),
     );
+  }
+
+  getFieldOptions(index: number): FormArray {
+    const field = this.fields.at(index);
+    if (!field) return this.fb.array([]);
+    const ctrl = field.get('options');
+    if (!ctrl) {
+      const arr = this.fb.array([]);
+      (field as FormGroup).addControl('options', arr);
+      return arr;
+    }
+    return ctrl as FormArray;
+  }
+
+  addOption(index: number) {
+    this.getFieldOptions(index).push(this.fb.control('', Validators.required));
+  }
+
+  removeOption(fieldIndex: number, optIndex: number) {
+    this.getFieldOptions(fieldIndex).removeAt(optIndex);
   }
 
   dropField(event: CdkDragDrop<AbstractControl[]>) {
@@ -698,6 +719,7 @@ export class CreateTemplateComponent implements OnInit {
         required: f.required,
         ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
         colSpan: f.colSpan ?? 2,
+        ...(f.type === 'select' && f.options?.length ? { options: f.options } : {}),
       })),
       scheduleConfig: formValue.hasSchedule
         ? {
@@ -722,6 +744,7 @@ export class CreateTemplateComponent implements OnInit {
           required: f.required,
           ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
           colSpan: f.colSpan ?? 2,
+          ...(f.type === 'select' && f.options?.length ? { options: f.options } : {}),
         })),
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
       };
@@ -751,6 +774,18 @@ export class CreateTemplateComponent implements OnInit {
         this.loadTemplateToForm(res);
         this.messages.success('Template criado com sucesso!');
 
+        // Preserva configuração dos campos select no sessionStorage
+        // (o importAttendance pode sobrescrever os fields no backend)
+        const selectCache: Record<string, string[]> = {};
+        res.fields.forEach(f => {
+          if (f.type === 'select' && f.options?.length) {
+            selectCache[f.label] = f.options;
+          }
+        });
+        if (Object.keys(selectCache).length > 0) {
+          sessionStorage.setItem(`tmpl-select-${res.slug}`, JSON.stringify(selectCache));
+        }
+
         // Se tem lista pendente, importa logo após criar
         if (formValue.hasAttendance && this.pendingAttendanceRows.length > 0) {
           this.importingAttendance = true;
@@ -760,6 +795,7 @@ export class CreateTemplateComponent implements OnInit {
               next: (records) => {
                 this.setAttendanceRecords(records);
                 this.importingAttendance = false;
+                if (this.template) this.template.hasAttendance = true;
                 this.cdr.detectChanges();
               },
               error: () => {
@@ -805,6 +841,9 @@ export class CreateTemplateComponent implements OnInit {
 
     this.fields.clear();
     template.fields.forEach((f) => {
+      const optionsArray = this.fb.array(
+        (f.options ?? []).map((o) => this.fb.control(o, Validators.required)),
+      );
       this.fields.push(
         this.fb.group({
           label: [f.label, Validators.required],
@@ -812,6 +851,7 @@ export class CreateTemplateComponent implements OnInit {
           required: [f.required ?? false],
           fieldColor: [f.fieldColor ?? ''],
           colSpan: [(f as any).colSpan ?? 2],
+          options: optionsArray,
         }),
       );
     });
