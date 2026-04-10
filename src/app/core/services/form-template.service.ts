@@ -37,6 +37,8 @@ export interface FormField {
   fieldColor?: string;
   /** 2 = largura total, 1 = meia largura */
   colSpan?: number;
+  /** Opções disponíveis para campos do tipo select */
+  options?: string[];
 }
 
 export interface ScheduleConfig {
@@ -75,7 +77,7 @@ export interface CreateFormTemplateRequest {
 
 export interface UpdateFormTemplateRequest {
   name: string;
-  fields: { label: string; type: string; required: boolean; fieldColor?: string; colSpan: number }[];
+  fields: { label: string; type: string; required: boolean; fieldColor?: string; colSpan: number; options?: string[] }[];
   appearance?: Partial<TemplateAppearance> | null;
 }
 

@@ -11,7 +11,7 @@
   <!-- ══════════════════════════════════════════════════════════ -->
   @if (slug && template && !editMode) {
   <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
-    <a page-actions routerLink="/form-builder" class="btn-outline">+ Novo formulário</a>
+    <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
   </app-page-header>
 
   <!-- Links públicos -->
@@ -278,13 +278,22 @@
     </div>
     <div style="padding: 8px 0">
       @for (f of template.fields; track f.id) {
-      <div class="field-row">
-        <div class="field-row-info">
-          <span class="field-row-label">{{ f.label }}</span>
-          <span class="badge badge-gray">{{ f.type }}</span>
+      <div class="field-row" style="flex-direction: column; align-items: flex-start; gap: 4px">
+        <div class="field-row-info" style="width: 100%">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+            <span class="field-row-label">{{ f.label }}</span>
+            <span class="badge badge-gray">{{ f.type }}</span>
+            @if (f.required) {
+              <span class="badge badge-red">Obrigatório</span>
+            }
+          </div>
         </div>
-        @if (f.required) {
-        <span class="badge badge-red">Obrigatório</span>
+        @if (f.type === 'select' && f.options && f.options.length > 0) {
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-left: 2px">
+            @for (opt of f.options; track opt) {
+              <span style="font-size: 11px; padding: 2px 10px; border-radius: 99px; background: var(--bg-subtle); border: 1px solid var(--border); color: var(--text-muted)">{{ opt }}</span>
+            }
+          </div>
         }
       </div>
       }
@@ -521,21 +530,21 @@
 
           <div formArrayName="fields" cdkDropList [cdkDropListData]="fields.controls"
             (cdkDropListDropped)="dropField($event)" class="fields-drop-list">
-            @for (f of fields.controls; track $index) {
-            <div [formGroupName]="$index" class="field-item" cdkDrag>
+            @for (f of fields.controls; track $index; let fi = $index) {
+            <div [formGroupName]="fi" class="field-item" cdkDrag>
               <div class="field-item-header">
                 <div style="display: flex; align-items: center; gap: 8px">
                   <span class="drag-handle" cdkDragHandle title="Arrastar para reordenar">⠿</span>
-                  <span class="field-item-number">Campo {{ $index + 1 }}</span>
+                  <span class="field-item-number">Campo {{ fi + 1 }}</span>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center">
                   <button type="button" class="btn-span-toggle" [class.active]="f.get('colSpan')?.value === 1"
-                    (click)="toggleFieldSpan($index)"
+                    (click)="toggleFieldSpan(fi)"
                     [title]="f.get('colSpan')?.value === 2 ? 'Clique para meia largura' : 'Clique para largura total'">
                     {{ f.get('colSpan')?.value === 2 ? '⬜ Full' : '▪▪ ½' }}
                   </button>
                   <button type="button" class="btn-danger" style="padding: 4px 10px; font-size: 11px"
-                    (click)="removeField($index)">
+                    (click)="removeField(fi)">
                     Remover
                   </button>
                 </div>
@@ -554,6 +563,7 @@
                       <option value="email">Email</option>
                       <option value="number">Número</option>
                       <option value="date">Data</option>
+                      <option value="select">Lista (select)</option>
                     </select>
                   </div>
                   <!-- <div class="field" style="margin-bottom: 0">
@@ -577,6 +587,37 @@
                     </label>
                   </div>
                 </div>
+
+                @if (f.get('type')?.value === 'select') {
+                  <div class="select-options-editor" [formArrayName]="'options'">
+                    <div class="select-options-header">
+                      <span class="select-options-label">Opções do campo</span>
+                      <button type="button" class="btn-add-option" (click)="addOption(fi)">
+                        + Adicionar opção
+                      </button>
+                    </div>
+                    @if (getFieldOptions(fi).length === 0) {
+                      <p class="select-options-empty">Nenhuma opção adicionada. Clique em "Adicionar opção".</p>
+                    }
+                    @for (opt of getFieldOptions(fi).controls; track oi; let oi = $index) {
+                      <div class="select-option-row">
+                        <span class="select-option-index">{{ oi + 1 }}</span>
+                        <input
+                          type="text"
+                          [formControlName]="oi"
+                          placeholder="Ex: Pista, VIP, Camarote..."
+                          class="select-option-input"
+                        />
+                        <button
+                          type="button"
+                          class="select-option-remove"
+                          (click)="removeOption(fi, oi)"
+                          title="Remover opção"
+                        >✕</button>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             </div>
             }

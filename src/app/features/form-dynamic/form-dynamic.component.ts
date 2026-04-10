@@ -233,6 +233,7 @@ export class FormDynamicComponent implements OnInit {
         required: [f.required ?? false],
         fieldColor: [f.fieldColor ?? ''],
         colSpan: [f.colSpan ?? 2],
+        options: [f.options ?? []],
       }),
     );
 
