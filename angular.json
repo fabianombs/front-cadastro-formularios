@@ -98,7 +98,15 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "coverageExclude": [
+              "**/*.html",
+              "**/*.scss",
+              "**/environments/**",
+              "**/main.ts"
+            ]
+          }
         }
       }
     }

@@ -9,7 +9,16 @@
       "Bash(mysql -u root -proot teste_fabiano_cadastro2 -e \"DELETE FROM flyway_schema_history WHERE version = '23' AND success = 0;\")",
       "Bash(where mysql:*)",
       "Read(//c/Program Files/MySQL/**)",
-      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql\" -u root -proot teste_fabiano_cadastro2 -e \"DELETE FROM flyway_schema_history WHERE version = '23' AND success = 0;\")"
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql\" -u root -proot teste_fabiano_cadastro2 -e \"DELETE FROM flyway_schema_history WHERE version = '23' AND success = 0;\")",
+      "Bash(grep -E '\\\\.\\(ts|js|json|html|css|scss\\)$')",
+      "Bash(grep -E '\\\\.ts$')",
+      "Bash(wc -l /d/Projetos/front/app-forms-clients/src/**/*.ts)",
+      "Bash(ng test:*)",
+      "Bash(sort -t'|' -k2 -n)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npx ng:*)",
+      "Bash(node -e ':*)",
+      "Bash(grep -c \"^\\\\s*$\" \"D:/Projetos/front/app-forms-clients/src/app/shared/components/reposition-modal/reposition-modal.component.ts\")"
     ]
   }
 }
