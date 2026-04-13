@@ -60,6 +60,7 @@ export interface FormTemplate {
   name: string;
   slug: string;
   clientName: string;
+  clientCompany?: string;
   fields: FormField[];
   hasSchedule: boolean;
   hasAttendance: boolean;

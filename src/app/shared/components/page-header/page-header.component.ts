@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <div class="page-header">
       <div>
         <h1 class="page-title">{{ title }}</h1>
-        <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+        <!-- <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p> -->
       </div>
       <ng-content select="[page-actions]"></ng-content>
     </div>

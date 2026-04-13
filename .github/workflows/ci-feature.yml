@@ -40,7 +40,7 @@ jobs:
 
       - name: Open PR to develop (if not exists)
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           BRANCH="${GITHUB_REF_NAME}"
           EXISTING=$(gh pr list --head "$BRANCH" --base develop --state open --json number --jq '.[0].number')

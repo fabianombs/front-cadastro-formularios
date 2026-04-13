@@ -44,20 +44,13 @@
 
           <!-- Nome completo -->
           <!-- Campo obrigatório, usado para identificar o cliente -->
-          <app-form-field [control]="nameControl" label="Nome completo" id="name" placeholder="Ex: João Silva"
-            [required]="true">
+          <app-form-field [control]="nameControl" label="Nome completo" id="name" placeholder="Ex: João Silva">
           </app-form-field>
 
-          <!-- Username -->
-          <!-- Campo obrigatório, será usado como login ou identificação interna -->
-          <app-form-field [control]="usernameControl" label="Username" id="username" placeholder="nome.sobrenome"
-            [required]="true">
+          <app-form-field [control]="usernameControl" label="Username" id="username" placeholder="nome.sobrenome">
           </app-form-field>
 
-          <!-- Email -->
-          <!-- Campo obrigatório, deve ser um email válido -->
-          <app-form-field [control]="emailControl" label="Email" id="email" placeholder="email@empresa.com" type="email"
-            [required]="true">
+          <app-form-field [control]="emailControl" label="Email" id="email" placeholder="email@empresa.com" type="email">
           </app-form-field>
         </div>
       </div>
@@ -73,9 +66,7 @@
           <app-form-field [control]="phoneControl" label="Telefone" id="phone" placeholder="(11) 90000-0000">
           </app-form-field>
 
-          <!-- Empresa -->
-          <!-- Campo opcional, nome da empresa do cliente -->
-          <app-form-field [control]="companyControl" label="Empresa" id="company" placeholder="Nome da empresa">
+          <app-form-field [control]="companyControl" label="Empresa" id="company" placeholder="Nome da empresa" [required]="true">
           </app-form-field>
 
           <!-- Observações -->
