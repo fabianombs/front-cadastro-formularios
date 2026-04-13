@@ -8,19 +8,17 @@ export class ExportService {
   // ─────────────────────────────────────────────
   // RESPOSTAS (FormSubmission)
   // ─────────────────────────────────────────────
-  exportSubmissions(submissions: FormSubmission[], templateName: string): void {
+  exportSubmissions(submissions: FormSubmission[], templateName: string, fieldOrder: string[] = []): void {
     if (!submissions.length) return;
 
-    const cols = this.getSubmissionColumns(submissions);
+    const cols = this.getSubmissionColumns(submissions, fieldOrder);
 
     const rows = submissions.map((s) => {
-      const row: Record<string, string> = {
-        ID: String(s.id),
-        Data: this.formatDateTime(s.createdAt),
-      };
+      const row: Record<string, string> = { ID: String(s.id) };
       cols.forEach((col) => {
         row[this.capitalize(col)] = s.values?.[col] ?? '';
       });
+      row['Data'] = this.formatDateTime(s.createdAt);
       return row;
     });
 
@@ -30,10 +28,10 @@ export class ExportService {
   // ─────────────────────────────────────────────
   // AGENDAMENTOS (AppointmentResponse)
   // ─────────────────────────────────────────────
-  exportAppointments(appointments: AppointmentResponse[], templateName: string): void {
+  exportAppointments(appointments: AppointmentResponse[], templateName: string, fieldOrder: string[] = []): void {
     if (!appointments.length) return;
 
-    const extraCols = this.getAppointmentExtraCols(appointments);
+    const extraCols = this.getAppointmentExtraCols(appointments, fieldOrder);
 
     const rows = appointments.map((a) => {
       const row: Record<string, string> = {
@@ -181,16 +179,22 @@ export class ExportService {
     });
   }
 
-  private getSubmissionColumns(submissions: FormSubmission[]): string[] {
-    const keys = new Set<string>();
-    submissions.forEach((s) => Object.keys(s.values || {}).forEach((k) => keys.add(k)));
-    return Array.from(keys).sort();
+  private getSubmissionColumns(submissions: FormSubmission[], fieldOrder: string[] = []): string[] {
+    const allKeys = new Set<string>();
+    submissions.forEach((s) => Object.keys(s.values || {}).forEach((k) => allKeys.add(k)));
+    return [
+      ...fieldOrder.filter(k => allKeys.has(k)),
+      ...Array.from(allKeys).filter(k => !fieldOrder.includes(k)),
+    ];
   }
 
-  private getAppointmentExtraCols(appointments: AppointmentResponse[]): string[] {
-    const keys = new Set<string>();
-    appointments.forEach((a) => Object.keys(a.extraValues || {}).forEach((k) => keys.add(k)));
-    return Array.from(keys);
+  private getAppointmentExtraCols(appointments: AppointmentResponse[], fieldOrder: string[] = []): string[] {
+    const allKeys = new Set<string>();
+    appointments.forEach((a) => Object.keys(a.extraValues || {}).forEach((k) => allKeys.add(k)));
+    return [
+      ...fieldOrder.filter(k => allKeys.has(k)),
+      ...Array.from(allKeys).filter(k => !fieldOrder.includes(k)),
+    ];
   }
 
   private getAttendanceCols(records: AttendanceRecord[]): string[] {
@@ -207,7 +211,9 @@ export class ExportService {
 
   private formatDateTime(dt: string): string {
     if (!dt) return '';
-    const date = new Date(dt);
+    // Garante que o timestamp seja interpretado como UTC (backend retorna sem 'Z')
+    const normalized = /[Zz]|[+\-]\d{2}:\d{2}$/.test(dt) ? dt : dt + 'Z';
+    const date = new Date(normalized);
     if (isNaN(date.getTime())) return dt;
     return date.toLocaleString('pt-BR');
   }
