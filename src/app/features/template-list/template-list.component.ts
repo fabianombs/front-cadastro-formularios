@@ -25,6 +25,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
 
 interface FilterableField {
   col: string;
@@ -36,7 +37,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent],
+  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
@@ -130,17 +131,18 @@ export class TemplateListComponent implements OnInit {
     // Colunas da planilha na ordem salva no import (fonte mais confiável)
     const savedOrder = this.template()?.attendanceColumnOrder ?? [];
 
-    // Campos custom criados no template (em ordem de criação)
+    // Campos do template em ordem de criação
     const templateFields = this.template()?.fields?.map(f => f.label) ?? [];
 
-    // Fallback: chaves do rowData (pode vir em ordem alfabética do backend)
-    const sheetCols = Object.keys(rows[0].rowData || {});
+    // Todas as chaves presentes no rowData (pode haver extras da planilha importada)
+    const allSheetCols = new Set<string>();
+    rows.forEach(r => Object.keys(r.rowData || {}).forEach(k => allSheetCols.add(k)));
 
-    // Base = colunas salvas no import OU chaves do rowData
-    const base: string[] = savedOrder.length ? [...savedOrder] : [...sheetCols];
+    // Base: savedOrder > templateFields > chaves do rowData
+    const base: string[] = savedOrder.length ? [...savedOrder] : [...templateFields];
 
-    // Acrescenta campos custom que ainda não estão na base (adicionados após o import)
-    templateFields.forEach(col => {
+    // Acrescenta colunas extras da planilha que não estão na base
+    allSheetCols.forEach(col => {
       if (!base.includes(col)) base.push(col);
     });
 
@@ -359,18 +361,30 @@ export class TemplateListComponent implements OnInit {
 
   // ── Build colunas dinâmicas (submissions) ───────────────────
   private buildColumns(subs: FormSubmission[]) {
-    const keys = new Set<string>();
-    subs.forEach((s) => Object.keys(s.values || {}).forEach((k) => keys.add(k)));
-    this.columns.set(Array.from(keys).sort());
+    // Ordem de criação dos campos do template
+    const templateOrder = this.template()?.fields?.map(f => f.label) ?? [];
+    // Chaves presentes nas respostas (pode haver extras fora do template)
+    const allKeys = new Set<string>();
+    subs.forEach((s) => Object.keys(s.values || {}).forEach((k) => allKeys.add(k)));
+    // Campos do template primeiro (ordem de criação), depois extras não previstos
+    const ordered = [
+      ...templateOrder.filter(k => allKeys.has(k)),
+      ...Array.from(allKeys).filter(k => !templateOrder.includes(k)),
+    ];
+    this.columns.set(ordered);
   }
 
   // ── Colunas extras dos agendamentos ─────────────────────────
   appointmentExtraCols = computed<string[]>(() => {
-    const keys = new Set<string>();
+    const templateOrder = this.template()?.fields?.map(f => f.label) ?? [];
+    const allKeys = new Set<string>();
     this.appointments().forEach((a) =>
-      Object.keys(a.extraValues || {}).forEach((k) => keys.add(k)),
+      Object.keys(a.extraValues || {}).forEach((k) => allKeys.add(k)),
     );
-    return Array.from(keys);
+    return [
+      ...templateOrder.filter(k => allKeys.has(k)),
+      ...Array.from(allKeys).filter(k => !templateOrder.includes(k)),
+    ];
   });
 
   apptColumns = computed<DataTableColumn[]>(() => [
@@ -390,12 +404,12 @@ export class TemplateListComponent implements OnInit {
 
   subColumns = computed<DataTableColumn[]>(() => [
     { key: 'id', label: 'ID', sortable: true, width: '60px' },
-    { key: 'createdAt', label: 'Data', sortable: true, width: '140px' },
     ...this.columns().map((col) => ({
       key: col,
       label: this.formatLabel(col),
       sortable: true,
     })),
+    { key: 'createdAt', label: 'Data', sortable: true, width: '140px' },
     { key: 'action', label: 'Ação', width: '90px' },
   ]);
 
@@ -636,7 +650,11 @@ export class TemplateListComponent implements OnInit {
       })
       .subscribe({
         next: (updated) => {
-          this.attendance.update((list) => list.map((r) => (r.id === record.id ? updated : r)));
+          // Se o backend não retornar attendedAt ao marcar presente, define o horário local
+          const result = updated.attended && !updated.attendedAt
+            ? { ...updated, attendedAt: new Date().toISOString().replace('Z', '') }
+            : updated;
+          this.attendance.update((list) => list.map((r) => (r.id === result.id ? result : r)));
           this.markingId.set(null);
         },
         error: () => {
@@ -678,13 +696,15 @@ export class TemplateListComponent implements OnInit {
   exportSubmissionsXlsx() {
     const t = this.template();
     if (!t) return;
-    this.exporter.exportSubmissions(this.filteredSubmissions(), t.name);
+    const fieldOrder = (t.fields ?? []).map(f => f.label);
+    this.exporter.exportSubmissions(this.filteredSubmissions(), t.name, fieldOrder);
   }
 
   exportAppointmentsXlsx() {
     const t = this.template();
     if (!t) return;
-    this.exporter.exportAppointments(this.filteredAppointments(), t.name);
+    const fieldOrder = (t.fields ?? []).map(f => f.label);
+    this.exporter.exportAppointments(this.filteredAppointments(), t.name, fieldOrder);
   }
 
   exportAttendanceXlsx() {
