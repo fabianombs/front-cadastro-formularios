@@ -134,7 +134,6 @@ export class CreateTemplateComponent implements OnInit {
   ];
 
   applyGradientPreset(value: string) {
-    this.deleteSessionImage('backgroundImageUrl');
     this.templateForm.get('appearance.backgroundGradient')?.setValue(value);
     this.templateForm.get('appearance.backgroundColor')?.setValue('');
     this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
@@ -191,10 +190,6 @@ export class CreateTemplateComponent implements OnInit {
 
     this.imagePositionConfig = null;
 
-    // Captura a URL anterior ANTES de sobrescrever com blob (pode ser uma URL real de sessão)
-    const prevSessionUrl = this.imagePreviews[field];
-    const savedUrl = this.template?.appearance?.[field];
-
     // Preview imediato com blob URL
     const blobUrl = URL.createObjectURL(event.blob);
     this.imagePreviews[field] = blobUrl;
@@ -204,13 +199,9 @@ export class CreateTemplateComponent implements OnInit {
     this.uploadingField.set(field);
     this.templateService.uploadImage(croppedFile).subscribe({
       next: ({ url }) => {
-        URL.revokeObjectURL(blobUrl);
-        // Se havia uma imagem de sessão (URL real, não blob) ocupando o slot, deletá-la
-        if (prevSessionUrl && !prevSessionUrl.startsWith('blob:') && prevSessionUrl !== url && prevSessionUrl !== savedUrl) {
-          this.templateService.deleteImage(prevSessionUrl).subscribe({ error: () => {} });
-        }
         this.imagePreviews[field] = url;
         this.templateForm.get(`appearance.${field}`)?.setValue(url);
+        URL.revokeObjectURL(blobUrl);
         this.uploadingField.set(null);
         if (field === 'backgroundImageUrl') {
           this.templateForm.get('appearance.backgroundGradient')?.setValue('');
@@ -992,7 +983,6 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.get(`appearance.${controlName}`)?.setValue(hex, { emitEvent: false });
     // Ao escolher cor sólida de fundo, remove gradiente e imagem para não sobrepor
     if (controlName === 'backgroundColor' && hex) {
-      this.deleteSessionImage('backgroundImageUrl');
       this.templateForm.get('appearance.backgroundGradient')?.setValue('', { emitEvent: false });
       this.templateForm.get('appearance.backgroundImageUrl')?.setValue('', { emitEvent: false });
       this.imagePreviews['backgroundImageUrl'] = '';

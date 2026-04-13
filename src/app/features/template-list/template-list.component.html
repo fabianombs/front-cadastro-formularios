@@ -215,7 +215,7 @@
           @for (col of appointmentExtraCols(); track col) {
           <td>{{ a.extraValues[col] || '-' }}</td>
           }
-          <td class="text-muted">{{ a.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+          <td class="text-muted">{{ a.createdAt | localDate: 'dd/MM/yy HH:mm' }}</td>
           @if (auth.isAdmin() || auth.isClient()) {
           <td class="td-actions">
             @if (a.status === 'AGENDADO') {
@@ -342,10 +342,10 @@
         rowKey="id">
         <ng-template #rowTemplate let-sub let-columns="columns">
           <td class="text-muted">#{{ sub.id }}</td>
-          <td>{{ sub.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
-          @for (col of columns.slice(2, columns.length - 1); track col.key) {
+          @for (col of columns.slice(1, columns.length - 2); track col.key) {
           <td>{{ getValue(sub, col.key) }}</td>
           }
+          <td>{{ sub.createdAt | localDate: 'dd/MM/yy HH:mm' }}</td>
           @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient()) {
           <td class="td-actions">
             <button class="btn-table-danger" (click)="doDelete(sub.id)" [disabled]="deletingId() === sub.id">
@@ -486,7 +486,7 @@
 
           <!-- DATA -->
           <td class="td-mono">
-            {{ r.attendedAt ? (r.attendedAt | date: 'dd/MM HH:mm') : '—' }}
+            {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
           </td>
 
         </ng-template>
