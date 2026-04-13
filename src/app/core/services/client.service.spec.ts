@@ -36,6 +36,7 @@ describe('ClientService', () => {
       phone: '11999999999',
       company: 'ABC Ltda',
       notes: 'Cliente premium',
+      username: 'teste'
     };
     const mockResponse: Client = { id: 1, ...request };
 

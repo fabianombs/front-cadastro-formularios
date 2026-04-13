@@ -430,21 +430,6 @@
         [noDataLabel]="'Nenhum registro encontrado'" rowKey="id" [rowClass]="attendanceRowClass">
         <ng-template #rowTemplate let-r>
 
-          <!-- PRESENÇA -->
-          <td class="td-center">
-            <button class="attendance-toggle" [class.attendance-toggle--present]="r.attended"
-              [class.attendance-toggle--loading]="markingId() === r.id" (click)="toggleAttendance(r)"
-              [disabled]="markingId() === r.id">
-              @if (markingId() === r.id) {
-              <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
-              } @else if (r.attended) {
-              ✓ Presente
-              } @else {
-              Ausente
-              }
-            </button>
-          </td>
-
           <!-- CAMPOS DINÂMICOS -->
           @for (col of attendanceDataColumns(); track col.key) {
           <td>
@@ -466,11 +451,32 @@
               placeholder="—" />
             }
             } @else {
-            <!-- Coluna da planilha: somente leitura -->
-            {{ r.rowData?.[col.key] ?? '—' }}
+            <!-- Coluna da planilha: editável se vazio, leitura se preenchido -->
+            @if (!r.rowData?.[col.key]) {
+            <input type="text" class="notes-input" [value]="''"
+              (click)="$event.stopPropagation()" (blur)="saveRowField(r, col.key, $any($event.target).value)"
+              placeholder="—" />
+            } @else {
+            {{ r.rowData?.[col.key] }}
+            }
             }
           </td>
           }
+
+          <!-- PRESENÇA -->
+          <td class="td-center">
+            <button class="attendance-toggle" [class.attendance-toggle--present]="r.attended"
+              [class.attendance-toggle--loading]="markingId() === r.id" (click)="toggleAttendance(r)"
+              [disabled]="markingId() === r.id">
+              @if (markingId() === r.id) {
+              <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+              } @else if (r.attended) {
+              ✓ Presente
+              } @else {
+              Ausente
+              }
+            </button>
+          </td>
 
           <!-- OBS -->
           <td>
