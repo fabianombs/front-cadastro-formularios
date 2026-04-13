@@ -25,7 +25,14 @@
             <div class="sub-id-badge">
               <span>#{{ submission.id }}</span>
             </div>
-            <span class="sub-date">{{ submission.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="sub-date">{{ submission.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              <button class="btn-icon-danger" title="Excluir resposta" (click)="openDeleteModal(submission.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="submission-fields">
             @for (field of submission.values | keyvalue; track field.key) {
@@ -39,4 +46,14 @@
       }
     </div>
   }
+
+<app-confirm-modal
+  [open]="deleteModalOpen()"
+  title="Excluir resposta"
+  message="Tem certeza que deseja excluir esta resposta? Essa ação não pode ser desfeita."
+  confirmLabel="Excluir"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+/>
 </app-page-shell>

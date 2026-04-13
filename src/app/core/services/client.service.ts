@@ -17,6 +17,7 @@ export interface Client {
 /** Payload enviado ao criar um novo cliente. */
 export interface CreateClientRequest {
   name: string;
+  username: string;
   email: string;
   phone: string;
   company: string;
