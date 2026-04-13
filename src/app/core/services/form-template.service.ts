@@ -64,6 +64,7 @@ export interface FormTemplate {
   fields: FormField[];
   hasSchedule: boolean;
   hasAttendance: boolean;
+  attendanceColumnOrder?: string[];
   scheduleConfig: ScheduleConfig | null;
   appearance?: TemplateAppearance | null;
 }

@@ -266,7 +266,17 @@ export class FormDynamicComponent implements OnInit {
     this.loadingSlots.set(true);
     this.service.getAvailableSlots(template.id, date).subscribe({
       next: (res: AvailableSlotsResponse) => {
-        this.availableSlots.set(res.slots);
+        const today = new Date();
+        const isToday = date === today.toISOString().split('T')[0];
+        const slots = isToday
+          ? res.slots.map(s => {
+              const [h, m] = s.time.split(':').map(Number);
+              const slotMinutes = h * 60 + m;
+              const nowMinutes = today.getHours() * 60 + today.getMinutes();
+              return slotMinutes <= nowMinutes ? { ...s, available: false } : s;
+            })
+          : res.slots;
+        this.availableSlots.set(slots);
         this.loadingSlots.set(false);
         this.cdr.detectChanges();
       },

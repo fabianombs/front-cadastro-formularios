@@ -125,23 +125,26 @@ export class TemplateListComponent implements OnInit {
   attendance = signal<AttendanceRecord[]>([]);
   attendanceCols = computed<string[]>(() => {
     const rows = this.attendance();
-
     if (!rows.length) return [];
 
-    // 🔥 pega a primeira linha e trava a ordem
-    const sheetCols = Object.keys(rows[0].rowData || {});
+    // Colunas da planilha na ordem salva no import (fonte mais confiável)
+    const savedOrder = this.template()?.attendanceColumnOrder ?? [];
 
+    // Campos custom criados no template (em ordem de criação)
     const templateFields = this.template()?.fields?.map(f => f.label) ?? [];
 
-    const merged: string[] = [...sheetCols];
+    // Fallback: chaves do rowData (pode vir em ordem alfabética do backend)
+    const sheetCols = Object.keys(rows[0].rowData || {});
 
+    // Base = colunas salvas no import OU chaves do rowData
+    const base: string[] = savedOrder.length ? [...savedOrder] : [...sheetCols];
+
+    // Acrescenta campos custom que ainda não estão na base (adicionados após o import)
     templateFields.forEach(col => {
-      if (!merged.includes(col)) {
-        merged.push(col);
-      }
+      if (!base.includes(col)) base.push(col);
     });
 
-    return merged;
+    return base;
   });
 
   /** Labels dos campos do template — essas colunas são editáveis na tabela */
@@ -397,8 +400,8 @@ export class TemplateListComponent implements OnInit {
   ]);
 
   attendanceColumnsMeta = computed<DataTableColumn[]>(() => [
-    { key: 'attendance', label: 'Presença', width: '110px', align: 'center' },
     ...this.attendanceCols().map((col) => ({ key: col, label: this.formatLabel(col) })),
+    { key: 'attendance', label: 'Presença', width: '110px', align: 'center' },
     { key: 'notes', label: 'Obs.' },
     { key: 'attendedAt', label: 'Marcado em', width: '120px' },
   ]);
