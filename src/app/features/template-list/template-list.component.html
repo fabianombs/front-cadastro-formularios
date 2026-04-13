@@ -449,33 +449,25 @@
           @for (col of attendanceDataColumns(); track col.key) {
           <td>
             @if (templateFieldLabels().has(col.key)) {
-              @let field = templateFieldMap().get(col.key);
-              @if (field?.type === 'select' || field?.options?.length) {
-                <!-- Campo select: dropdown com as opções configuradas -->
-                <select
-                  class="notes-input notes-select"
-                  (click)="$event.stopPropagation()"
-                  (change)="saveRowField(r, col.key, $any($event.target).value)"
-                >
-                  <option value="" [selected]="!r.rowData?.[col.key]">—</option>
-                  @for (opt of (field?.options ?? []); track opt) {
-                    <option [value]="opt" [selected]="r.rowData?.[col.key] === opt">{{ opt }}</option>
-                  }
-                </select>
-              } @else {
-                <!-- Campo texto: editável inline, salva no blur -->
-                <input
-                  type="text"
-                  class="notes-input"
-                  [value]="r.rowData?.[col.key] ?? ''"
-                  (click)="$event.stopPropagation()"
-                  (blur)="saveRowField(r, col.key, $any($event.target).value)"
-                  placeholder="—"
-                />
+            @let field = templateFieldMap().get(col.key);
+            @if (field?.type === 'select' || field?.options?.length) {
+            <!-- Campo select: dropdown com as opções configuradas -->
+            <select class="notes-input notes-select" (click)="$event.stopPropagation()"
+              (change)="saveRowField(r, col.key, $any($event.target).value)">
+              <option value="" [selected]="!r.rowData?.[col.key]">—</option>
+              @for (opt of (field?.options ?? []); track opt) {
+              <option [value]="opt" [selected]="r.rowData?.[col.key] === opt">{{ opt }}</option>
               }
+            </select>
             } @else {
-              <!-- Coluna da planilha: somente leitura -->
-              {{ r.rowData?.[col.key] ?? '—' }}
+            <!-- Campo texto: editável inline, salva no blur -->
+            <input type="text" class="notes-input" [value]="r.rowData?.[col.key] ?? ''"
+              (click)="$event.stopPropagation()" (blur)="saveRowField(r, col.key, $any($event.target).value)"
+              placeholder="—" />
+            }
+            } @else {
+            <!-- Coluna da planilha: somente leitura -->
+            {{ r.rowData?.[col.key] ?? '—' }}
             }
           </td>
           }
@@ -509,6 +501,15 @@
   </div>
   }
   }
+
+  <app-confirm-modal [open]="confirmModalOpen()"
+    [title]="confirmAction() === 'delete' ? 'Excluir resposta' : 'Cancelar agendamento'" [message]="
+    confirmAction() === 'delete'
+      ? 'Tem certeza que deseja excluir a resposta ' + confirmTargetName() + '? Esta ação não pode ser desfeita.'
+      : 'Tem certeza que deseja cancelar o agendamento ' + confirmTargetName() + '?'
+  " [confirmLabel]="confirmAction() === 'delete' ? 'Excluir' : 'Cancelar'"
+    [confirmLabel]="confirmAction() === 'delete' ? 'Excluir' : 'Cancelar'"
+    (confirmed)="onConfirm()" (cancelled)="onCancel()" />
 </app-page-shell>
 
 <app-footer></app-footer>

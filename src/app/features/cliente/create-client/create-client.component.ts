@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ClientService } from '../../../core/services/client.service';
 import { MessageService } from '../../../core/services/message.service';
 import { FormFieldComponent } from '../../../shared/components/form-field/form-field.component';
@@ -24,11 +25,11 @@ export class CreateClientComponent {
   // FormGroup com FormBuilder
   // ==========================
   form: FormGroup = this.fb.group({
-    name: ['', Validators.required],
-    username: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    name: [''],
+    username: [''],
+    email: ['', Validators.email],
     phone: [''],
-    company: [''],
+    company: ['', Validators.required],
     notes: [''],
   });
 
@@ -57,9 +58,10 @@ export class CreateClientComponent {
   // ==========================
   // Submit
   // ==========================
+
   submit() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched(); // mostra erros
+      this.form.markAllAsTouched();
       return;
     }
 
@@ -70,8 +72,9 @@ export class CreateClientComponent {
         this.messages.success('Cliente criado com sucesso 🚀');
         this.router.navigate(['/clients']);
       },
-      error: () => {
-        this.messages.error('Erro ao criar cliente');
+      error: (err: HttpErrorResponse) => {
+        const msg = err.error?.message ?? 'Erro ao criar cliente';
+        this.messages.error(msg);
         this.loading = false;
       },
     });

@@ -24,6 +24,7 @@ import {
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 
 interface FilterableField {
   col: string;
@@ -35,7 +36,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent],
+  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
@@ -113,15 +114,34 @@ export class TemplateListComponent implements OnInit {
   cancellingId = signal<number | null>(null);
   deletingId = signal<number | null>(null);
 
+  // ── Modal de confirmação (GENÉRICO) ──
+  confirmModalOpen = signal(false);
+  confirmAction = signal<'delete' | 'cancel' | null>(null);
+  confirmTargetId = signal<number | null>(null);
+  confirmTargetName = signal('');
+  confirmLoading = signal(false);
+
   // ── Presença ─────────────────────────────────────────────────
   attendance = signal<AttendanceRecord[]>([]);
   attendanceCols = computed<string[]>(() => {
-    const keys = new Set<string>();
-    // 1º: campos definidos no template (ordem garantida, sempre visíveis)
-    this.template()?.fields?.forEach((f) => keys.add(f.label));
-    // 2º: colunas extras vindas da planilha que não estão no template
-    this.attendance().forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
-    return Array.from(keys);
+    const rows = this.attendance();
+
+    if (!rows.length) return [];
+
+    // 🔥 pega a primeira linha e trava a ordem
+    const sheetCols = Object.keys(rows[0].rowData || {});
+
+    const templateFields = this.template()?.fields?.map(f => f.label) ?? [];
+
+    const merged: string[] = [...sheetCols];
+
+    templateFields.forEach(col => {
+      if (!merged.includes(col)) {
+        merged.push(col);
+      }
+    });
+
+    return merged;
   });
 
   /** Labels dos campos do template — essas colunas são editáveis na tabela */
@@ -670,36 +690,75 @@ export class TemplateListComponent implements OnInit {
     const fieldLabels = (t.fields ?? []).map((f) => f.label);
     this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels);
   }
-
   doDelete(id: number) {
-    if (!confirm('Deseja excluir esta resposta? Esta ação não pode ser desfeita.')) return;
-    this.deletingId.set(id);
-    this.service.deleteSubmission(id).subscribe({
-      next: () => {
-        this.submissions.update((list) => list.filter((s) => s.id !== id));
-        this.buildColumns(this.submissions());
-        this.deletingId.set(null);
-      },
-      error: () => {
-        this.messages.error('Erro ao excluir resposta.');
-        this.deletingId.set(null);
-      },
-    });
+    this.confirmAction.set('delete');
+    this.confirmTargetId.set(id);
+    this.confirmTargetName.set(`#${id}`);
+    this.confirmModalOpen.set(true);
   }
 
+
   doCancel(id: number) {
-    if (!confirm('Deseja cancelar este agendamento?')) return;
-    this.cancellingId.set(id);
-    this.service.cancelAppointment(id).subscribe({
-      next: (updated) => {
-        this.appointments.update((list) => list.map((a) => (a.id === id ? updated : a)));
-        this.cancellingId.set(null);
-      },
-      error: () => {
-        this.messages.error('Erro ao cancelar agendamento.');
-        this.cancellingId.set(null);
-      },
-    });
+    this.confirmAction.set('cancel');
+    this.confirmTargetId.set(id);
+    this.confirmTargetName.set(`#${id}`);
+    this.confirmModalOpen.set(true);
+  }
+
+  onConfirm(): void {
+    const id = this.confirmTargetId();
+    const action = this.confirmAction();
+
+    if (!id || !action) return;
+
+    this.confirmLoading.set(true);
+
+    if (action === 'delete') {
+      this.deletingId.set(id);
+
+      this.service.deleteSubmission(id).subscribe({
+        next: () => {
+          this.submissions.update(list => list.filter(s => s.id !== id));
+          this.buildColumns(this.submissions());
+          this.resetModal();
+        },
+        error: () => {
+          this.messages.error('Erro ao excluir resposta.');
+          this.resetModal();
+        }
+      });
+    }
+
+    if (action === 'cancel') {
+      this.cancellingId.set(id);
+
+      this.service.cancelAppointment(id).subscribe({
+        next: (updated) => {
+          this.appointments.update(list =>
+            list.map(a => (a.id === id ? updated : a))
+          );
+          this.resetModal();
+        },
+        error: () => {
+          this.messages.error('Erro ao cancelar agendamento.');
+          this.resetModal();
+        }
+      });
+    }
+  }
+
+  onCancel(): void {
+    this.resetModal();
+  }
+
+  resetModal(): void {
+    this.confirmModalOpen.set(false);
+    this.confirmAction.set(null);
+    this.confirmTargetId.set(null);
+    this.confirmTargetName.set('');
+    this.confirmLoading.set(false);
+    this.deletingId.set(null);
+    this.cancellingId.set(null);
   }
 
   // ── Appearance ───────────────────────────────────────────────

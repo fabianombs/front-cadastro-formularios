@@ -10,7 +10,7 @@
   <!-- VIEW MODE                                                  -->
   <!-- ══════════════════════════════════════════════════════════ -->
   @if (slug && template && !editMode) {
-  <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + template.clientName">
+  <app-page-header [title]="template.name" [subtitle]="'Cliente: ' + (template.clientCompany || template.clientName)">
     <a page-actions routerLink="/forms-all" class="btn-outline">← Voltar</a>
   </app-page-header>
 
@@ -323,7 +323,7 @@
             <select formControlName="clientId">
               <option [ngValue]="null" disabled>Selecione um cliente</option>
               @for (c of clients; track c.id) {
-              <option [ngValue]="c.id">{{ c.name }}</option>
+              <option [ngValue]="c.id">{{ c.company }}</option>
               }
             </select>
           </div>
