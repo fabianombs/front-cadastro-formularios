@@ -879,9 +879,12 @@ export class CreateTemplateComponent implements OnInit {
     this.exportService
       .readExcelFile(file)
       .then((rows) => {
+        // Captura a ordem das colunas do Excel antes de enviar ao backend,
+        // pois o backend pode retornar rowData com chaves em ordem diferente.
+        const excelColOrder = rows.length ? Object.keys(rows[0]) : [];
         this.templateService.importAttendance(this.template!.id, { rows }).subscribe({
           next: (records) => {
-            this.setAttendanceRecords(records);
+            this.setAttendanceRecords(records, excelColOrder);
             this.importingAttendance = false;
             this.cdr.detectChanges();
           },
@@ -899,11 +902,15 @@ export class CreateTemplateComponent implements OnInit {
     input.value = '';
   }
 
-  private setAttendanceRecords(records: AttendanceRecord[]) {
+  private setAttendanceRecords(records: AttendanceRecord[], colOrder: string[] = []) {
     this.attendanceRecords = records;
-    const keys = new Set<string>();
-    records.forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
-    this.attendanceCols = Array.from(keys);
+    if (colOrder.length) {
+      this.attendanceCols = colOrder;
+    } else {
+      const keys = new Set<string>();
+      records.forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
+      this.attendanceCols = Array.from(keys);
+    }
     this.cdr.detectChanges();
   }
 

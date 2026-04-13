@@ -42,6 +42,34 @@
         </div>
         <div class="fd-section-body">
           <form [formGroup]="form" (ngSubmit)="submit()">
+            <!-- CAMPOS DO FORMULÁRIO -->
+            @if (formFields().length > 0) {
+              @if (template()?.hasSchedule) {
+                <p class="fd-block-label">Dados do solicitante</p>
+              }
+
+              <div class="fd-fields-grid">
+                @for (fg of formFields(); track fg.value.label; let i = $index) {
+                  <div
+                    [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
+                    [class.fd-field--half]="fg.value.colSpan === 1"
+                  >
+                    <app-form-field
+                      [control]="getControl(i)"
+                      [label]="fg.value.label"
+                      [id]="'field-' + i"
+                      [type]="fg.value.type"
+                      [options]="fg.value.options ?? []"
+                      [placeholder]="fg.value.type === 'select' ? 'Selecione ' + fg.value.label.toLowerCase() : 'Informe ' + fg.value.label.toLowerCase()"
+                      [required]="fg.value.required"
+                      [inputStyle]="fieldInputStyle()"
+                      [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"
+                    />
+                  </div>
+                }
+              </div>
+            }
+
             <!-- SEÇÃO DE AGENDAMENTO -->
             @if (template()?.hasSchedule) {
               <div class="fd-schedule-block">
@@ -108,34 +136,6 @@
 
                 @if (!loadingSlots() && selectedDate() && availableSlots().length === 0) {
                   <div class="fd-no-slots">Nenhum horário disponível para esta data.</div>
-                }
-              </div>
-            }
-
-            <!-- CAMPOS DO FORMULÁRIO -->
-            @if (formFields().length > 0) {
-              @if (template()?.hasSchedule) {
-                <p class="fd-block-label">Dados do solicitante</p>
-              }
-
-              <div class="fd-fields-grid">
-                @for (fg of formFields(); track fg.value.label; let i = $index) {
-                  <div
-                    [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
-                    [class.fd-field--half]="fg.value.colSpan === 1"
-                  >
-                    <app-form-field
-                      [control]="getControl(i)"
-                      [label]="fg.value.label"
-                      [id]="'field-' + i"
-                      [type]="fg.value.type"
-                      [options]="fg.value.options ?? []"
-                      [placeholder]="fg.value.type === 'select' ? 'Selecione ' + fg.value.label.toLowerCase() : 'Informe ' + fg.value.label.toLowerCase()"
-                      [required]="fg.value.required"
-                      [inputStyle]="fieldInputStyle()"
-                      [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"
-                    />
-                  </div>
                 }
               </div>
             }

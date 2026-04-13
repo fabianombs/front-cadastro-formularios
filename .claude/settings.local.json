@@ -18,7 +18,21 @@
       "Bash(grep -v \"^$\")",
       "Bash(npx ng:*)",
       "Bash(node -e ':*)",
-      "Bash(grep -c \"^\\\\s*$\" \"D:/Projetos/front/app-forms-clients/src/app/shared/components/reposition-modal/reposition-modal.component.ts\")"
+      "Bash(grep -c \"^\\\\s*$\" \"D:/Projetos/front/app-forms-clients/src/app/shared/components/reposition-modal/reposition-modal.component.ts\")",
+      "Read(//c/Users/Vini/AppData/Local/Programs/**)",
+      "Read(//c/Users/Vini/AppData/Local/Programs//**)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(pip show:*)",
+      "Bash(python -m pip show reportlab)",
+      "Bash(py --version)",
+      "Bash(py -m pip show reportlab)",
+      "Bash(where python3:*)",
+      "Bash(node gerar-checklist.mjs)",
+      "Bash(node -e \"require\\('docx'\\); console.log\\('ok'\\)\")",
+      "Bash(where python:*)",
+      "Bash(where pip:*)",
+      "Bash(where py:*)"
     ]
   }
 }
