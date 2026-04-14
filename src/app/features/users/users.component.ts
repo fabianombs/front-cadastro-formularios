@@ -94,6 +94,19 @@ export class UsersComponent implements OnInit {
     return this.authService.isAdmin();
   }
 
+  roleLabel(role: string): string {
+    const labels: Record<string, string> = {
+      ROLE_ADMIN: 'Admin',
+      ROLE_FUNCIONARIO: 'Funcionário',
+      ROLE_CLIENT: 'Cliente',
+    };
+    return labels[role] ?? role;
+  }
+
+  updateEditedField(field: keyof User, value: string) {
+    this.editedUser.update((u) => ({ ...u, [field]: value }));
+  }
+
   startEdit(user: User) {
     this.editingUserId.set(user.id);
     this.editedUser.set({ ...user });
