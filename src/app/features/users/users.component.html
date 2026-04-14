@@ -52,7 +52,12 @@
             </td>
             <td>
               @if (editingUserId() === user.id) {
-                <input class="inline-input" [(ngModel)]="editedUser().name" placeholder="Nome" />
+                <input
+                  class="inline-input"
+                  [ngModel]="editedUser().name"
+                  (ngModelChange)="updateEditedField('name', $event)"
+                  placeholder="Nome"
+                />
               } @else {
                 {{ user.name }}
               }
@@ -61,7 +66,8 @@
               @if (editingUserId() === user.id) {
                 <input
                   class="inline-input"
-                  [(ngModel)]="editedUser().email"
+                  [ngModel]="editedUser().email"
+                  (ngModelChange)="updateEditedField('email', $event)"
                   placeholder="E-mail"
                 />
               } @else {
@@ -70,10 +76,14 @@
             </td>
             <td>
               @if (editingUserId() === user.id) {
-                <select class="inline-select" [(ngModel)]="editedUser().role">
-                  <option value="ROLE_ADMIN">ADMIN</option>
-                  <option value="ROLE_FUNCIONARIO">FUNCIONARIO</option>
-                  <option value="ROLE_CLIENT">CLIENT</option>
+                <select
+                  class="inline-select"
+                  [ngModel]="editedUser().role"
+                  (ngModelChange)="updateEditedField('role', $event)"
+                >
+                  <option value="ROLE_ADMIN">Admin</option>
+                  <option value="ROLE_FUNCIONARIO">Funcionário</option>
+                  <option value="ROLE_CLIENT">Cliente</option>
                 </select>
               } @else {
                 <span
@@ -82,18 +92,20 @@
                   [class.badge-blue]="user.role === 'ROLE_FUNCIONARIO'"
                   [class.badge-gray]="user.role === 'ROLE_CLIENT'"
                 >
-                  {{ user.role }}
+                  {{ roleLabel(user.role) }}
                 </span>
               }
             </td>
             <td class="td-actions">
               <div class="row-actions">
-                @if (editingUserId() === user.id) {
-                  <button class="btn-table-outline save-btn" (click)="saveEdit(user.id)">Salvar</button>
-                  <button class="btn-table-outline" (click)="cancelEdit()">Cancelar</button>
-                } @else {
-                  <button class="btn-table-outline" (click)="startEdit(user)">Editar</button>
-                  <button class="btn-table-danger" (click)="deleteUser(user.id)">Excluir</button>
+                @if (isAdmin()) {
+                  @if (editingUserId() === user.id) {
+                    <button class="btn-table-outline save-btn" (click)="saveEdit(user.id)">Salvar</button>
+                    <button class="btn-table-outline" (click)="cancelEdit()">Cancelar</button>
+                  } @else {
+                    <button class="btn-table-outline" (click)="startEdit(user)">Editar</button>
+                    <button class="btn-table-danger" (click)="deleteUser(user.id)">Excluir</button>
+                  }
                 }
               </div>
             </td>
