@@ -285,7 +285,7 @@ export class CreateTemplateComponent implements OnInit {
     const style: Record<string, string> = {};
     if (a.fieldBackgroundColor) style['backgroundColor'] = a.fieldBackgroundColor;
     if (a.fieldTextColor) style['color'] = a.fieldTextColor;
-    if (a.primaryColor) style['borderColor'] = a.primaryColor;
+    if (a.fieldBorderColor) style['borderColor'] = a.fieldBorderColor;
     return style;
   }
 
@@ -489,6 +489,7 @@ export class CreateTemplateComponent implements OnInit {
         formTextColor: [''],
         fieldBackgroundColor: [''],
         fieldTextColor: [''],
+        fieldBorderColor: [''],
         cardBackgroundColor: [''],
         cardBorderColor: [''],
         titleFontSize: [''],
