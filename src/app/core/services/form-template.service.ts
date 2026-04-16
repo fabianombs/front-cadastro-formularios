@@ -19,6 +19,8 @@ export interface TemplateAppearance {
   cardBackgroundColor?: string;
   /** Cor da borda dos cards e tabelas */
   cardBorderColor?: string;
+  /** Cor da borda dos inputs dos campos do formulário */
+  fieldBorderColor?: string;
   /** Tamanho da fonte do título do formulário (ex: "18px") */
   titleFontSize?: string;
   /** Tamanho da fonte dos labels dos campos (ex: "13px") */

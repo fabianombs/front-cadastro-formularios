@@ -6,7 +6,9 @@ import {
   FormGroup,
   Validators,
   FormControl,
+  ValidatorFn,
 } from '@angular/forms';
+import { cpfValidator, cnpjValidator } from '../../shared/validators/cpf-cnpj.validator';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormTemplateService,
@@ -179,8 +181,7 @@ export class FormDynamicComponent implements OnInit {
     const style: Record<string, string> = {};
     if (a.fieldBackgroundColor) style['backgroundColor'] = a.fieldBackgroundColor;
     if (a.fieldTextColor) style['color'] = a.fieldTextColor;
-    const accent = this.resolvedAccentColor();
-    if (accent) style['borderColor'] = accent;
+    if (a.fieldBorderColor) style['borderColor'] = a.fieldBorderColor;
     return style;
   });
 
@@ -225,17 +226,22 @@ export class FormDynamicComponent implements OnInit {
   }
 
   private buildForm(fields: FormField[]) {
-    const fgArray: FormGroup[] = fields.map((f) =>
-      this.fb.group({
+    const fgArray: FormGroup[] = fields.map((f) => {
+      const validators: ValidatorFn[] = [];
+      if (f.required) validators.push(Validators.required);
+      if (f.type === 'cpf') validators.push(cpfValidator());
+      if (f.type === 'cnpj') validators.push(cnpjValidator());
+
+      return this.fb.group({
         label: [f.label],
         type: [f.type],
-        value: ['', f.required ? Validators.required : []],
+        value: ['', validators],
         required: [f.required ?? false],
         fieldColor: [f.fieldColor ?? ''],
         colSpan: [f.colSpan ?? 2],
         options: [f.options ?? []],
-      }),
-    );
+      });
+    });
 
     this.formFields.set(fgArray);
 
