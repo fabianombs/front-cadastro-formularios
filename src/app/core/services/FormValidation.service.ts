@@ -75,6 +75,8 @@ export class FormValidationService {
     if (control.errors['minlength']) return `Mínimo de ${control.errors['minlength'].requiredLength} caracteres`;
     if (control.errors['maxlength']) return `Máximo de ${control.errors['maxlength'].requiredLength} caracteres`;
     if (control.errors['pattern']) return 'Formato inválido';
+    if (control.errors['cpfInvalido']) return 'CPF inválido';
+    if (control.errors['cnpjInvalido']) return 'CNPJ inválido';
     if (control.errors['customError']) return control.errors['customError'] as string;
 
     return 'Campo inválido';

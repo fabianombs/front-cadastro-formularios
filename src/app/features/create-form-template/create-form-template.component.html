@@ -564,6 +564,10 @@
                       <option value="number">Número</option>
                       <option value="date">Data</option>
                       <option value="select">Lista (select)</option>
+                      <option value="phone">Telefone nacional</option>
+                      <option value="phone-intl">Telefone internacional</option>
+                      <option value="cpf">CPF</option>
+                      <option value="cnpj">CNPJ</option>
                     </select>
                   </div>
                   <!-- <div class="field" style="margin-bottom: 0">
@@ -770,16 +774,14 @@
             </div>
           </div>
 
-          <!-- ── 2. Texto & Botão ── -->
+          <!-- ── 2. Botão ── -->
           <div class="ap-section">
             <p class="ap-section-label">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round">
-                <polyline points="4 7 4 4 20 4 20 7" />
-                <line x1="9" y1="20" x2="15" y2="20" />
-                <line x1="12" y1="4" x2="12" y2="20" />
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="10" rx="4" />
               </svg>
-              Texto &amp; Botão
+              Botão
             </p>
 
             <div class="ap-color-row-grid">
@@ -791,15 +793,13 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.formTextColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.formTextColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão'
-                    }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.formTextColor')?.value || 'Padrão' }}</span>
                   @if (templateForm.get('appearance.formTextColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('formTextColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('formTextColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
@@ -812,19 +812,31 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.primaryColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.primaryColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão'
-                    }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.primaryColor')?.value || 'Padrão' }}</span>
                   @if (templateForm.get('appearance.primaryColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('primaryColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('primaryColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
+            </div>
+          </div>
 
+          <!-- ── 3. Campos de entrada ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="6" y1="12" x2="10" y2="12" />
+              </svg>
+              Campos de entrada
+            </p>
+
+            <div class="ap-color-row-grid">
               <div class="ap-color-field">
                 <label class="ap-label">Fundo dos campos</label>
                 <div class="ap-color-control">
@@ -833,15 +845,13 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.fieldBackgroundColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBackgroundColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão'
-                    }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldBackgroundColor')?.value || 'Padrão' }}</span>
                   @if (templateForm.get('appearance.fieldBackgroundColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBackgroundColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBackgroundColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
@@ -854,19 +864,49 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.fieldTextColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldTextColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão'
-                    }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldTextColor')?.value || 'Padrão' }}</span>
                   @if (templateForm.get('appearance.fieldTextColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldTextColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldTextColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
 
+              <div class="ap-color-field">
+                <label class="ap-label">Borda dos campos</label>
+                <div class="ap-color-control">
+                  <input type="color" formControlName="fieldBorderColor" class="ap-color-input"
+                    (input)="onColorLiveChange('fieldBorderColor', $event)" />
+                  <div class="ap-color-swatch"
+                    [style.background]="templateForm.get('appearance.fieldBorderColor')?.value || 'transparent'"
+                    [class.ap-color-swatch--empty]="!templateForm.get('appearance.fieldBorderColor')?.value"></div>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.fieldBorderColor')?.value || 'Padrão' }}</span>
+                  @if (templateForm.get('appearance.fieldBorderColor')?.value) {
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('fieldBorderColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 4. Cards ── -->
+          <div class="ap-section">
+            <p class="ap-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="18" rx="3" />
+              </svg>
+              Cards
+            </p>
+
+            <div class="ap-color-row-grid">
               <div class="ap-color-field">
                 <label class="ap-label">Fundo dos cards</label>
                 <div class="ap-color-control">
@@ -875,15 +915,13 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.cardBackgroundColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBackgroundColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto
-                    (glass)' }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBackgroundColor')?.value || 'Auto (glass)' }}</span>
                   @if (templateForm.get('appearance.cardBackgroundColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBackgroundColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBackgroundColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
@@ -896,22 +934,20 @@
                   <div class="ap-color-swatch"
                     [style.background]="templateForm.get('appearance.cardBorderColor')?.value || 'transparent'"
                     [class.ap-color-swatch--empty]="!templateForm.get('appearance.cardBorderColor')?.value"></div>
-                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto'
-                    }}</span>
+                  <span class="ap-color-value">{{ templateForm.get('appearance.cardBorderColor')?.value || 'Auto' }}</span>
                   @if (templateForm.get('appearance.cardBorderColor')?.value) {
-                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBorderColor')"
-                    title="Remover"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      stroke-width="3" stroke-linecap="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg></button>
+                  <button type="button" class="ap-clear-btn" (click)="clearAppearanceField('cardBorderColor')" title="Remover">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                   }
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ── 3. Tipografia ── -->
+          <!-- ── 5. Tipografia ── -->
           <div class="ap-section">
             <p class="ap-section-label">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -989,7 +1025,7 @@
             </div>
           </div>
 
-          <!-- ── 4. Imagens de topo e rodapé ── -->
+          <!-- ── 6. Imagens de topo e rodapé ── -->
           <div class="ap-section">
             <p class="ap-section-label">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
