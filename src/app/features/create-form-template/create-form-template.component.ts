@@ -471,6 +471,8 @@ export class CreateTemplateComponent implements OnInit {
       fields: this.fb.array([]),
       hasSchedule: [false],
       hasAttendance: [false],
+      lgpdEnabled: [false],
+      lgpdText: [''],
       scheduleConfig: this.fb.group({
         startTime: ['08:00'],
         endTime: ['17:00'],
@@ -514,6 +516,10 @@ export class CreateTemplateComponent implements OnInit {
 
   get hasAttendance(): boolean {
     return this.templateForm.get('hasAttendance')?.value === true;
+  }
+
+  get lgpdEnabled(): boolean {
+    return this.templateForm.get('lgpdEnabled')?.value === true;
   }
 
   get scheduleConfig(): FormGroup {
@@ -724,6 +730,8 @@ export class CreateTemplateComponent implements OnInit {
           }
         : null,
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
+      lgpdEnabled: formValue.lgpdEnabled ?? false,
+      lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
     };
 
     // ── MODO EDIÇÃO ─────────────────────────────────────────────
@@ -739,6 +747,8 @@ export class CreateTemplateComponent implements OnInit {
           ...(f.type === 'select' && f.options?.length ? { options: f.options } : {}),
         })),
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
+        lgpdEnabled: formValue.lgpdEnabled ?? false,
+        lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
       };
 
       this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
@@ -810,6 +820,8 @@ export class CreateTemplateComponent implements OnInit {
       name: template.name,
       clientId: (template as any).clientId ?? null,
       hasSchedule: template.hasSchedule,
+      lgpdEnabled: template.lgpdEnabled ?? false,
+      lgpdText: template.lgpdText ?? '',
     });
 
     if (template.hasSchedule && template.scheduleConfig) {

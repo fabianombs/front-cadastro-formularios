@@ -34,6 +34,15 @@ export class FormDynamicComponent implements OnInit {
   public submitted = signal<boolean>(false);
   public form: FormGroup;
   public formFields = signal<FormGroup[]>([]);
+  public isEstrangeiro = signal<boolean>(false);
+  public showLgpdModal = signal<boolean>(false);
+  private pendingSubmitFn: (() => void) | null = null;
+
+  public hasCpfOrPhone = computed(() =>
+    this.formFields().some(fg =>
+      ['cpf', 'phone'].includes(fg.get('originalType')?.value ?? '')
+    )
+  );
 
   // Estado de agendamento
   public selectedDate = signal<string>('');
@@ -235,6 +244,7 @@ export class FormDynamicComponent implements OnInit {
       return this.fb.group({
         label: [f.label],
         type: [f.type],
+        originalType: [f.type],
         value: ['', validators],
         required: [f.required ?? false],
         fieldColor: [f.fieldColor ?? ''],
@@ -304,6 +314,33 @@ export class FormDynamicComponent implements OnInit {
   }
 
   // =====================
+  // ESTRANGEIRO
+  // =====================
+
+  onEstrangeiroChange(checked: boolean): void {
+    this.isEstrangeiro.set(checked);
+    this.formFields().forEach((fg, i) => {
+      const originalType = fg.get('originalType')?.value as string;
+      const valueControl = this.form.get(`field_${i}`) as FormControl;
+      const required = fg.get('required')?.value as boolean;
+
+      if (originalType === 'cpf') {
+        const validators: ValidatorFn[] = [];
+        if (required) validators.push(Validators.required);
+        if (!checked) validators.push(cpfValidator());
+        fg.get('type')?.setValue(checked ? 'text' : 'cpf', { emitEvent: false });
+        valueControl.setValidators(validators);
+        valueControl.updateValueAndValidity();
+      }
+
+      if (originalType === 'phone') {
+        fg.get('type')?.setValue(checked ? 'phone-intl' : 'phone', { emitEvent: false });
+      }
+    });
+    this.cdr.detectChanges();
+  }
+
+  // =====================
   // SUBMIT
   // =====================
 
@@ -311,11 +348,34 @@ export class FormDynamicComponent implements OnInit {
     const template = this.template();
     if (!template) return;
 
-    if (template.hasSchedule) {
-      this.submitAppointment(template);
+    const doSubmit = () => {
+      if (template.hasSchedule) {
+        this.submitAppointment(template);
+      } else {
+        this.submitRegularForm(template);
+      }
+    };
+
+    if (template.lgpdEnabled) {
+      this.pendingSubmitFn = doSubmit;
+      this.showLgpdModal.set(true);
+      this.cdr.detectChanges();
     } else {
-      this.submitRegularForm(template);
+      doSubmit();
     }
+  }
+
+  lgpdAccept(): void {
+    this.showLgpdModal.set(false);
+    if (this.pendingSubmitFn) {
+      this.pendingSubmitFn();
+      this.pendingSubmitFn = null;
+    }
+  }
+
+  lgpdDecline(): void {
+    this.showLgpdModal.set(false);
+    this.pendingSubmitFn = null;
   }
 
   private submitRegularForm(template: FormTemplate): void {
