@@ -69,6 +69,8 @@ export interface FormTemplate {
   attendanceColumnOrder?: string[];
   scheduleConfig: ScheduleConfig | null;
   appearance?: TemplateAppearance | null;
+  lgpdEnabled: boolean;
+  lgpdText?: string | null;
 }
 
 export interface CreateFormTemplateRequest {
@@ -77,12 +79,16 @@ export interface CreateFormTemplateRequest {
   fields: Omit<FormField, 'id'>[];
   scheduleConfig?: ScheduleConfig | null;
   appearance?: TemplateAppearance | null;
+  lgpdEnabled: boolean;
+  lgpdText?: string | null;
 }
 
 export interface UpdateFormTemplateRequest {
   name: string;
   fields: { label: string; type: string; required: boolean; fieldColor?: string; colSpan: number; options?: string[] }[];
   appearance?: Partial<TemplateAppearance> | null;
+  lgpdEnabled: boolean;
+  lgpdText?: string | null;
 }
 
 export interface FormSubmission {

@@ -49,6 +49,25 @@
 .fd-header-img { margin-bottom: 16px; }
 .fd-footer-img { margin-top: 16px; }
 
+/* ── Checkbox estrangeiro ── */
+.fd-estrangeiro-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  color: var(--text-muted, #6c757d);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--primary, #4d8fff);
+  }
+}
+
 /* ── Section header ── */
 .fd-section-header {
   padding: 15px 20px;
@@ -333,6 +352,97 @@
 
   .fd-slot-time { font-size: 13px; }
   .fd-slot-vacancy { font-size: 9px; }
+}
+
+/* ── Modal LGPD ── */
+.lgpd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: lgpd-fade-in 0.18s ease;
+}
+
+.lgpd-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.3));
+  animation: lgpd-slide-up 0.22s ease;
+  overflow: hidden;
+
+  &__header {
+    padding: 20px 24px 0;
+  }
+
+  &__title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--font-display);
+    margin: 0;
+  }
+
+  &__body {
+    padding: 16px 24px;
+    max-height: 320px;
+    overflow-y: auto;
+
+    p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      margin: 0;
+    }
+  }
+
+  &__footer {
+    padding: 16px 24px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+  }
+}
+
+.lgpd-btn {
+  padding: 9px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.85; }
+
+  &--decline {
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+  }
+
+  &--accept {
+    background: var(--primary, #4d8fff);
+    border-color: var(--primary, #4d8fff);
+    color: #fff;
+  }
+}
+
+@keyframes lgpd-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lgpd-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
 /* ── Success screen ── */

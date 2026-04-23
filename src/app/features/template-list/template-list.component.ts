@@ -37,7 +37,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe],
+  imports: [CommonModule, DatePipe, FormsModule, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })

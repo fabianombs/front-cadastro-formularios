@@ -32,7 +32,14 @@
       "Bash(node -e \"require\\('docx'\\); console.log\\('ok'\\)\")",
       "Bash(where python:*)",
       "Bash(where pip:*)",
-      "Bash(where py:*)"
+      "Bash(where py:*)",
+      "mcp__rede-neural__directory_tree",
+      "Bash(./mvnw compile *)",
+      "Read(//d D:/Projetos/Fabiano/**)",
+      "Bash(mvn compile *)",
+      "Bash(cmd /c \"cd /d D:\\\\Projetos\\\\Fabiano\\\\back-cadastro-formularios && mvnw.cmd compile 2>&1\")",
+      "Bash(cmd /c \"D: && cd D:\\\\Projetos\\\\Fabiano\\\\back-cadastro-formularios && mvnw.cmd compile 2>&1\")",
+      "PowerShell(Set-Location \"D:\\\\Projetos\\\\Fabiano\\\\back-cadastro-formularios\"; $result = & \".\\\\mvnw.cmd\" compile 2>&1; $result | Where-Object { $_ -match \"ERROR|error:|BUILD|cannot find\" } | Select-Object -Last 60)"
     ]
   }
 }
