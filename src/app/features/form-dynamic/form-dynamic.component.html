@@ -48,6 +48,17 @@
                 <p class="fd-block-label">Dados do solicitante</p>
               }
 
+              @if (hasCpfOrPhone()) {
+                <label class="fd-estrangeiro-check">
+                  <input
+                    type="checkbox"
+                    [checked]="isEstrangeiro()"
+                    (change)="onEstrangeiroChange($any($event.target).checked)"
+                  />
+                  Sou estrangeiro (dispensa validação de CPF e telefone)
+                </label>
+              }
+
               <div class="fd-fields-grid">
                 @for (fg of formFields(); track fg.value.label; let i = $index) {
                   <div
@@ -177,3 +188,24 @@
     </div>
   }
 </div>
+
+@if (showLgpdModal()) {
+  <div class="lgpd-overlay" (click)="lgpdDecline()">
+    <div class="lgpd-modal" (click)="$event.stopPropagation()">
+      <div class="lgpd-modal__header">
+        <h3 class="lgpd-modal__title">Política de Privacidade</h3>
+      </div>
+      <div class="lgpd-modal__body">
+        <p>{{ template()?.lgpdText }}</p>
+      </div>
+      <div class="lgpd-modal__footer">
+        <button type="button" class="lgpd-btn lgpd-btn--decline" (click)="lgpdDecline()">
+          Recusar
+        </button>
+        <button type="button" class="lgpd-btn lgpd-btn--accept" [ngStyle]="submitBtnStyle()" (click)="lgpdAccept()">
+          Aceitar e enviar
+        </button>
+      </div>
+    </div>
+  </div>
+}

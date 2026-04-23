@@ -366,6 +366,36 @@
             </small>
           </div>
 
+          <!-- Toggle: LGPD -->
+          <div class="field" style="margin-top: 4px">
+            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+              <input type="checkbox" formControlName="lgpdEnabled"
+                style="width: 16px; height: 16px; cursor: pointer; accent-color: #6366f1" />
+              <span>Exigir aceite de LGPD</span>
+            </label>
+            <small style="
+                    display: block;
+                    margin-top: 4px;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    padding-left: 26px;
+                  ">
+              Exibe um modal com o texto de política de dados antes do envio
+            </small>
+          </div>
+
+          <!-- Texto do modal LGPD (aparece ao habilitar) -->
+          @if (lgpdEnabled) {
+          <div class="field" style="margin-top: 8px; margin-bottom: 0">
+            <label>Texto do modal de consentimento</label>
+            <textarea
+              formControlName="lgpdText"
+              rows="6"
+              placeholder="Informe aqui o texto da política de privacidade / LGPD que será exibido para o usuário antes de enviar o formulário..."
+            ></textarea>
+          </div>
+          }
+
           <!-- Upload da planilha (aparece ao habilitar) -->
           @if (hasAttendance) {
           <div style="
