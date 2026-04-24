@@ -9,6 +9,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { cpfValidator, cnpjValidator } from '../../shared/validators/cpf-cnpj.validator';
+import { dateValidator, dateBrToIso } from '../../shared/validators/date.validator';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormTemplateService,
@@ -240,6 +241,7 @@ export class FormDynamicComponent implements OnInit {
       if (f.required) validators.push(Validators.required);
       if (f.type === 'cpf') validators.push(cpfValidator());
       if (f.type === 'cnpj') validators.push(cnpjValidator());
+      if (f.type === 'date') validators.push(dateValidator());
 
       return this.fb.group({
         label: [f.label],
@@ -386,7 +388,8 @@ export class FormDynamicComponent implements OnInit {
 
     const values: { [key: string]: string } = {};
     this.formFields().forEach((fg, i) => {
-      values[fg.value.label] = (this.form.get(`field_${i}`) as FormControl).value;
+      const raw = (this.form.get(`field_${i}`) as FormControl).value;
+      values[fg.value.label] = fg.value.type === 'date' ? dateBrToIso(raw) : raw;
     });
 
     this.service.submitForm({ templateId: template.id, values }).subscribe({
@@ -414,7 +417,8 @@ export class FormDynamicComponent implements OnInit {
 
     const extraValues: { [key: string]: string } = {};
     this.formFields().forEach((fg, i) => {
-      extraValues[fg.value.label] = (this.form.get(`field_${i}`) as FormControl).value;
+      const raw = (this.form.get(`field_${i}`) as FormControl).value;
+      extraValues[fg.value.label] = fg.value.type === 'date' ? dateBrToIso(raw) : raw;
     });
 
     // Nome e contato vêm dos campos extras (procura por campos comuns)

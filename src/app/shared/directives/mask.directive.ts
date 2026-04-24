@@ -8,13 +8,14 @@ import { NgControl } from '@angular/forms';
  * - `phone`  → (11) 90000-0000 ou (11) 2222-2222 (auto-detecta pelo número de dígitos)
  * - `cpf`    → 333.444.555-66
  * - `cnpj`   → 33.444.555/0001-66
+ * - `date`   → 31/12/2026
  */
 @Directive({
   selector: '[appMask]',
   standalone: true,
 })
 export class MaskDirective implements OnChanges {
-  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | null | undefined;
+  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | 'date' | null | undefined;
 
   constructor(
     private el: ElementRef<HTMLInputElement>,
@@ -55,6 +56,9 @@ export class MaskDirective implements OnChanges {
         break;
       case 'cnpj':
         formatted = this.applyCnpjMask(digits);
+        break;
+      case 'date':
+        formatted = this.applyDateMask(digits);
         break;
       default:
         return;
@@ -101,5 +105,13 @@ export class MaskDirective implements OnChanges {
     if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
     if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
     return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  }
+
+  /** dd/mm/aaaa */
+  private applyDateMask(digits: string): string {
+    const d = digits.slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+    return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
   }
 }
