@@ -77,6 +77,7 @@ export class FormValidationService {
     if (control.errors['pattern']) return 'Formato inválido';
     if (control.errors['cpfInvalido']) return 'CPF inválido';
     if (control.errors['cnpjInvalido']) return 'CNPJ inválido';
+    if (control.errors['dataInvalida']) return 'Data inválida';
     if (control.errors['customError']) return control.errors['customError'] as string;
 
     return 'Campo inválido';

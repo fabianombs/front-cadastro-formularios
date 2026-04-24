@@ -71,7 +71,7 @@
                       [id]="'field-' + i"
                       [type]="fg.value.type"
                       [options]="fg.value.options ?? []"
-                      [placeholder]="fg.value.type === 'select' ? 'Selecione ' + fg.value.label.toLowerCase() : 'Informe ' + fg.value.label.toLowerCase()"
+                      [placeholder]="fg.value.type === 'select' ? 'Selecione ' + fg.value.label.toLowerCase() : (fg.value.type === 'date' ? 'dd/mm/aaaa' : 'Informe ' + fg.value.label.toLowerCase())"
                       [required]="fg.value.required"
                       [inputStyle]="fieldInputStyle()"
                       [labelStyle]="fieldLabelStyle(fg.value.fieldColor)"

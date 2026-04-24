@@ -5,7 +5,7 @@ import { FormValidationService } from '../../../core/services/FormValidation.ser
 import { MaskDirective } from '../../directives/mask.directive';
 
 /** Tipos de campo que recebem máscara automática */
-const MASKED_TYPES = ['phone', 'cpf', 'cnpj'] as const;
+const MASKED_TYPES = ['phone', 'cpf', 'cnpj', 'date'] as const;
 type MaskedType = (typeof MASKED_TYPES)[number];
 
 @Component({
@@ -38,8 +38,14 @@ export class FormFieldComponent {
 
   /** Tipo HTML real do <input> — phone/cpf/cnpj/phone-intl renderizam como "text" */
   get htmlInputType(): string {
-    if (['phone', 'cpf', 'cnpj', 'phone-intl'].includes(this.type)) return 'text';
+    if (['phone', 'cpf', 'cnpj', 'phone-intl', 'date'].includes(this.type)) return 'text';
     return this.type;
+  }
+
+  /** inputmode específico para mobile — campos de data/telefone/cpf/cnpj abrem teclado numérico */
+  get inputMode(): string | null {
+    if (['phone', 'cpf', 'cnpj', 'date'].includes(this.type)) return 'numeric';
+    return null;
   }
 
   /** Tipo de máscara a ser passado para a MaskDirective (null = sem máscara) */
