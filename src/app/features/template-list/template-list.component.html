@@ -435,7 +435,7 @@
       <div class="stats-3-grid">
         <div class="mini-stat-card">
           <span class="mini-stat-value">{{ attendanceStats().total }}</span>
-          <span class="mini-stat-label">Total</span>
+          <span class="mini-stat-label">Convidados</span>
         </div>
         <div class="mini-stat-card mini-stat-card--success">
           <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
@@ -444,6 +444,18 @@
         <div class="mini-stat-card mini-stat-card--warning">
           <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
           <span class="mini-stat-label">Ausentes</span>
+        </div>
+        <div class="mini-stat-card mini-stat-card--info">
+          <span class="mini-stat-value">{{ attendanceStats().totalAcompanhantes }}</span>
+          <span class="mini-stat-label">Acompanhantes</span>
+        </div>
+        <div class="mini-stat-card mini-stat-card--success">
+          <span class="mini-stat-value">{{ attendanceStats().presentesGeral }}</span>
+          <span class="mini-stat-label">Total Presentes</span>
+        </div>
+        <div class="mini-stat-card">
+          <span class="mini-stat-value">{{ attendanceStats().totalGeral }}</span>
+          <span class="mini-stat-label">Total Geral</span>
         </div>
       </div>
 
@@ -490,106 +502,214 @@
 
             <span class="result-count result-count--present">
               {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
+              @if (attendanceStats().totalAcompanhantes > 0) {
+                · {{ attendanceStats().acompanhantesPresentes }}/{{ attendanceStats().totalAcompanhantes }} acompanhantes
+                · total: {{ attendanceStats().presentesGeral }} pessoas
+              }
             </span>
           </div>
 
+          <!-- Tabela manual para permitir linhas expansíveis de acompanhantes -->
           <div style="overflow-x: auto">
-            <app-data-table
-              [columns]="attendanceColumnsMeta()"
-              [rows]="filteredAttendance()"
-              [noDataLabel]="'Nenhum registro encontrado'"
-              rowKey="id"
-              [rowClass]="attendanceRowClass"
-            >
-              <ng-template #rowTemplate let-r>
-                <!-- CAMPOS DINÂMICOS -->
-                @for (col of attendanceDataColumns(); track col.key) {
-                  <td>
-                    @if (templateFieldLabels().has(col.key)) {
-                      @let field = templateFieldMap().get(col.key);
-                      @if (field?.type === 'select' || field?.options?.length) {
-                        <!-- Campo select: dropdown com as opções configuradas -->
-                        <select
-                          class="notes-input notes-select"
-                          (click)="$event.stopPropagation()"
-                          (change)="saveRowField(r, col.key, $any($event.target).value)"
-                        >
-                          <option value="" [selected]="!r.rowData?.[col.key]">—</option>
-                          @for (opt of field?.options ?? []; track opt) {
-                            <option [value]="opt" [selected]="r.rowData?.[col.key] === opt">
-                              {{ opt }}
-                            </option>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  @for (col of attendanceDataColumns(); track col.key) {
+                    <th>{{ col.label }}</th>
+                  }
+                  <th style="width:90px;text-align:center">Acomp.</th>
+                  <th style="width:110px;text-align:center">Presença</th>
+                  <th>Obs.</th>
+                  <th style="width:120px">Marcado em</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of filteredAttendance(); track r.id) {
+                  <!-- LINHA DO CONVIDADO -->
+                  <tr [class.row--present]="r.attended">
+                    @for (col of attendanceDataColumns(); track col.key) {
+                      <td>
+                        @if (templateFieldLabels().has(col.key)) {
+                          @let field = templateFieldMap().get(col.key);
+                          @if (field?.type === 'select' || field?.options?.length) {
+                            <select
+                              class="notes-input notes-select"
+                              (click)="$event.stopPropagation()"
+                              (change)="saveRowField(r, col.key, $any($event.target).value)"
+                            >
+                              <option value="" [selected]="!r.rowData?.[col.key]">—</option>
+                              @for (opt of field?.options ?? []; track opt) {
+                                <option [value]="opt" [selected]="r.rowData?.[col.key] === opt">{{ opt }}</option>
+                              }
+                            </select>
+                          } @else {
+                            <input type="text" class="notes-input"
+                              [value]="r.rowData?.[col.key] ?? ''"
+                              (click)="$event.stopPropagation()"
+                              (blur)="saveRowField(r, col.key, $any($event.target).value)"
+                              placeholder="—" />
                           }
-                        </select>
-                      } @else {
-                        <!-- Campo texto: editável inline, salva no blur -->
-                        <input
-                          type="text"
-                          class="notes-input"
-                          [value]="r.rowData?.[col.key] ?? ''"
-                          (click)="$event.stopPropagation()"
-                          (blur)="saveRowField(r, col.key, $any($event.target).value)"
-                          placeholder="—"
-                        />
-                      }
-                    } @else {
-                      <!-- Coluna da planilha: editável se vazio, leitura se preenchido -->
-                      @if (!r.rowData?.[col.key]) {
-                        <input
-                          type="text"
-                          class="notes-input"
-                          [value]="''"
-                          (click)="$event.stopPropagation()"
-                          (blur)="saveRowField(r, col.key, $any($event.target).value)"
-                          placeholder="—"
-                        />
-                      } @else {
-                        {{ r.rowData?.[col.key] }}
-                      }
+                        } @else {
+                          @if (!r.rowData?.[col.key]) {
+                            <input type="text" class="notes-input" [value]="''"
+                              (click)="$event.stopPropagation()"
+                              (blur)="saveRowField(r, col.key, $any($event.target).value)"
+                              placeholder="—" />
+                          } @else {
+                            {{ r.rowData?.[col.key] }}
+                          }
+                        }
+                      </td>
                     }
-                  </td>
+
+                    <!-- BOTÃO + ACOMPANHANTES -->
+                    <td class="td-center">
+                      <button
+                        class="companion-btn"
+                        [class.companion-btn--active]="expandedCompanionId() === r.id"
+                        (click)="toggleCompanionPanel(r.id)"
+                        [title]="r.companionsCount > 0 ? r.companionsCount + ' acompanhante(s)' : 'Adicionar acompanhante'"
+                      >
+                        @if (r.companionsCount > 0) {
+                          <span class="companion-badge">{{ r.companionsCount }}</span>
+                        }
+                        <span class="companion-plus">{{ expandedCompanionId() === r.id ? '−' : '+' }}</span>
+                      </button>
+                    </td>
+
+                    <!-- PRESENÇA -->
+                    <td class="td-center">
+                      <button
+                        class="attendance-toggle"
+                        [class.attendance-toggle--present]="r.attended"
+                        [class.attendance-toggle--loading]="markingId() === r.id"
+                        (click)="toggleAttendance(r)"
+                        [disabled]="markingId() === r.id"
+                      >
+                        @if (markingId() === r.id) {
+                          <span class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+                        } @else if (r.attended) {
+                          ✓ Presente
+                        } @else {
+                          Ausente
+                        }
+                      </button>
+                    </td>
+
+                    <!-- OBS -->
+                    <td>
+                      <input type="text" class="notes-input"
+                        [value]="r.notes ?? ''"
+                        (click)="$event.stopPropagation()"
+                        (blur)="saveNote(r, $any($event.target).value)"
+                        placeholder="Observação..." />
+                    </td>
+
+                    <!-- MARCADO EM -->
+                    <td class="td-mono">
+                      {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
+                    </td>
+                  </tr>
+
+                  <!-- PAINEL DE ACOMPANHANTES (expansível) -->
+                  @if (expandedCompanionId() === r.id) {
+                    <tr class="companion-panel-row">
+                      <td [attr.colspan]="attendanceColumnsMeta().length">
+                        <div class="companion-panel">
+
+                          <!-- Lista de acompanhantes existentes -->
+                          @if (r.companions?.length) {
+                            <div class="companion-list">
+                              @for (c of r.companions; track c.id) {
+                                <div class="companion-item" [class.companion-item--present]="c.attended">
+
+                                  <!-- Identidade -->
+                                  <span class="companion-icon">👤</span>
+                                  <div class="companion-info">
+                                    <span class="companion-name">{{ c.name }}</span>
+                                    @if (c.phone) {
+                                      <span class="companion-phone">{{ c.phone }}</span>
+                                    }
+                                  </div>
+
+                                  <!-- Botão de presença -->
+                                  <button
+                                    class="companion-attendance-btn"
+                                    [class.companion-attendance-btn--present]="c.attended"
+                                    [disabled]="markingCompanionId() === c.id"
+                                    (click)="toggleCompanionAttendance(c)"
+                                  >
+                                    @if (markingCompanionId() === c.id) {
+                                      <span class="spinner" style="width:11px;height:11px;border-width:2px"></span>
+                                    } @else if (c.attended) {
+                                      ✓ Presente
+                                    } @else {
+                                      Ausente
+                                    }
+                                  </button>
+
+                                  <!-- Horário de entrada -->
+                                  @if (c.attended && c.attendedAt) {
+                                    <span class="companion-attended-at">
+                                      {{ c.attendedAt | localDate: 'dd/MM HH:mm' }}
+                                    </span>
+                                  }
+
+                                  <!-- Remover -->
+                                  <button
+                                    class="companion-remove"
+                                    [disabled]="removingCompanionId() === c.id"
+                                    (click)="removeCompanion(r, c)"
+                                    title="Remover acompanhante"
+                                  >
+                                    @if (removingCompanionId() === c.id) {
+                                      <span class="spinner" style="width:10px;height:10px;border-width:2px"></span>
+                                    } @else {
+                                      ×
+                                    }
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          <!-- Form inline para novo acompanhante -->
+                          <div class="companion-form">
+                            <input
+                              type="text"
+                              class="notes-input companion-form-input"
+                              placeholder="Nome do acompanhante *"
+                              [value]="newCompanionName()[r.id] ?? ''"
+                              (input)="setNewCompanionName(r.id, $any($event.target).value)"
+                            />
+                            <input
+                              type="text"
+                              class="notes-input companion-form-input"
+                              placeholder="Telefone (opcional)"
+                              [value]="newCompanionPhone()[r.id] ?? ''"
+                              (input)="setNewCompanionPhone(r.id, $any($event.target).value); $any($event.target).value = newCompanionPhone()[r.id] ?? ''"
+                              maxlength="20"
+                            />
+                            <button
+                              class="btn-primary companion-add-btn"
+                              [disabled]="addingCompanionId() === r.id || !(newCompanionName()[r.id]?.trim())"
+                              (click)="addCompanion(r)"
+                            >
+                              @if (addingCompanionId() === r.id) {
+                                <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
+                              } @else {
+                                + Adicionar
+                              }
+                            </button>
+                          </div>
+
+                        </div>
+                      </td>
+                    </tr>
+                  }
                 }
-
-                <!-- PRESENÇA -->
-                <td class="td-center">
-                  <button
-                    class="attendance-toggle"
-                    [class.attendance-toggle--present]="r.attended"
-                    [class.attendance-toggle--loading]="markingId() === r.id"
-                    (click)="toggleAttendance(r)"
-                    [disabled]="markingId() === r.id"
-                  >
-                    @if (markingId() === r.id) {
-                      <span
-                        class="spinner"
-                        style="width: 14px; height: 14px; border-width: 2px"
-                      ></span>
-                    } @else if (r.attended) {
-                      ✓ Presente
-                    } @else {
-                      Ausente
-                    }
-                  </button>
-                </td>
-
-                <!-- OBS -->
-                <td>
-                  <input
-                    type="text"
-                    class="notes-input"
-                    [value]="r.notes ?? ''"
-                    (click)="$event.stopPropagation()"
-                    (blur)="saveNote(r, $any($event.target).value)"
-                    placeholder="Observação..."
-                  />
-                </td>
-
-                <!-- DATA -->
-                <td class="td-mono">
-                  {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
-                </td>
-              </ng-template>
-            </app-data-table>
+              </tbody>
+            </table>
           </div>
         </div>
 

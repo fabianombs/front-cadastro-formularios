@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
-import { FormSubmission, AppointmentResponse, AttendanceRecord } from './form-template.service';
+import { FormSubmission, AppointmentResponse, AttendanceRecord, AttendanceCompanion } from './form-template.service';
 import { DashboardSummary } from './dashboard.service';
 
 @Injectable({ providedIn: 'root' })
@@ -73,18 +73,86 @@ export class ExportService {
       ...fromData.filter((c) => !fromTemplate.has(c)),
     ];
 
-    const rows = records.map((r) => {
-      const row: Record<string, string> = {};
-      dataCols.forEach((col) => {
-        row[this.capitalize(col)] = r.rowData?.[col] ?? '';
-      });
-      row['Presente'] = r.attended ? 'Sim' : 'Não';
-      row['Horário Presença'] = r.attendedAt ? this.formatDateTime(r.attendedAt) : '';
-      row['Observações'] = r.notes ?? '';
-      return row;
-    });
+    // Detecta qual coluna do template representa "Nome" e "Telefone"
+    // para mapear os dados do acompanhante na coluna semântica correta.
+    const nameCol = dataCols.find((c) => /^nome$/i.test(c.trim()))
+      ?? dataCols.find((c) => /nome/i.test(c));
+    const phoneCol = dataCols.find((c) => /^(telefone|tel\.?|celular|fone)$/i.test(c.trim()))
+      ?? dataCols.find((c) => /tel|fone|celular/i.test(c));
 
-    this.writeFile(rows, `presenca_${this.slug(templateName)}`);
+    // Se não houver coluna semântica, cria colunas dedicadas para acompanhantes
+    const useExtraNameCol = !nameCol;
+    const useExtraPhoneCol = !phoneCol;
+
+    // Monta linhas: cada convidado + sub-linhas para seus acompanhantes
+    const dataRows: Record<string, string>[] = [];
+    for (const r of records) {
+      const guestRow: Record<string, string> = { Tipo: 'Convidado' };
+      dataCols.forEach((col) => {
+        guestRow[this.capitalize(col)] = r.rowData?.[col] ?? '';
+      });
+      // Colunas extras ficam vazias para convidados
+      if (useExtraNameCol) guestRow['Nome (Acomp.)'] = '';
+      if (useExtraPhoneCol) guestRow['Tel. (Acomp.)'] = '';
+      guestRow['Presente'] = r.attended ? 'Sim' : 'Não';
+      guestRow['Horário Presença'] = r.attendedAt ? this.formatDateTime(r.attendedAt) : '';
+      guestRow['Observações'] = r.notes ?? '';
+      dataRows.push(guestRow);
+
+      // Sub-linha por acompanhante (prefixo "↳" para destaque visual no Excel)
+      for (const c of (r.companions ?? [])) {
+        const companionRow: Record<string, string> = { Tipo: '↳ Acompanhante' };
+        // Todas as colunas do template ficam vazias
+        dataCols.forEach((col) => { companionRow[this.capitalize(col)] = ''; });
+
+        // Nome do acompanhante → coluna semântica "Nome" ou coluna dedicada
+        if (nameCol) {
+          companionRow[this.capitalize(nameCol)] = c.name;
+        } else {
+          companionRow['Nome (Acomp.)'] = c.name;
+        }
+
+        // Telefone do acompanhante → coluna semântica "Telefone" ou coluna dedicada
+        if (phoneCol) {
+          companionRow[this.capitalize(phoneCol)] = c.phone ?? '';
+        } else {
+          companionRow['Tel. (Acomp.)'] = c.phone ?? '';
+        }
+
+        companionRow['Presente'] = c.attended ? 'Sim' : 'Não';
+        companionRow['Horário Presença'] = c.attendedAt ? this.formatDateTime(c.attendedAt) : '';
+        companionRow['Observações'] = '';
+        dataRows.push(companionRow);
+      }
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // Aba principal: convidados + acompanhantes como sub-linhas
+    const wsData = XLSX.utils.json_to_sheet(dataRows);
+    this.autoWidth(wsData, dataRows as any);
+    XLSX.utils.book_append_sheet(wb, wsData, 'Lista de Presença');
+
+    // Aba de resumo com totais
+    const presentes = records.filter((r) => r.attended);
+    const allCompanions = records.flatMap((r) => r.companions ?? []);
+    const totalAcomp = allCompanions.length;
+    // Conta acompanhantes com presença marcada individualmente
+    const acompPresentes = allCompanions.filter((c) => c.attended).length;
+    const resumo = [
+      { Métrica: 'Total de Convidados', Valor: records.length },
+      { Métrica: 'Convidados Presentes', Valor: presentes.length },
+      { Métrica: 'Convidados Ausentes', Valor: records.length - presentes.length },
+      { Métrica: 'Total de Acompanhantes', Valor: totalAcomp },
+      { Métrica: 'Acompanhantes Presentes', Valor: acompPresentes },
+      { Métrica: 'Total Geral de Pessoas', Valor: records.length + totalAcomp },
+      { Métrica: 'Total Geral Presentes', Valor: presentes.length + acompPresentes },
+    ];
+    const wsResumo = XLSX.utils.json_to_sheet(resumo);
+    this.autoWidth(wsResumo, resumo as any);
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    XLSX.writeFile(wb, `presenca_${this.slug(templateName)}.xlsx`);
   }
 
   // ─────────────────────────────────────────────

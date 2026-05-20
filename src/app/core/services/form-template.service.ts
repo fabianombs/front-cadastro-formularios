@@ -128,6 +128,16 @@ export interface BookAppointmentRequest {
 
 // ===== LISTA DE PRESENÇA =====
 
+export interface AttendanceCompanion {
+  id: number;
+  recordId: number;
+  name: string;
+  phone: string | null;
+  attended: boolean;
+  attendedAt: string | null;
+  createdAt: string;
+}
+
 export interface AttendanceRecord {
   id: number;
   templateId: number;
@@ -135,6 +145,8 @@ export interface AttendanceRecord {
   attended: boolean;
   attendedAt: string | null;
   notes: string | null;
+  companionsCount: number;
+  companions: AttendanceCompanion[];
   rowOrder: number;
   createdAt: string;
 }
@@ -146,6 +158,12 @@ export interface ImportAttendanceRequest {
 export interface MarkAttendanceRequest {
   attended: boolean;
   notes: string | null;
+  companionsCount?: number | null;
+}
+
+export interface AddCompanionRequest {
+  name: string;
+  phone: string | null;
 }
 
 export interface AppointmentResponse {
@@ -325,5 +343,23 @@ export class FormTemplateService {
 
   deleteAttendanceRecord(recordId: number): Observable<void> {
     return this.http.delete<void>(`${this.attendanceUrl}/${recordId}`);
+  }
+
+  // Adiciona acompanhante (nome + telefone) a um convidado; retorna o registro atualizado
+  addCompanion(recordId: number, payload: AddCompanionRequest): Observable<AttendanceRecord> {
+    return this.http.post<AttendanceRecord>(`${this.attendanceUrl}/${recordId}/companions`, payload);
+  }
+
+  // Remove acompanhante pelo id; retorna o registro pai atualizado
+  removeCompanion(companionId: number): Observable<AttendanceRecord> {
+    return this.http.delete<AttendanceRecord>(`${this.attendanceUrl}/companions/${companionId}`);
+  }
+
+  // Marca/desmarca presença individual do acompanhante; retorna o registro pai atualizado
+  markCompanionAttendance(companionId: number, attended: boolean): Observable<AttendanceRecord> {
+    return this.http.patch<AttendanceRecord>(
+      `${this.attendanceUrl}/companions/${companionId}/mark`,
+      { attended }
+    );
   }
 }

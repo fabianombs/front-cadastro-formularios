@@ -8,6 +8,8 @@ import {
   FormSubmission,
   AppointmentResponse,
   AttendanceRecord,
+  AttendanceCompanion,
+  AddCompanionRequest,
 } from '../../core/services/form-template.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ExportService } from '../../core/services/export.service';
@@ -162,13 +164,34 @@ export class TemplateListComponent implements OnInit {
     this.template()?.fields?.forEach((f) => map.set(f.label, f));
     return map;
   });
-  attendanceStats = computed(() => ({
-    total: this.attTotalElements(),
-    presente: this.attendance().filter((r) => r.attended).length,
-    ausente: this.attendance().filter((r) => !r.attended).length,
-  }));
+  attendanceStats = computed(() => {
+    const records = this.attendance();
+    const presentes = records.filter((r) => r.attended);
+    const allCompanions = records.flatMap((r) => r.companions ?? []);
+    const totalAcompanhantes = allCompanions.length;
+    // Acompanhantes com presença marcada individualmente
+    const acompanhantesPresentes = allCompanions.filter((c) => c.attended).length;
+    return {
+      total: this.attTotalElements(),
+      presente: presentes.length,
+      ausente: records.filter((r) => !r.attended).length,
+      totalAcompanhantes,
+      acompanhantesPresentes,
+      totalGeral: this.attTotalElements() + totalAcompanhantes,
+      presentesGeral: presentes.length + acompanhantesPresentes,
+    };
+  });
   markingId = signal<number | null>(null);
   attendanceSearch = signal('');
+
+  // ID do convidado com o painel de acompanhantes expandido (null = nenhum)
+  expandedCompanionId = signal<number | null>(null);
+  // Valores do form inline de novo acompanhante, keyed por recordId
+  newCompanionName = signal<Record<number, string>>({});
+  newCompanionPhone = signal<Record<number, string>>({});
+  addingCompanionId = signal<number | null>(null);
+  removingCompanionId = signal<number | null>(null);
+  markingCompanionId = signal<number | null>(null);
 
   constructor() {
     effect(() => {
@@ -415,6 +438,7 @@ export class TemplateListComponent implements OnInit {
 
   attendanceColumnsMeta = computed<DataTableColumn[]>(() => [
     ...this.attendanceCols().map((col) => ({ key: col, label: this.formatLabel(col) })),
+    { key: 'companions', label: 'Acomp.', width: '90px', align: 'center' },
     { key: 'attendance', label: 'Presença', width: '110px', align: 'center' },
     { key: 'notes', label: 'Obs.' },
     { key: 'attendedAt', label: 'Marcado em', width: '120px' },
@@ -676,6 +700,97 @@ export class TemplateListComponent implements OnInit {
         },
         error: () => this.messages.error('Erro ao salvar observação.'),
       });
+  }
+
+  toggleCompanionPanel(recordId: number): void {
+    this.expandedCompanionId.set(
+      this.expandedCompanionId() === recordId ? null : recordId
+    );
+  }
+
+  setNewCompanionName(recordId: number, val: string): void {
+    this.newCompanionName.update(m => ({ ...m, [recordId]: val }));
+  }
+
+  setNewCompanionPhone(recordId: number, val: string): void {
+    this.newCompanionPhone.update(m => ({ ...m, [recordId]: this.applyPhoneMask(val) }));
+  }
+
+  /**
+   * Aplica máscara de telefone brasileiro enquanto o usuário digita.
+   * - Até 10 dígitos → (XX) XXXX-XXXX  (fixo)
+   * - 11 dígitos     → (XX) XXXXX-XXXX (celular)
+   * - Mais de 11     → sem máscara, aceita qualquer valor (ex.: DDI internacional)
+   */
+  applyPhoneMask(value: string): string {
+    const digits = value.replace(/\D/g, '');
+
+    if (digits.length > 11) return value; // fora do padrão, não força máscara
+
+    if (digits.length <= 10) {
+      return digits
+        .replace(/^(\d{0,2})/, '($1')
+        .replace(/^(\(\d{2})(\d{0,4})/, '$1) $2')
+        .replace(/^(\(\d{2}\) \d{4})(\d{1,4})/, '$1-$2');
+    }
+
+    // 11 dígitos → celular (XXXXX-XXXX)
+    return digits
+      .replace(/^(\d{2})/, '($1) ')
+      .replace(/^(\(\d{2}\) )(\d{5})(\d{0,4})/, '$1$2-$3');
+  }
+
+  addCompanion(record: AttendanceRecord): void {
+    const name = (this.newCompanionName()[record.id] ?? '').trim();
+    if (!name) return;
+
+    this.addingCompanionId.set(record.id);
+    const payload: AddCompanionRequest = {
+      name,
+      phone: (this.newCompanionPhone()[record.id] ?? '').trim() || null,
+    };
+
+    this.service.addCompanion(record.id, payload).subscribe({
+      next: (updated) => {
+        this.attendance.update(list => list.map(r => r.id === updated.id ? updated : r));
+        // Limpa o form inline
+        this.newCompanionName.update(m => ({ ...m, [record.id]: '' }));
+        this.newCompanionPhone.update(m => ({ ...m, [record.id]: '' }));
+        this.addingCompanionId.set(null);
+      },
+      error: () => {
+        this.messages.error('Erro ao adicionar acompanhante.');
+        this.addingCompanionId.set(null);
+      },
+    });
+  }
+
+  removeCompanion(record: AttendanceRecord, companion: AttendanceCompanion): void {
+    this.removingCompanionId.set(companion.id);
+    this.service.removeCompanion(companion.id).subscribe({
+      next: (updated) => {
+        this.attendance.update(list => list.map(r => r.id === updated.id ? updated : r));
+        this.removingCompanionId.set(null);
+      },
+      error: () => {
+        this.messages.error('Erro ao remover acompanhante.');
+        this.removingCompanionId.set(null);
+      },
+    });
+  }
+
+  toggleCompanionAttendance(companion: AttendanceCompanion): void {
+    this.markingCompanionId.set(companion.id);
+    this.service.markCompanionAttendance(companion.id, !companion.attended).subscribe({
+      next: (updated) => {
+        this.attendance.update(list => list.map(r => r.id === updated.id ? updated : r));
+        this.markingCompanionId.set(null);
+      },
+      error: () => {
+        this.messages.error('Erro ao atualizar presença do acompanhante.');
+        this.markingCompanionId.set(null);
+      },
+    });
   }
 
   saveRowField(record: AttendanceRecord, colKey: string, value: string): void {
