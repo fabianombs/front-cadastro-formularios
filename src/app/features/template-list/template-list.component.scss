@@ -484,6 +484,14 @@
 
     .mini-stat-value { color: var(--warning, #f5a623); }
   }
+
+  // Acompanhantes — azul informativo
+  &--info {
+    border-color: rgba(77, 143, 255, 0.2);
+    background: rgba(77, 143, 255, 0.04);
+
+    .mini-stat-value { color: var(--primary, #4d8fff); }
+  }
 }
 
 .mini-stat-value {
@@ -606,6 +614,195 @@
 .result-count--present {
   margin-left: auto;
   color: var(--success, #10c98a) !important;
+}
+
+// ── Botão "+" de acompanhantes ───────────────────────────────────
+.companion-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border, #1c2e4a);
+  background: transparent;
+  color: var(--text-muted, #5d789f);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--primary, #4d8fff);
+    color: var(--primary, #4d8fff);
+    background: var(--primary-muted, rgba(77,143,255,0.08));
+  }
+
+  &--active {
+    border-color: var(--primary, #4d8fff);
+    color: var(--primary, #4d8fff);
+    background: var(--primary-muted, rgba(77,143,255,0.10));
+  }
+}
+
+.companion-badge {
+  background: var(--primary, #4d8fff);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.companion-plus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+// ── Linha expansível de acompanhantes ────────────────────────────
+.companion-panel-row td {
+  padding: 0 !important;
+  background: var(--bg-subtle, #0a1020);
+  border-top: none !important;
+}
+
+.companion-panel {
+  padding: 12px 20px 14px 36px;
+  border-left: 3px solid var(--primary, #4d8fff);
+  margin: 0 8px 4px 8px;
+  border-radius: 0 0 8px 8px;
+  background: var(--surface, #0d1627);
+}
+
+.companion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.companion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text, #d8e4f8);
+}
+
+.companion-icon {
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+// Wrapper para empilhar nome + telefone verticalmente
+.companion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.companion-name {
+  font-weight: 500;
+}
+
+.companion-phone {
+  color: var(--text-muted, #5d789f);
+  font-size: 11.5px;
+}
+
+.companion-item--present .companion-name {
+  color: var(--success, #10c98a);
+}
+
+.companion-attended-at {
+  font-size: 10.5px;
+  color: var(--success, #10c98a);
+  opacity: 0.8;
+}
+
+// Versão compacta do attendance-toggle para uso inline no painel (legado)
+.attendance-toggle--sm {
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  min-width: 32px;
+}
+
+// Botão de presença individual do acompanhante
+.companion-attendance-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border, rgba(100,130,180,0.2));
+  background: transparent;
+  color: var(--text-muted, #5d789f);
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary, #5b8dee);
+    color: var(--primary, #5b8dee);
+  }
+
+  // Estado "presente" — verde
+  &--present {
+    background: rgba(16, 201, 138, 0.12);
+    border-color: rgba(16, 201, 138, 0.35);
+    color: var(--success, #10c98a);
+
+    &:hover:not(:disabled) {
+      background: rgba(16, 201, 138, 0.2);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.companion-remove {
+  background: none;
+  border: none;
+  color: var(--danger, #ff4f6a);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 1; }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+}
+
+// Form inline de novo acompanhante
+.companion-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.companion-form-input {
+  width: 180px;
+}
+
+.companion-add-btn {
+  font-size: 12px;
+  padding: 5px 14px;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 /* ── Stats 3-column grid ── */
