@@ -8,6 +8,7 @@ import {
   QuizConfigRequest,
   QuizQuestionRequest,
   QuizOptionRequest,
+  normalizeQuizLink,
 } from '../../core/services/quiz.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -105,7 +106,13 @@ export class QuizLibraryComponent implements OnInit {
     this.loading.set(true);
     this.quizService.listAll().subscribe({
       next: (list) => {
-        this.quizzes.set(list);
+        // Normaliza os links para usar o domínio atual (corrige localhost:4200 em prod)
+        const normalized = list.map(q => ({
+          ...q,
+          quizLink: normalizeQuizLink(q.quizLink),
+          rankingLink: normalizeQuizLink(q.rankingLink),
+        }));
+        this.quizzes.set(normalized);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -200,7 +207,7 @@ export class QuizLibraryComponent implements OnInit {
     this.expandedId.update(cur => (cur === id ? null : id));
   }
 
-  copyLink(link: string | undefined) {
+  copyLink(link: string | null | undefined) {
     if (link) navigator.clipboard.writeText(link);
   }
 
