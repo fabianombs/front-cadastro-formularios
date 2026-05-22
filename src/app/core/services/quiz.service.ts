@@ -95,6 +95,21 @@ export interface QuizConfigRequest {
   cardColor?: string | null;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// O backend gera os links com o host de onde está rodando (pode ser localhost:4200).
+// Esta função garante que o link sempre use o origin atual do browser (ex: nexventa.com.br em prod).
+export function normalizeQuizLink(link: string | null | undefined): string | null {
+  if (!link) return null; // preserva null/undefined — não afeta formulários sem quiz
+  try {
+    const parsed = new URL(link);
+    return window.location.origin + parsed.pathname + parsed.search + parsed.hash;
+  } catch {
+    // Se não for uma URL válida, trata como path relativo
+    return window.location.origin + (link.startsWith('/') ? link : '/' + link);
+  }
+}
+
 // ── Service ───────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
