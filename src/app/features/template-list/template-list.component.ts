@@ -28,6 +28,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
+import { QuizService, RankingResponse, QuizSession } from '../../core/services/quiz.service';
 
 interface FilterableField {
   col: string;
@@ -48,6 +49,7 @@ export class TemplateListComponent implements OnInit {
   private service = inject(FormTemplateService);
   private exporter = inject(ExportService);
   private messages = inject(MessageService);
+  private quizService = inject(QuizService);
   public auth = inject(AuthService);
 
   readonly pageSizeOptions = [2, 5, 10, 50];
@@ -102,7 +104,13 @@ export class TemplateListComponent implements OnInit {
   }));
 
   // ── Aba ativa ────────────────────────────────────────────────
-  activeTab = signal<'appointments' | 'submissions' | 'attendance'>('submissions');
+  activeTab = signal<'appointments' | 'submissions' | 'attendance' | 'quiz'>('submissions');
+
+  // ── Quiz report ───────────────────────────────────────────────
+  quizReport = signal<RankingResponse | null>(null);
+  quizLoading = signal(false);
+  quizLoaded = signal(false);
+  resettingQuiz = signal(false);
 
   // ── Filtros globais ─────────────────────────────────────────
   globalSearch = signal('');
@@ -187,8 +195,9 @@ export class TemplateListComponent implements OnInit {
   // ID do convidado com o painel de acompanhantes expandido (null = nenhum)
   expandedCompanionId = signal<number | null>(null);
   // Valores do form inline de novo acompanhante, keyed por recordId
-  newCompanionName = signal<Record<number, string>>({});
-  newCompanionPhone = signal<Record<number, string>>({});
+  // Partial<Record> para que o acesso por índice retorne string | undefined (necessário para ?? '')
+  newCompanionName = signal<Partial<Record<number, string>>>({});
+  newCompanionPhone = signal<Partial<Record<number, string>>>({});
   addingCompanionId = signal<number | null>(null);
   removingCompanionId = signal<number | null>(null);
   markingCompanionId = signal<number | null>(null);
@@ -262,17 +271,66 @@ export class TemplateListComponent implements OnInit {
         break;
 
       case 'attendance':
-        console.log('Loading attendance tab data...'); // 🔥 DEBUG
         if (!this.attendanceLoaded()) this.loadAttendance();
+        break;
+
+      case 'quiz':
+        if (!this.quizLoaded()) this.loadQuizReport();
         break;
     }
   }
 
-  changeTab(tab: 'appointments' | 'submissions' | 'attendance'): void {
+  changeTab(tab: 'appointments' | 'submissions' | 'attendance' | 'quiz'): void {
     if (this.activeTab() === tab) return;
     this.activeTab.set(tab);
     this.loadActiveTabData();
     this.cdr.detectChanges();
+  }
+
+  // ── Quiz report ───────────────────────────────────────────────
+
+  loadQuizReport(): void {
+    const t = this.template();
+    if (!t?.quizId) return;
+    this.quizLoading.set(true);
+    this.quizService.getAdminReport(t.quizId).subscribe({
+      next: (r) => {
+        this.quizReport.set(r);
+        this.quizLoaded.set(true);
+        this.quizLoading.set(false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.quizLoading.set(false);
+        this.messages.error('Erro ao carregar relatório do quiz');
+      },
+    });
+  }
+
+  resetQuizRanking(): void {
+    const t = this.template();
+    if (!t?.quizId) return;
+    this.resettingQuiz.set(true);
+    this.quizService.resetRanking(t.quizId).subscribe({
+      next: () => {
+        this.quizReport.set(null);
+        this.quizLoaded.set(false);
+        this.resettingQuiz.set(false);
+        this.loadQuizReport();
+        this.messages.success('Ranking resetado com sucesso');
+      },
+      error: () => {
+        this.resettingQuiz.set(false);
+        this.messages.error('Erro ao resetar ranking');
+      },
+    });
+  }
+
+  quizMedal(pos: number): string {
+    if (pos === 1) return '🏆';
+    if (pos === 2) return '🥈';
+    if (pos === 3) return '🥉';
+    return `${pos}º`;
   }
 
   // ─────────────────────────────────────────────

@@ -28,6 +28,18 @@ export const routes: Routes = [
       ),
   },
 
+  // 🎮 QUIZ PÚBLICO
+  {
+    path: 'quiz/:slug',
+    loadComponent: () =>
+      import('./features/quiz-public/quiz-public.component').then((m) => m.QuizPublicComponent),
+  },
+  {
+    path: 'quiz/:slug/ranking',
+    loadComponent: () =>
+      import('./features/quiz-ranking/quiz-ranking.component').then((m) => m.QuizRankingComponent),
+  },
+
   // 🔐 ROTAS PRIVADAS COM LAYOUT
   {
     path: '',
@@ -93,9 +105,30 @@ export const routes: Routes = [
       {
         path: 'forms-all',
         canActivate: [authGuard],
-        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO', 'ROLE_CLIENT'] }, // apenas admin e cliente
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO', 'ROLE_CLIENT'] },
         loadComponent: () =>
           import('./features/forms-all/forms-all.component').then((m) => m.FormsAllComponent),
+      },
+      {
+        path: 'quizzes',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/quiz-library/quiz-library.component').then((m) => m.QuizLibraryComponent),
+      },
+      {
+        path: 'quizzes/new',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/quiz-edit/quiz-edit.component').then((m) => m.QuizEditComponent),
+      },
+      {
+        path: 'quizzes/:id/edit',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/quiz-edit/quiz-edit.component').then((m) => m.QuizEditComponent),
       },
     ],
   },

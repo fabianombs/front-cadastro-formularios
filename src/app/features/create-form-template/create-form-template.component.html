@@ -271,6 +271,57 @@
   </div>
   }
 
+  <!-- Quiz (view) -->
+  <div class="card" style="margin-bottom: 16px; border-left: 4px solid #7c3aed">
+    <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
+      <div>
+        <p style="font-size: 13px; font-weight: 600; color: #7c3aed; margin: 0">🎮 Quiz</p>
+        @if (quizConfig()) {
+          <p style="font-size: 12px; color: #94a3b8; margin: 3px 0 0">
+            <strong style="color: #6d28d9">{{ quizConfig()!.name }}</strong>
+            · {{ quizConfig()!.questions.length }} pergunta(s) · {{ quizConfig()!.timePerQuestion }}s por questão
+          </p>
+        } @else {
+          <p style="font-size: 12px; color: #94a3b8; margin: 3px 0 0">Nenhum quiz vinculado</p>
+        }
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+        @if (quizConfig()) {
+          <a [href]="quizConfig()!.quizLink" target="_blank" class="quiz-link-btn quiz-link-btn--play"
+            style="font-size: 12px; padding: 5px 12px">🔗 Quiz</a>
+          <a [href]="quizConfig()!.rankingLink" target="_blank" class="quiz-link-btn quiz-link-btn--rank"
+            style="font-size: 12px; padding: 5px 12px">📊 Ranking</a>
+          <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px; color: #ef4444; border-color: #fca5a5"
+            [disabled]="savingQuiz()" (click)="unlinkQuiz()">
+            ✕ Desvincular
+          </button>
+        }
+        <a routerLink="/quizzes" class="btn-outline" style="font-size: 12px; padding: 5px 12px">
+          ⚙ Gerenciar quizzes
+        </a>
+      </div>
+    </div>
+
+    <!-- Picker de quiz no view mode -->
+    @if (availableQuizzes().length > 0) {
+    <div style="padding: 0 20px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <label style="font-size: 12px; color: #64748b; white-space: nowrap; font-weight: 600;">Vincular quiz:</label>
+      <select style="flex: 1; min-width: 200px; font-size: 13px; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; color: #334155;"
+        (change)="onQuizPickerChange($any($event.target).value)">
+        <option value="">— Selecione um quiz —</option>
+        @for (q of availableQuizzes(); track q.id) {
+          <option [value]="q.id" [selected]="quizConfig()?.id === q.id">
+            {{ q.name }} ({{ q.questions.length }} perguntas · {{ q.timePerQuestion }}s)
+          </option>
+        }
+      </select>
+      @if (savingQuiz()) {
+        <span style="font-size: 12px; color: #94a3b8">Salvando...</span>
+      }
+    </div>
+    }
+  </div>
+
   <!-- Campos do formulário -->
   <div class="card">
     <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0">
@@ -331,57 +382,53 @@
           <app-form-field [control]="nameControl" label="Nome do template" id="template-name"
             placeholder="Ex: Formulário de atendimento" [required]="true" />
 
-          <!-- Toggle: agenda -->
-          <div class="field" style="margin-top: 8px">
-            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
-              <input type="checkbox" formControlName="hasSchedule" style="width: 16px; height: 16px; cursor: pointer" />
-              <span>Habilitar agendamento por horário</span>
-            </label>
-            <small style="
-                    display: block;
-                    margin-top: 4px;
-                    color: #94a3b8;
-                    font-size: 12px;
-                    padding-left: 26px;
-                  ">
-              Permite definir um range de horários com slots por atendimento
-            </small>
-          </div>
+          <!-- Grid 2×2 de toggles de funcionalidades -->
+          <div class="feature-toggles-grid">
 
-          <!-- Toggle: lista de presença -->
-          <div class="field" style="margin-top: 4px">
-            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
-              <input type="checkbox" formControlName="hasAttendance"
-                style="width: 16px; height: 16px; cursor: pointer" />
-              <span>Habilitar lista de presença</span>
-            </label>
-            <small style="
-                    display: block;
-                    margin-top: 4px;
-                    color: #94a3b8;
-                    font-size: 12px;
-                    padding-left: 26px;
-                  ">
-              Importe uma planilha Excel com os participantes para controle de presença
-            </small>
-          </div>
+            <!-- Agendamento -->
+            <div class="feature-toggle-card">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="hasSchedule" class="feature-toggle-check" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Agendamento por horário</span>
+                  <span class="feature-toggle-desc">Slots de atendimento com range de horários</span>
+                </div>
+              </label>
+            </div>
 
-          <!-- Toggle: LGPD -->
-          <div class="field" style="margin-top: 4px">
-            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
-              <input type="checkbox" formControlName="lgpdEnabled"
-                style="width: 16px; height: 16px; cursor: pointer; accent-color: #6366f1" />
-              <span>Exigir aceite de LGPD</span>
-            </label>
-            <small style="
-                    display: block;
-                    margin-top: 4px;
-                    color: #94a3b8;
-                    font-size: 12px;
-                    padding-left: 26px;
-                  ">
-              Exibe um modal com o texto de política de dados antes do envio
-            </small>
+            <!-- Lista de presença -->
+            <div class="feature-toggle-card">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="hasAttendance" class="feature-toggle-check" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Lista de presença</span>
+                  <span class="feature-toggle-desc">Importe planilha Excel para controle de presença</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- LGPD -->
+            <div class="feature-toggle-card">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="lgpdEnabled" class="feature-toggle-check feature-toggle-check--lgpd" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Exigir aceite de LGPD</span>
+                  <span class="feature-toggle-desc">Modal de política de dados antes do envio</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Quiz -->
+            <div class="feature-toggle-card">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="hasQuiz" class="feature-toggle-check feature-toggle-check--quiz" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Habilitar Quiz</span>
+                  <span class="feature-toggle-desc">Timer, pontuação e ranking público</span>
+                </div>
+              </label>
+            </div>
+
           </div>
 
           <!-- Texto do modal LGPD (aparece ao habilitar) -->
@@ -1344,7 +1391,77 @@
     </div>
     }
 
-    <!-- Actions -->
+  
+  <!-- ── Quiz Picker (aparece ao habilitar) ───────────────────────────────── -->
+  @if (hasQuiz) {
+  <div class="quiz-editor-section">
+    <div class="quiz-editor-header">
+      <h2 class="quiz-editor-title">🎮 Quiz vinculado</h2>
+      <a routerLink="/quizzes" class="quiz-link-btn quiz-link-btn--manage">
+        ⚙ Gerenciar quizzes
+      </a>
+    </div>
+
+    <!-- Seletor de quiz — aparece imediatamente ao habilitar, mesmo antes de salvar -->
+    <div class="quiz-picker-row">
+      <div class="quiz-picker-field">
+        <label class="quiz-picker-label">Selecionar quiz</label>
+        @if (availableQuizzes().length === 0) {
+          <p class="quiz-picker-empty">
+            Nenhum quiz criado ainda.
+            <a routerLink="/quizzes">Crie um na biblioteca de quizzes →</a>
+          </p>
+        } @else {
+          <select class="quiz-picker-select" (change)="onQuizPickerChange($any($event.target).value)">
+            <option value="">— Nenhum quiz —</option>
+            @for (q of availableQuizzes(); track q.id) {
+              <option [value]="q.id" [selected]="quizConfig()?.id === q.id">
+                {{ q.name }} ({{ q.questions.length }} perguntas · {{ q.timePerQuestion }}s)
+              </option>
+            }
+          </select>
+        }
+      </div>
+
+      @if (quizConfig()) {
+        <button type="button" class="quiz-unlink-btn" [disabled]="savingQuiz()"
+          (click)="unlinkQuiz()">
+          {{ savingQuiz() ? '...' : '✕ Desvincular' }}
+        </button>
+      }
+    </div>
+
+    <!-- Card de info do quiz selecionado -->
+    @if (quizConfig()) {
+      <div class="quiz-info-card">
+        <div class="quiz-info-top">
+          <span class="quiz-info-name">{{ quizConfig()!.name }}</span>
+          <span class="quiz-info-badge">{{ quizConfig()!.questions.length }} perguntas</span>
+          <span class="quiz-info-badge quiz-info-badge--time">⏱ {{ quizConfig()!.timePerQuestion }}s</span>
+          <span class="quiz-info-badge quiz-info-badge--pts">🏆 {{ quizConfig()!.pointsPerQuestion }} pts</span>
+        </div>
+        <!-- Links só disponíveis após salvar (quiz precisa de template para ter URL) -->
+        @if (template && quizConfig()!.quizLink) {
+          <div class="quiz-info-links">
+            <a [href]="quizConfig()!.quizLink" target="_blank" class="quiz-link-btn quiz-link-btn--play">
+              🔗 Abrir Quiz
+            </a>
+            <a [href]="quizConfig()!.rankingLink" target="_blank" class="quiz-link-btn quiz-link-btn--rank">
+              📊 Ranking
+            </a>
+            <a [routerLink]="['/quizzes']" [queryParams]="{edit: quizConfig()!.id}" class="quiz-link-btn quiz-link-btn--manage">
+              ✎ Editar quiz
+            </a>
+          </div>
+        } @else if (!template) {
+          <p class="quiz-pending-note">💡 Os links do quiz ficarão disponíveis após salvar o template.</p>
+        }
+      </div>
+    }
+  </div>
+  }
+
+  <!-- Actions -->
     <div class="form-actions">
       <button type="submit" class="btn-primary" [disabled]="templateForm.invalid">
         {{ editMode ? 'Atualizar template' : 'Criar template' }}

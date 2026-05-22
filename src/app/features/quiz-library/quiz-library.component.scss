@@ -1,0 +1,593 @@
+// ── Grid de quizzes ───────────────────────────────────────────────────────────
+
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 4px 0 40px;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--fast), box-shadow var(--fast);
+
+  &:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  &--inactive {
+    opacity: 0.6;
+  }
+
+  // Cabeçalho: nome + badge ativo/inativo
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__slug {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+
+    &.badge--active {
+      background: var(--success-muted);
+      color: var(--success);
+      border-color: rgba(16, 201, 138, 0.25);
+    }
+
+    &.badge--inactive {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+  }
+
+  // Bloco de métricas (perguntas, tempo, pontos)
+  &__stats {
+    display: flex;
+    gap: 20px;
+    padding: 12px 14px;
+    background: var(--surface-high);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  // Bloco expandível de links
+  &__links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: var(--surface-high);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+  }
+}
+
+// ── Métricas individuais ──────────────────────────────────────────────────────
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  &__value {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+// ── Linhas de link ────────────────────────────────────────────────────────────
+
+.link-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  .link-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    min-width: 62px;
+    padding-top: 1px;
+  }
+
+  // URL clicável — quebra linha para mostrar o link completo
+  .link-url {
+    flex: 1;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--primary);
+    text-decoration: none;
+    word-break: break-all;
+    line-height: 1.5;
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--primary-dark);
+    }
+  }
+}
+
+// ── Confirmação de exclusão inline ────────────────────────────────────────────
+
+.delete-confirm {
+  background: var(--danger-muted);
+  border: 1px solid rgba(255, 79, 106, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+
+  p {
+    font-size: 13px;
+    color: var(--danger);
+    margin: 0 0 10px;
+    font-weight: 500;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// ── Botões locais (ghost e icon) ──────────────────────────────────────────────
+
+// btn-primary e btn-danger herdam do global styles.scss
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--fast);
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-muted);
+  }
+
+  &--sm {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  &--xs {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  &--danger {
+    color: var(--danger);
+    border-color: rgba(255, 79, 106, 0.3);
+
+    &:hover {
+      background: var(--danger-muted);
+      border-color: var(--danger);
+    }
+  }
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 14px;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  transition: background var(--fast), color var(--fast);
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  &--danger:hover {
+    background: var(--danger-muted);
+    color: var(--danger);
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 32px 16px;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 720px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+    }
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: var(--radius-xs);
+    transition: background var(--fast), color var(--fast);
+
+    &:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+  }
+
+  &__body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+}
+
+// ── Campos do formulário do modal ─────────────────────────────────────────────
+
+.form-row {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &--flex { flex: 1; }
+  &--sm { flex: 0 0 180px; }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-body);
+  }
+}
+
+.input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg-subtle);
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--fast), box-shadow var(--fast);
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  &::placeholder {
+    color: var(--text-faint);
+  }
+
+  &--sm {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  &--option {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: var(--font-body);
+}
+
+// ── Seção de perguntas ────────────────────────────────────────────────────────
+
+.questions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.questions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+}
+
+.questions-empty {
+  text-align: center;
+  padding: 24px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.question-card {
+  background: var(--surface-high);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.question-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-muted);
+  border: 1px solid rgba(77, 143, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--font-body);
+}
+
+// ── Opções de resposta ────────────────────────────────────────────────────────
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: background var(--fast), border-color var(--fast);
+
+  // Opção marcada como correta
+  &--correct {
+    background: var(--success-muted);
+    border-color: rgba(16, 201, 138, 0.25);
+  }
+}
+
+.correct-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: all var(--fast);
+
+  &--active {
+    background: var(--success);
+    border-color: var(--success);
+    color: #fff;
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--text-muted);
+}
+
+// ── Aparência no modal ────────────────────────────────────────────────────────
+
+.appearance-section {
+  background: var(--surface-high, #0d1627);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 4px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 14px;
+}
+
+.color-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-color {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-clear-field {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover { background: var(--danger-muted, rgba(239,68,68,0.12)); color: var(--danger, #ef4444); }
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+// Preview da aparência
+.appearance-preview {
+  margin-top: 14px;
+  border-radius: 10px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  border: 1px solid var(--border);
+}
+
+.preview-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+.preview-badge {
+  padding: 8px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}

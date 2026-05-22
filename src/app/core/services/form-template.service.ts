@@ -71,6 +71,11 @@ export interface FormTemplate {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Quiz integrado — presentes quando existe um QuizConfig ativo
+  hasQuiz: boolean;
+  quizId?: number | null;
+  quizLink?: string | null;
+  rankingLink?: string | null;
 }
 
 export interface CreateFormTemplateRequest {
@@ -81,6 +86,8 @@ export interface CreateFormTemplateRequest {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Quiz selecionado antes de salvar — vinculado automaticamente pelo backend
+  quizId?: number | null;
 }
 
 export interface UpdateFormTemplateRequest {

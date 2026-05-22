@@ -1,0 +1,270 @@
+<app-page-shell>
+  <app-page-header title="🎮 Biblioteca de Quizzes">
+    <button page-actions class="btn-primary" (click)="openCreate()">+ Novo Quiz</button>
+  </app-page-header>
+
+  <!-- Estado de carregamento -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Carregando quizzes...</p>
+    </div>
+  }
+
+  <!-- Lista vazia -->
+  @if (!loading() && quizzes().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">🎮</div>
+      <h3>Nenhum quiz criado ainda</h3>
+      <p>Crie quizzes independentes e associe-os a formulários ou compartilhe os links diretamente com seus clientes.</p>
+      <button class="btn-primary" (click)="openCreate()">Criar primeiro quiz</button>
+    </div>
+  }
+
+  <!-- Grade de quizzes -->
+  @if (!loading() && quizzes().length > 0) {
+    <div class="quiz-grid">
+      @for (quiz of quizzes(); track quiz.id) {
+        <div class="quiz-card" [class.quiz-card--inactive]="!quiz.active">
+
+          <!-- Cabeçalho do card -->
+          <div class="quiz-card__header">
+            <div class="quiz-card__info">
+              <h3 class="quiz-card__name">{{ quiz.name }}</h3>
+              <span class="quiz-card__slug">{{ quiz.slug }}</span>
+            </div>
+            <div class="quiz-card__badge" [class.badge--active]="quiz.active" [class.badge--inactive]="!quiz.active">
+              {{ quiz.active ? 'Ativo' : 'Inativo' }}
+            </div>
+          </div>
+
+          <!-- Métricas rápidas -->
+          <div class="quiz-card__stats">
+            <div class="stat">
+              <span class="stat__value">{{ quiz.totalQuestions }}</span>
+              <span class="stat__label">perguntas</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">{{ quiz.timePerQuestion }}s</span>
+              <span class="stat__label">por questão</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">{{ quiz.pointsPerQuestion }}</span>
+              <span class="stat__label">pts/questão</span>
+            </div>
+          </div>
+
+          <!-- Links (expandíveis) -->
+          @if (expandedId() === quiz.id) {
+            <div class="quiz-card__links">
+              <div class="link-row">
+                <span class="link-label">🔗 Quiz</span>
+                <a [href]="quiz.quizLink" target="_blank" class="link-url">{{ quiz.quizLink }}</a>
+                <button class="btn-icon" (click)="copyLink(quiz.quizLink)" title="Copiar link">📋</button>
+              </div>
+              <div class="link-row">
+                <span class="link-label">🏆 Ranking</span>
+                <a [href]="quiz.rankingLink" target="_blank" class="link-url">{{ quiz.rankingLink }}</a>
+                <button class="btn-icon" (click)="copyLink(quiz.rankingLink)" title="Copiar link">📋</button>
+              </div>
+            </div>
+          }
+
+          <!-- Ações -->
+          <div class="quiz-card__actions">
+            <button class="btn-ghost btn-ghost--sm" (click)="toggleExpanded(quiz.id)">
+              {{ expandedId() === quiz.id ? 'Ocultar links' : '🔗 Ver links' }}
+            </button>
+            <button class="btn-ghost btn-ghost--sm" (click)="toggleActive(quiz)" [title]="quiz.active ? 'Desativar' : 'Ativar'">
+              {{ quiz.active ? '⏸ Pausar' : '▶ Ativar' }}
+            </button>
+            <button class="btn-ghost btn-ghost--sm" (click)="openEdit(quiz)">✎ Editar</button>
+            <button class="btn-ghost btn-ghost--sm btn-ghost--danger" (click)="confirmDelete(quiz.id)">🗑</button>
+          </div>
+
+          <!-- Confirmação de exclusão inline -->
+          @if (deletingId() === quiz.id) {
+            <div class="delete-confirm">
+              <p>Tem certeza? Isso não pode ser desfeito.</p>
+              <div class="delete-confirm__actions">
+                <button class="btn-danger" (click)="deleteQuiz(quiz.id)">Excluir</button>
+                <button class="btn-ghost btn-ghost--sm" (click)="cancelDelete()">Cancelar</button>
+              </div>
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  }
+</app-page-shell>
+
+<!-- ── Modal de criação / edição ──────────────────────────────────────────── -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal__header">
+        <h2>{{ editingQuiz() ? 'Editar Quiz' : 'Novo Quiz' }}</h2>
+        <button class="modal__close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form [formGroup]="quizForm" (ngSubmit)="saveQuiz()" class="modal__body">
+
+        <!-- Identificação -->
+        <div class="form-row">
+          <div class="form-group form-group--flex">
+            <label>Nome do Quiz *</label>
+            <input type="text" formControlName="name" placeholder="Ex: Quiz de Conhecimentos" class="input" />
+          </div>
+          <div class="form-group form-group--flex form-group--sm">
+            <label>Slug (opcional)</label>
+            <input type="text" formControlName="slug" placeholder="gerado automaticamente" class="input" />
+          </div>
+        </div>
+
+        <!-- Configurações de tempo/pontos -->
+        <div class="form-row">
+          <div class="form-group form-group--flex">
+            <label>Tempo por questão (seg)</label>
+            <input type="number" formControlName="timePerQuestion" min="5" max="300" class="input" />
+          </div>
+          <div class="form-group form-group--flex">
+            <label>Pontos por questão</label>
+            <input type="number" formControlName="pointsPerQuestion" min="100" step="100" class="input" />
+          </div>
+        </div>
+
+        <!-- Aparência visual -->
+        <div class="appearance-section">
+          <h3 class="section-title">🎨 Aparência</h3>
+
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label>Cor de fundo</label>
+              <div class="color-input-wrap">
+                <input type="color" formControlName="backgroundColor" class="input-color" />
+                <input type="text"  formControlName="backgroundColor" placeholder="#0d1117" class="input input--sm" />
+                <button type="button" class="btn-clear-field" title="Limpar" (click)="clearAppearance('backgroundColor')">✕</button>
+              </div>
+            </div>
+            <div class="form-group form-group--flex">
+              <label>Cor primária (botões/timer)</label>
+              <div class="color-input-wrap">
+                <input type="color" formControlName="primaryColor" class="input-color" />
+                <input type="text"  formControlName="primaryColor" placeholder="#5b8dee" class="input input--sm" />
+                <button type="button" class="btn-clear-field" title="Limpar" (click)="clearAppearance('primaryColor')">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Gradiente de fundo <span class="hint">(substitui a cor se preenchido)</span></label>
+            <div class="color-input-wrap">
+              <input type="text" formControlName="backgroundGradient"
+                     placeholder="Ex: linear-gradient(135deg,#1a1a2e,#16213e)" class="input" />
+              <button type="button" class="btn-clear-field" title="Limpar" (click)="clearAppearance('backgroundGradient')">✕</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Imagem de fundo (URL)</label>
+            <div class="color-input-wrap">
+              <input type="text" formControlName="backgroundImageUrl"
+                     placeholder="https://..." class="input" />
+              <button type="button" class="btn-clear-field" title="Limpar" (click)="clearAppearance('backgroundImageUrl')">✕</button>
+            </div>
+          </div>
+
+          <!-- Preview compacto -->
+          @if (hasAppearance()) {
+            <div class="appearance-preview"
+                 [style.background]="previewBackground()"
+                 [style.--quiz-primary]="quizForm.get('primaryColor')?.value || '#5b8dee'">
+              <span class="preview-label">Preview</span>
+              <div class="preview-badge" [style.background]="quizForm.get('primaryColor')?.value || '#5b8dee'">
+                Iniciar Quiz
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Perguntas -->
+        <div class="questions-section">
+          <div class="questions-header">
+            <h3>Perguntas ({{ questionsArray.length }})</h3>
+            <button type="button" class="btn-ghost btn-ghost--sm" (click)="addQuestion()">+ Nova pergunta</button>
+          </div>
+
+          <div formArrayName="questions">
+            @for (q of questionsArray.controls; track $index; let qi = $index) {
+              <div class="question-card" [formGroupName]="qi">
+                <div class="question-card__header">
+                  <span class="question-num">P{{ qi + 1 }}</span>
+                  <button type="button" class="btn-icon btn-icon--danger" (click)="removeQuestion(qi)">✕</button>
+                </div>
+
+                <textarea
+                  formControlName="question"
+                  rows="2"
+                  placeholder="Digite a pergunta..."
+                  class="input textarea">
+                </textarea>
+
+                <input
+                  type="text"
+                  formControlName="imageUrl"
+                  placeholder="URL da imagem (opcional)"
+                  class="input input--sm" />
+
+                <!-- Opções -->
+                <div class="options-list" formArrayName="options">
+                  @for (opt of getOptionsArray(qi).controls; track $index; let oi = $index) {
+                    <div class="option-row" [formGroupName]="oi" [class.option-row--correct]="opt.get('correct')?.value">
+                      <button
+                        type="button"
+                        class="correct-btn"
+                        [class.correct-btn--active]="opt.get('correct')?.value"
+                        (click)="setCorrect(qi, oi)"
+                        title="Marcar como correta">
+                        {{ opt.get('correct')?.value ? '✓' : '○' }}
+                      </button>
+                      <input
+                        type="text"
+                        formControlName="optionText"
+                        placeholder="Opção {{ oi + 1 }}"
+                        class="input input--option" />
+                      @if (getOptionsArray(qi).length > 2) {
+                        <button type="button" class="btn-icon btn-icon--danger" (click)="removeOption(qi, oi)">✕</button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <button type="button" class="btn-ghost btn-ghost--xs" (click)="addOption(qi)">+ Opção</button>
+              </div>
+            }
+          </div>
+
+          @if (questionsArray.length === 0) {
+            <div class="questions-empty">
+              <p>Nenhuma pergunta ainda. Clique em "Nova pergunta" para começar.</p>
+            </div>
+          }
+        </div>
+
+        <!-- Footer do modal -->
+        <div class="modal__footer">
+          <button type="button" class="btn-ghost" (click)="closeModal()">Cancelar</button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="quizForm.invalid || saving() || questionsArray.length === 0">
+            {{ saving() ? 'Salvando...' : (editingQuiz() ? '💾 Salvar alterações' : '✅ Criar Quiz') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

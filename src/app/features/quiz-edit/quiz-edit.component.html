@@ -1,0 +1,320 @@
+<!-- Loading -->
+@if (loading()) {
+  <div class="edit-loading">
+    <div class="spinner"></div>
+    <p>Carregando quiz...</p>
+  </div>
+}
+
+@if (!loading() && (quiz() || isCreateMode)) {
+  <div class="edit-root">
+
+    <!-- ── Topbar ─────────────────────────────────────────────────────────── -->
+    <header class="edit-topbar">
+      <button class="btn-back" (click)="goBack()">
+        ← Quizzes
+      </button>
+      <div class="topbar-center">
+        <span class="topbar-title">{{ isCreateMode ? (quizForm.get('name')?.value || 'Novo Quiz') : quiz()!.name }}</span>
+        <span class="topbar-slug">{{ isCreateMode ? 'novo' : quiz()!.slug }}</span>
+      </div>
+      <div class="topbar-actions">
+        @if (saved()) {
+          <span class="save-feedback">✓ Salvo!</span>
+        }
+        <button
+          class="btn-save"
+          [disabled]="quizForm.invalid || saving()"
+          (click)="save()">
+          {{ saving() ? 'Salvando...' : (isCreateMode ? '✅ Criar Quiz' : '💾 Salvar alterações') }}
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Tabs ───────────────────────────────────────────────────────────── -->
+    <div class="edit-tabs">
+      <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'content'"    (click)="activeTab.set('content')">📝 Conteúdo</button>
+      <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'appearance'" (click)="activeTab.set('appearance')">🎨 Aparência</button>
+    </div>
+
+    <!-- ── Body ───────────────────────────────────────────────────────────── -->
+    <div class="edit-body" [formGroup]="quizForm">
+
+      <!-- ════ ABA CONTEÚDO ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'content') {
+        <div class="content-panel">
+
+          <!-- Identificação -->
+          <section class="edit-section">
+            <h2 class="section-title">Identificação</h2>
+            <div class="form-row">
+              <div class="form-group form-group--flex">
+                <label>Nome do Quiz *</label>
+                <input type="text" formControlName="name" placeholder="Ex: Quiz de Conhecimentos" class="input" />
+              </div>
+              <div class="form-group form-group--sm">
+                <label>Slug (URL)</label>
+                <input type="text" formControlName="slug" placeholder="gerado automaticamente" class="input" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group--flex">
+                <label>Tempo por questão (s)</label>
+                <input type="number" formControlName="timePerQuestion" min="5" max="300" class="input" />
+              </div>
+              <div class="form-group form-group--flex">
+                <label>Pontos por questão</label>
+                <input type="number" formControlName="pointsPerQuestion" min="100" step="100" class="input" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Perguntas -->
+          <section class="edit-section">
+            <div class="section-header">
+              <h2 class="section-title">Perguntas ({{ questionsArray.length }})</h2>
+              <button type="button" class="btn-add-question" (click)="addQuestion()">+ Nova pergunta</button>
+            </div>
+
+            <div formArrayName="questions">
+              @for (q of questionsArray.controls; track $index; let qi = $index) {
+                <div class="question-card" [formGroupName]="qi">
+                  <div class="question-card__header">
+                    <span class="question-num">P{{ qi + 1 }}</span>
+                    <button type="button" class="btn-remove" (click)="removeQuestion(qi)">✕</button>
+                  </div>
+
+                  <textarea
+                    formControlName="question"
+                    rows="2"
+                    placeholder="Digite a pergunta..."
+                    class="input textarea">
+                  </textarea>
+
+                  <input
+                    type="text"
+                    formControlName="imageUrl"
+                    placeholder="URL da imagem da pergunta (opcional)"
+                    class="input input--sm" />
+
+                  <!-- Opções -->
+                  <div class="options-list" formArrayName="options">
+                    @for (opt of getOptionsArray(qi).controls; track $index; let oi = $index) {
+                      <div class="option-row" [formGroupName]="oi" [class.option-row--correct]="opt.get('correct')?.value">
+                        <button
+                          type="button"
+                          class="correct-btn"
+                          [class.correct-btn--active]="opt.get('correct')?.value"
+                          (click)="setCorrect(qi, oi)"
+                          title="Marcar como correta">
+                          {{ opt.get('correct')?.value ? '✓' : '○' }}
+                        </button>
+                        <input
+                          type="text"
+                          formControlName="optionText"
+                          [placeholder]="'Opção ' + (oi + 1)"
+                          class="input input--option" />
+                        @if (getOptionsArray(qi).length > 2) {
+                          <button type="button" class="btn-remove btn-remove--sm" (click)="removeOption(qi, oi)">✕</button>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <button type="button" class="btn-ghost-xs" (click)="addOption(qi)">+ Opção</button>
+                </div>
+              }
+
+              @if (questionsArray.length === 0) {
+                <div class="questions-empty">
+                  <p>Nenhuma pergunta ainda.</p>
+                  <button type="button" class="btn-add-question" (click)="addQuestion()">Criar primeira pergunta</button>
+                </div>
+              }
+            </div>
+          </section>
+
+        </div>
+      }
+
+      <!-- ════ ABA APARÊNCIA ══════════════════════════════════════════════ -->
+      @if (activeTab() === 'appearance') {
+        <div class="appearance-layout">
+
+          <!-- Coluna esquerda: controles -->
+          <div class="appearance-controls">
+
+            <!-- Cores -->
+            <section class="edit-section">
+              <h2 class="section-title">🎨 Cores</h2>
+
+              <div class="color-grid">
+
+                <div class="color-field">
+                  <label>Cor de fundo</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="backgroundColor" class="picker" />
+                    <input type="text"  formControlName="backgroundColor" placeholder="#0d1117" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('backgroundColor')">✕</button>
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Cor do texto</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="textColor" class="picker" />
+                    <input type="text"  formControlName="textColor" placeholder="#e2e8f0" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('textColor')">✕</button>
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Cor primária (botões / timer)</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="primaryColor" class="picker" />
+                    <input type="text"  formControlName="primaryColor" placeholder="#5b8dee" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('primaryColor')">✕</button>
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Cor dos cards de resposta</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="cardColor" class="picker" />
+                    <input type="text"  formControlName="cardColor" placeholder="Ex: rgba(20,30,50,0.7)" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('cardColor')">✕</button>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- Gradiente -->
+            <section class="edit-section">
+              <h2 class="section-title">🌈 Gradiente de fundo <span class="hint">(substitui a cor sólida)</span></h2>
+              <div class="color-row">
+                <input type="text" formControlName="backgroundGradient"
+                       placeholder="Ex: linear-gradient(135deg, #1a1a2e, #16213e)"
+                       class="input"
+                       (input)="clearField('backgroundImageUrl')" />
+                <button type="button" class="btn-clear" title="Limpar" (click)="clearField('backgroundGradient')">✕</button>
+              </div>
+              <div class="gradient-presets">
+                @for (g of gradientPresets; track g.label) {
+                  <button type="button"
+                          class="preset-btn"
+                          [style.background]="g.value"
+                          (click)="quizForm.get('backgroundGradient')?.setValue(g.value); clearField('backgroundColor'); clearField('backgroundImageUrl')"
+                          [title]="g.label">
+                  </button>
+                }
+              </div>
+            </section>
+
+            <!-- Imagem de fundo -->
+            <section class="edit-section">
+              <h2 class="section-title">🖼️ Imagem de fundo <span class="hint">(sobrepõe cor e gradiente)</span></h2>
+
+              <!-- Drop zone -->
+              <div class="drop-zone"
+                   [class.drop-zone--active]="dragOver()"
+                   [class.drop-zone--has-image]="!!quizForm.get('backgroundImageUrl')?.value"
+                   (dragover)="onDragOverZone($event)"
+                   (dragleave)="onDragLeaveZone()"
+                   (drop)="onDropZone($event)">
+
+                @if (uploading()) {
+                  <div class="drop-zone__uploading">
+                    <div class="mini-spinner"></div>
+                    <span>Enviando...</span>
+                  </div>
+                } @else if (quizForm.get('backgroundImageUrl')?.value) {
+                  <div class="drop-zone__preview"
+                       [style.background-image]="'url(' + quizForm.get('backgroundImageUrl')?.value + ')'">
+                    <button type="button" class="btn-remove-img" (click)="clearField('backgroundImageUrl')">✕ Remover</button>
+                  </div>
+                } @else {
+                  <div class="drop-zone__placeholder">
+                    <span class="drop-icon">📁</span>
+                    <p>Arraste uma imagem aqui</p>
+                    <p class="drop-hint">ou</p>
+                    <label class="btn-file-select">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onFileSelect($event)" hidden />
+                    </label>
+                  </div>
+                }
+              </div>
+
+              <!-- URL manual como alternativa -->
+              <div class="url-alt">
+                <span class="url-alt__label">ou cole uma URL:</span>
+                <input type="text" formControlName="backgroundImageUrl"
+                       placeholder="https://..." class="input input--sm" />
+              </div>
+            </section>
+
+          </div>
+
+          <!-- Coluna direita: live preview -->
+          <div class="preview-column">
+            <div class="preview-sticky">
+              <h3 class="preview-header">👁 Preview ao vivo</h3>
+              <div class="preview-phone">
+                <div class="preview-screen"
+                     [style.background]="previewBg()"
+                     [style.color]="previewText()">
+
+                  <div class="prev-quiz-card">
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s por pergunta
+                    </p>
+
+                    <!-- Timer bar preview -->
+                    <div class="prev-timer">
+                      <div class="prev-timer__bar">
+                        <div class="prev-timer__fill" [style.background]="previewPrimary()"></div>
+                      </div>
+                      <span class="prev-timer__val" [style.color]="previewText()">30s</span>
+                    </div>
+
+                    <!-- Pergunta mockada -->
+                    <div class="prev-question" [style.color]="previewText()">
+                      {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
+                    </div>
+
+                    <!-- Opções mockadas -->
+                    <div class="prev-options">
+                      @for (label of ['A', 'B', 'C', 'D']; track label) {
+                        <div class="prev-option"
+                             [style.background]="previewCardColor()"
+                             [style.border-color]="previewPrimary() + '55'"
+                             [style.color]="previewText()">
+                          {{ label }}
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Botão de iniciar mockado -->
+                    <div class="prev-btn" [style.background]="previewPrimary()">
+                      Começar Quiz 🚀
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <p class="preview-hint">As alterações aparecem em tempo real. Salve para aplicar no link público.</p>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    </div>
+
+  </div>
+}
+
+<!-- Presets de gradiente (definidos no TS) -->

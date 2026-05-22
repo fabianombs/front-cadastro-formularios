@@ -17,6 +17,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: 'Criar Formulário', path: '/form-builder', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
   { label: 'Formulários', path: '/forms-all', roles: ['ROLE_CLIENT'] },
   { label: 'Forms de Clientes', path: '/forms-all', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+  { label: 'Quizzes', path: '/quizzes', roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
 ];
 
 @Component({

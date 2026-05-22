@@ -33,6 +33,8 @@ export class FormDynamicComponent implements OnInit {
   public template = signal<FormTemplate | null>(null);
   public loading = signal<boolean>(false);
   public submitted = signal<boolean>(false);
+  // Exibido após qualquer ação concluída quando o template tem quiz ativo
+  public showQuizPrompt = signal<boolean>(false);
   public form: FormGroup;
   public formFields = signal<FormGroup[]>([]);
   public isEstrangeiro = signal<boolean>(false);
@@ -396,6 +398,9 @@ export class FormDynamicComponent implements OnInit {
       next: () => {
         this.messages.success('Formulário enviado com sucesso!');
         this.form.reset();
+        this.submitted.set(true);
+        // Exibe o prompt do quiz se o template tiver quiz ativo
+        if (template.hasQuiz) this.showQuizPrompt.set(true);
       },
       error: () => this.messages.error('Erro ao enviar formulário'),
     });
@@ -443,6 +448,8 @@ export class FormDynamicComponent implements OnInit {
         this.selectedSlot.set('');
         this.selectedDate.set('');
         this.availableSlots.set([]);
+        // Exibe o prompt do quiz se o template tiver quiz ativo
+        if (template.hasQuiz) this.showQuizPrompt.set(true);
         this.cdr.detectChanges();
       },
       error: (err) => {

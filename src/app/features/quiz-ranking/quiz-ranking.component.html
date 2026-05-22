@@ -1,0 +1,146 @@
+<!-- Background dinâmico — mesma aparência da tela do quiz -->
+<div class="ranking-page" [style.background]="quizBg()">
+
+  <!-- Partículas decorativas para 1º lugar -->
+  <div class="particles" aria-hidden="true">
+    @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]; track $index) {
+      <div class="particle" [style.--i]="$index"></div>
+    }
+  </div>
+
+  <!-- ── LOADING ──────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="r-center">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring pulse-ring--delay"></div>
+      <div class="loader-dot" [style.background]="quizPrimary()"></div>
+    </div>
+  }
+
+  <!-- ── CONTEÚDO ─────────────────────────────────────────────────────────── -->
+  @if (!loading() && ranking()) {
+    <div class="r-wrap">
+
+      <!-- Header -->
+      <header class="r-header">
+        <span class="r-trophy">🏆</span>
+        <h1 class="r-title" [style.color]="quizText()">Ranking</h1>
+        <p class="r-quiz-name" [style.color]="quizText() + 'aa'">{{ ranking()!.templateName }}</p>
+        <div class="r-meta">
+          <span class="pill"
+                [style.border-color]="quizPrimary() + '66'"
+                [style.color]="quizPrimary()">
+            {{ ranking()!.totalParticipants }} participante(s)
+          </span>
+          @if (ranking()!.top.length > 0) {
+            <button class="btn-export"
+                    [style.border-color]="quizPrimary() + '66'"
+                    [style.color]="quizPrimary()"
+                    (click)="exportExcel()">
+              📥 Exportar Excel
+            </button>
+          }
+        </div>
+      </header>
+
+      <!-- ── Sem participantes ──────────────────────────────────────────── -->
+      @if (ranking()!.top.length === 0) {
+        <div class="empty-wrap glass-card">
+          <span class="empty-icon">🎮</span>
+          <p [style.color]="quizText()">Nenhum participante ainda. Seja o primeiro!</p>
+          <a [routerLink]="['/quiz', slug]"
+             class="btn-play"
+             [style.background]="quizPrimary()">Jogar agora</a>
+        </div>
+      }
+
+      <!-- ── Pódio Top 3 ────────────────────────────────────────────────── -->
+      @if (podium().length > 0) {
+        <div class="podium-scene">
+
+          <!-- 2º lugar -->
+          <div class="podium-col podium-col--2nd">
+            <div class="p-card glass-card p-card--2nd">
+              <span class="p-medal">🥈</span>
+              <p class="p-name" [style.color]="quizText()">{{ podium().length >= 2 ? podium()[1].playerName : '—' }}</p>
+              <p class="p-score" [style.color]="quizPrimary()">
+                {{ podium().length >= 2 ? podium()[1].totalScore : 0 }}
+              </p>
+              <p class="p-hits" [style.color]="quizText() + '77'">
+                {{ podium().length >= 2 ? (podium()[1].correctAnswers + '/' + podium()[1].totalQuestions + ' acertos') : '' }}
+              </p>
+            </div>
+            <div class="p-stand p-stand--2nd" [style.border-top-color]="quizPrimary() + '44'">
+              <span class="p-pos">2º</span>
+            </div>
+          </div>
+
+          <!-- 1º lugar (centro, mais alto) -->
+          <div class="podium-col podium-col--1st">
+            <div class="crown-wrap">
+              <span class="crown">👑</span>
+            </div>
+            <div class="p-card glass-card p-card--1st" [style.border-color]="quizPrimary() + '44'">
+              <span class="p-medal p-medal--1st">🥇</span>
+              <p class="p-name p-name--1st" [style.color]="quizText()">{{ podium()[0].playerName }}</p>
+              <p class="p-score p-score--1st" [style.color]="quizPrimary()">{{ podium()[0].totalScore }}</p>
+              <p class="p-hits" [style.color]="quizText() + '77'">
+                {{ podium()[0].correctAnswers }}/{{ podium()[0].totalQuestions }} acertos
+              </p>
+            </div>
+            <div class="p-stand p-stand--1st" [style.background]="quizPrimary()">
+              <span class="p-pos p-pos--1st">1º</span>
+            </div>
+          </div>
+
+          <!-- 3º lugar -->
+          <div class="podium-col podium-col--3rd">
+            <div class="p-card glass-card p-card--3rd">
+              <span class="p-medal">🥉</span>
+              <p class="p-name" [style.color]="quizText()">{{ podium().length >= 3 ? podium()[2].playerName : '—' }}</p>
+              <p class="p-score" [style.color]="quizPrimary()">
+                {{ podium().length >= 3 ? podium()[2].totalScore : 0 }}
+              </p>
+              <p class="p-hits" [style.color]="quizText() + '77'">
+                {{ podium().length >= 3 ? (podium()[2].correctAnswers + '/' + podium()[2].totalQuestions + ' acertos') : '' }}
+              </p>
+            </div>
+            <div class="p-stand p-stand--3rd" [style.border-top-color]="quizPrimary() + '44'">
+              <span class="p-pos">3º</span>
+            </div>
+          </div>
+
+        </div>
+      }
+
+      <!-- ── Lista 4º+ ──────────────────────────────────────────────────── -->
+      @if (rest().length > 0) {
+        <div class="rank-list glass-card">
+          @for (s of rest(); track s.id; let i = $index) {
+            <div class="rank-row">
+              <span class="rank-badge" [style.color]="quizPrimary()">{{ i + 4 }}º</span>
+              <span class="rank-name" [style.color]="quizText()">{{ s.playerName }}</span>
+              <span class="rank-hits" [style.color]="quizText() + '66'">
+                {{ s.correctAnswers }}/{{ s.totalQuestions }}
+              </span>
+              <span class="rank-score" [style.color]="quizPrimary()">{{ s.totalScore }} pts</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Footer -->
+      <p class="auto-refresh" [style.color]="quizText() + '44'">
+        ⟳ Atualiza a cada 15 segundos
+      </p>
+
+      <a [routerLink]="['/quiz', slug]"
+         class="btn-play"
+         [style.background]="quizPrimary()">
+        Quero jogar! 🎮
+      </a>
+
+    </div>
+  }
+
+</div>
