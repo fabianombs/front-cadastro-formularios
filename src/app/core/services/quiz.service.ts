@@ -30,8 +30,8 @@ export interface QuizConfig {
   active: boolean;
   totalQuestions: number;
   questions: QuizQuestion[];
-  quizLink: string;
-  rankingLink: string;
+  quizLink: string | null;
+  rankingLink: string | null;
   // Aparência visual do quiz público
   backgroundColor?: string | null;
   backgroundGradient?: string | null;
