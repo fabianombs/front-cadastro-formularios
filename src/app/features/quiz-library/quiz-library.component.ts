@@ -207,7 +207,7 @@ export class QuizLibraryComponent implements OnInit {
     this.expandedId.update(cur => (cur === id ? null : id));
   }
 
-  copyLink(link: string | undefined) {
+  copyLink(link: string | null | undefined) {
     if (link) navigator.clipboard.writeText(link);
   }
 
