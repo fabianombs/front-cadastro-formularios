@@ -11,6 +11,7 @@ import {
 import { MessageService } from '../../core/services/message.service';
 import { ClientService, Client } from '../../core/services/client.service';
 import { ExportService } from '../../core/services/export.service';
+import { QuizService, QuizConfig } from '../../core/services/quiz.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -457,11 +458,21 @@ export class CreateTemplateComponent implements OnInit {
   public attendanceCols: string[] = [];
   public importingAttendance = false;
 
+  // ── Quiz state ───────────────────────────────────────────────────────────
+  quizConfig    = signal<QuizConfig | null>(null);
+  savingQuiz    = signal(false);
+  // ID do quiz selecionado antes de o template ser salvo (novo template)
+  pendingQuizId = signal<number | null>(null);
+
+  // Lista de quizzes disponíveis para associar ao template
+  availableQuizzes = signal<QuizConfig[]>([]);
+
   constructor(
     private fb: FormBuilder,
     private templateService: FormTemplateService,
     private clientService: ClientService,
     private exportService: ExportService,
+    private quizService: QuizService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
   ) {
@@ -471,6 +482,7 @@ export class CreateTemplateComponent implements OnInit {
       fields: this.fb.array([]),
       hasSchedule: [false],
       hasAttendance: [false],
+      hasQuiz: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
       scheduleConfig: this.fb.group({
@@ -518,8 +530,88 @@ export class CreateTemplateComponent implements OnInit {
     return this.templateForm.get('hasAttendance')?.value === true;
   }
 
+  get hasQuiz(): boolean {
+    return this.templateForm.get('hasQuiz')?.value === true;
+  }
+
   get lgpdEnabled(): boolean {
     return this.templateForm.get('lgpdEnabled')?.value === true;
+  }
+
+  // ── Quiz picker methods ───────────────────────────────────────────────────
+
+  // Chamado quando o usuário seleciona um quiz no dropdown
+  onQuizPickerChange(quizIdStr: string) {
+    const quizId = Number(quizIdStr);
+
+    if (!quizIdStr || isNaN(quizId)) {
+      this.unlinkQuiz();
+      return;
+    }
+
+    // Template ainda não salvo — apenas guarda o ID para enviar junto ao criar
+    if (!this.template) {
+      this.pendingQuizId.set(quizId);
+      const selected = this.availableQuizzes().find(q => q.id === quizId) ?? null;
+      this.quizConfig.set(selected);
+      return;
+    }
+
+    // Template já salvo — vincula via API imediatamente
+    this.savingQuiz.set(true);
+    this.quizService.assignToTemplate(quizId, this.template.id).subscribe({
+      next: () => {
+        const selected = this.availableQuizzes().find(q => q.id === quizId) ?? null;
+        this.quizConfig.set(selected);
+        this.savingQuiz.set(false);
+        this.messages.success('Quiz vinculado com sucesso!');
+      },
+      error: () => {
+        this.savingQuiz.set(false);
+        this.messages.error('Erro ao vincular o quiz.');
+      },
+    });
+  }
+
+  // Remove a associação entre o template atual e o quiz vinculado
+  unlinkQuiz() {
+    // Template ainda não salvo — apenas limpa o pending
+    if (!this.template) {
+      this.pendingQuizId.set(null);
+      this.quizConfig.set(null);
+      return;
+    }
+
+    this.savingQuiz.set(true);
+    this.quizService.unassignFromTemplate(this.template.id).subscribe({
+      next: () => {
+        this.quizConfig.set(null);
+        this.savingQuiz.set(false);
+        this.messages.success('Quiz desvinculado.');
+      },
+      error: () => {
+        this.savingQuiz.set(false);
+        this.messages.error('Erro ao desvincular o quiz.');
+      },
+    });
+  }
+
+  // Carrega todos os quizzes e identifica qual está associado ao template atual
+  loadQuizIfExists(template: FormTemplate) {
+    this.quizService.listAll().subscribe({
+      next: (quizzes: QuizConfig[]) => {
+        this.availableQuizzes.set(quizzes);
+
+        // Usa o quizId direto do template para identificar o quiz vinculado
+        if (template.hasQuiz && template.quizId) {
+          const matched = quizzes.find((q: QuizConfig) => q.id === template.quizId) ?? null;
+          this.quizConfig.set(matched);
+        } else {
+          this.quizConfig.set(null);
+        }
+      },
+      error: () => { /* sem quizzes disponíveis, segue sem quiz */ },
+    });
   }
 
   get scheduleConfig(): FormGroup {
@@ -579,6 +671,12 @@ export class CreateTemplateComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClients();
+
+    // Carrega quizzes disponíveis sempre — necessário para o picker no create mode
+    this.quizService.listAll().subscribe({
+      next: (quizzes) => this.availableQuizzes.set(quizzes),
+      error: () => {},
+    });
 
     const slugParam = this.route.snapshot.params['slug'];
     if (slugParam) {
@@ -732,6 +830,8 @@ export class CreateTemplateComponent implements OnInit {
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
       lgpdEnabled: formValue.lgpdEnabled ?? false,
       lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+      // Vincula o quiz selecionado antes de salvar (se houver)
+      quizId: this.pendingQuizId() ?? null,
     };
 
     // ── MODO EDIÇÃO ─────────────────────────────────────────────
@@ -823,6 +923,9 @@ export class CreateTemplateComponent implements OnInit {
       lgpdEnabled: template.lgpdEnabled ?? false,
       lgpdText: template.lgpdText ?? '',
     });
+
+    // Carrega lista de quizzes e identifica qual está associado ao template
+    this.loadQuizIfExists(template);
 
     if (template.hasSchedule && template.scheduleConfig) {
       this.scheduleConfig.patchValue({

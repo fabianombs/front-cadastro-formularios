@@ -367,3 +367,53 @@
     box-shadow: 0 2px 8px rgba(255, 79, 106, 0.35);
   }
 }
+
+/* ── Barra de atalhos do Quiz no card ───────────────────────── */
+.tc-quiz-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  margin: 8px -4px -4px;
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: 0 0 12px 12px;
+}
+
+.tc-quiz-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a78bfa;
+  letter-spacing: 0.03em;
+}
+
+.tc-quiz-links {
+  display: flex;
+  gap: 6px;
+}
+
+.tc-quiz-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+
+  &--play {
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    color: #a78bfa;
+    &:hover { background: rgba(139, 92, 246, 0.28); }
+  }
+
+  &--rank {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    &:hover { background: rgba(251, 191, 36, 0.2); }
+  }
+}

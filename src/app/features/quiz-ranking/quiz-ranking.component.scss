@@ -1,0 +1,409 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Poppins', system-ui, sans-serif;
+  --qprimary: #5b8dee;
+  --qtext: #e2e8f0;
+}
+
+// ── Página ────────────────────────────────────────────────────────────────────
+.ranking-page {
+  min-height: 100vh;
+  padding: 40px 16px 72px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.30);
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+// ── Glassmorphism ─────────────────────────────────────────────────────────────
+.glass-card {
+  background: rgba(8, 12, 20, 0.65);
+  backdrop-filter: blur(32px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+// ── Partículas decorativas ────────────────────────────────────────────────────
+.particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--qprimary);
+  opacity: 0;
+  left: calc(var(--i) * 6.5%);
+  animation: particleFloat calc(4s + var(--i) * 0.3s) ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.25s);
+
+  &:nth-child(odd)  { background: rgba(255,255,255,0.4); width: 4px; height: 4px; }
+  &:nth-child(3n)   { border-radius: 2px; transform: rotate(45deg); }
+}
+
+@keyframes particleFloat {
+  0%   { transform: translateY(110vh) scale(0.5); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.r-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid var(--qprimary);
+  animation: pulse 1.8s ease-out infinite;
+  opacity: 0;
+  &--delay { animation-delay: 0.7s; }
+}
+
+.loader-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+  animation: dotBeat 1s ease-in-out infinite;
+}
+
+@keyframes pulse  { 0% { transform: scale(.4); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes dotBeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+.r-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  animation: wrapIn .5s ease both;
+}
+
+@keyframes wrapIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.r-header { text-align: center; }
+
+.r-trophy {
+  font-size: 3.5rem;
+  display: block;
+  animation: trophyDrop .8s cubic-bezier(.34,1.56,.64,1) both .15s;
+}
+
+@keyframes trophyDrop {
+  from { transform: scale(0) translateY(-40px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);     opacity: 1; }
+}
+
+.r-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin: 4px 0 2px;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+
+.r-quiz-name {
+  font-size: .95rem;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+
+.r-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pill, .btn-export {
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: .82rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover { background: rgba(255,255,255,0.06); }
+}
+
+// ── Pódio scene ───────────────────────────────────────────────────────────────
+.podium-scene {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+}
+
+.podium-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 200px;
+  animation: colIn .5s ease both;
+
+  &--1st { animation-delay: .1s; max-width: 240px; }
+  &--2nd { animation-delay: .2s; }
+  &--3rd { animation-delay: .3s; }
+}
+
+@keyframes colIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Coroa flutuante acima do 1º
+.crown-wrap {
+  margin-bottom: 4px;
+  animation: crownFloat 2.4s ease-in-out infinite;
+}
+
+.crown { font-size: 1.8rem; display: block; }
+
+@keyframes crownFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+// Cards do pódio
+.p-card {
+  width: 100%;
+  padding: 20px 16px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-radius: 20px 20px 0 0;
+
+  &--1st {
+    padding: 24px 20px 20px;
+    // Borda sutil na cor primária para o 1º
+    border-bottom: none;
+  }
+}
+
+.p-medal {
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+  animation: medalPop .6s cubic-bezier(.34,1.56,.64,1) both .4s;
+
+  &--1st { font-size: 3rem; }
+}
+
+@keyframes medalPop {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0);      opacity: 1; }
+}
+
+.p-name {
+  font-size: .85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: break-word;
+  margin: 0;
+
+  &--1st { font-size: 1.05rem; font-weight: 700; }
+}
+
+.p-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+
+  &--1st {
+    font-size: 2.2rem;
+    font-weight: 900;
+    animation: scoreCount .8s ease both .6s;
+  }
+}
+
+@keyframes scoreCount {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+.p-hits {
+  font-size: .72rem;
+  margin: 0;
+}
+
+// Bases do pódio (altura diferente por posição)
+.p-stand {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 16px 16px;
+
+  &--1st {
+    height: 72px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  &--2nd {
+    height: 52px;
+    background: rgba(148, 163, 184, 0.22);
+    border-top: 2px solid;
+  }
+
+  &--3rd {
+    height: 38px;
+    background: rgba(180, 120, 60, 0.22);
+    border-top: 2px solid;
+  }
+}
+
+.p-pos {
+  font-size: 1rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+
+  &--1st { font-size: 1.3rem; color: #fff; }
+}
+
+// ── Lista 4º+ ─────────────────────────────────────────────────────────────────
+.rank-list {
+  width: 100%;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  animation: rowSlide .4s ease both;
+  transition: background .15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover      { background: rgba(255,255,255,0.03); }
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) { animation-delay: #{$i * 0.06}s; }
+  }
+}
+
+@keyframes rowSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.rank-badge {
+  font-size: .95rem;
+  font-weight: 800;
+  width: 30px;
+  text-align: center;
+}
+
+.rank-name {
+  flex: 1;
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+.rank-hits {
+  font-size: .78rem;
+  white-space: nowrap;
+}
+
+.rank-score {
+  font-size: .9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// ── Vazio ─────────────────────────────────────────────────────────────────────
+.empty-wrap {
+  width: 100%;
+  max-width: 400px;
+  padding: 48px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  .empty-icon { font-size: 3.5rem; }
+  p { margin: 0; font-size: .95rem; }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.auto-refresh {
+  font-size: .72rem;
+  margin: 0;
+  letter-spacing: .3px;
+}
+
+.btn-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 42px;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: .3px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  transition: transform .15s, box-shadow .15s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.45);
+  }
+
+  &:active { transform: translateY(-1px); }
+}
