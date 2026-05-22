@@ -209,3 +209,28 @@
     </div>
   </div>
 }
+
+<!-- ── Quiz Prompt — aparece após qualquer ação concluída quando o template tem quiz ── -->
+@if (showQuizPrompt() && template()?.hasQuiz) {
+  <div class="quiz-prompt-overlay" (click)="showQuizPrompt.set(false)">
+    <div class="quiz-prompt-card" (click)="$event.stopPropagation()">
+      <div class="quiz-prompt-icon">🎯</div>
+      <h2 class="quiz-prompt-title">Participe do Quiz!</h2>
+      <p class="quiz-prompt-desc">
+        Responda as perguntas, acumule pontos e concorra ao sorteio.<br>
+        Quanto mais rápido você responder, mais pontos você ganha!
+      </p>
+      <div class="quiz-prompt-actions">
+        <a [href]="template()!.quizLink!" target="_blank" class="quiz-prompt-btn quiz-prompt-btn--play">
+          🎮 Responder Quiz
+        </a>
+        <a [href]="template()!.rankingLink!" target="_blank" class="quiz-prompt-btn quiz-prompt-btn--rank">
+          🏆 Ver Ranking
+        </a>
+      </div>
+      <button type="button" class="quiz-prompt-skip" (click)="showQuizPrompt.set(false)">
+        Agora não
+      </button>
+    </div>
+  </div>
+}

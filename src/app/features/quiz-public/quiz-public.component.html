@@ -1,0 +1,211 @@
+<!-- Background aplicado via signal — funciona com cor, gradiente ou imagem -->
+<div class="quiz-page" [style.background]="quizBg()">
+
+  <!-- ── LOADING ──────────────────────────────────────────────────────────── -->
+  @if (step() === 'loading') {
+    <div class="q-center">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring pulse-ring--delay"></div>
+      <div class="loader-dot"></div>
+    </div>
+  }
+
+  <!-- ── ERRO ─────────────────────────────────────────────────────────────── -->
+  @if (step() === 'error') {
+    <div class="q-center">
+      <div class="glass-card glass-card--error">
+        <span class="error-glyph">⚠️</span>
+        <h2 class="card-title">Ops!</h2>
+        <p class="card-sub">{{ errorMsg() }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- ── CADASTRO ──────────────────────────────────────────────────────────── -->
+  @if (step() === 'register') {
+    <div class="q-center">
+      <div class="glass-card glass-card--register" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+
+        <!-- Badge do quiz -->
+        <div class="quiz-badge">QUIZ</div>
+
+        <h1 class="quiz-hero-title" [style.color]="quizText()">{{ quiz()?.name }}</h1>
+        <p class="quiz-hero-sub">
+          <span class="pill">{{ quiz()?.totalQuestions }} perguntas</span>
+          <span class="pill">{{ quiz()?.timePerQuestion }}s cada</span>
+        </p>
+
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="reg-form">
+          <div class="reg-field">
+            <label class="reg-label">Nome completo</label>
+            <input class="reg-input" formControlName="playerName" type="text"
+                   placeholder="Seu nome" autocomplete="name"/>
+          </div>
+          <div class="reg-field">
+            <label class="reg-label">E-mail ou telefone</label>
+            <input class="reg-input" formControlName="playerContact" type="text"
+                   placeholder="contato@email.com"/>
+          </div>
+          @if (errorMsg()) {
+            <p class="reg-error">{{ errorMsg() }}</p>
+          }
+          <button type="submit" class="btn-hero" [disabled]="registerForm.invalid"
+                  [style.background]="quizPrimary()">
+            Começar Quiz 🚀
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ── COUNTDOWN ──────────────────────────────────────────────────────────── -->
+  @if (step() === 'countdown') {
+    <div class="q-center">
+      <div class="countdown-scene">
+        <div class="cd-ring" [style.border-color]="quizPrimary() + '40'">
+          <div class="cd-num" [style.color]="quizPrimary()">{{ countdownValue() }}</div>
+        </div>
+        <p class="cd-label">Prepare-se!</p>
+      </div>
+    </div>
+  }
+
+  <!-- ── PERGUNTA / FEEDBACK ──────────────────────────────────────────────── -->
+  @if (step() === 'question' || step() === 'feedback') {
+    <div class="game-wrap" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+
+      <!-- Topbar: progresso e score -->
+      <div class="game-topbar">
+        <div class="progress-area">
+          <span class="q-counter" [style.color]="quizText() + 'aa'">
+            {{ currentQuestionIndex() + 1 }}&nbsp;/&nbsp;{{ quiz()?.totalQuestions }}
+          </span>
+          <div class="prog-track">
+            <div class="prog-fill" [style.width.%]="progressPercent()"
+                 [style.background]="quizPrimary()"></div>
+          </div>
+        </div>
+        <div class="score-badge" [style.color]="quizPrimary()">
+          🏆&nbsp;{{ session()?.totalScore ?? 0 }}
+        </div>
+      </div>
+
+      <!-- Card da pergunta com timer circular integrado -->
+      <div class="q-glass">
+
+        <!-- Timer circular SVG -->
+        <div class="ring-timer">
+          <svg class="ring-svg" viewBox="0 0 80 80">
+            <circle class="ring-track" cx="40" cy="40" r="34"/>
+            <circle class="ring-arc" cx="40" cy="40" r="34"
+              [style.stroke]="timerRingColor()"
+              [style.stroke-dashoffset]="timerDashOffset()"/>
+          </svg>
+          <span class="ring-digits" [style.color]="timerRingColor()">{{ timeLeft() }}</span>
+        </div>
+
+        @if (currentQuestion()?.imageUrl) {
+          <img class="q-img" [src]="currentQuestion()!.imageUrl" alt="Imagem"/>
+        }
+
+        <p class="q-text" [style.color]="quizText()">{{ currentQuestion()?.question }}</p>
+      </div>
+
+      <!-- Opções com letter badge -->
+      <div class="opts-grid">
+        @for (opt of currentQuestion()?.options ?? []; track opt.id; let i = $index) {
+          <button class="opt-btn"
+            [class.opt-btn--selected]="step() === 'question' && selectedOptionId() === opt.id"
+            [class.opt-btn--correct]="step() === 'feedback' && isCorrectOption(opt.id)"
+            [class.opt-btn--wrong]="step() === 'feedback' && isWrongOption(opt.id)"
+            [class.opt-btn--dimmed]="step() === 'feedback' && isDimmedOption(opt.id)"
+            [disabled]="step() === 'feedback'"
+            [style.--qprimary]="quizPrimary()"
+            (click)="selectOption(opt.id)">
+            <span class="opt-letter" [style.background]="quizPrimary() + '28'">
+              {{ 'ABCD'[i] }}
+            </span>
+            <span class="opt-text" [style.color]="quizText()">{{ opt.optionText }}</span>
+            @if (step() === 'feedback' && isCorrectOption(opt.id)) {
+              <span class="opt-mark opt-mark--ok">✓</span>
+            }
+            @if (step() === 'feedback' && isWrongOption(opt.id)) {
+              <span class="opt-mark opt-mark--err">✗</span>
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Feedback banner -->
+      @if (step() === 'feedback' && lastAnswer()) {
+        <div class="fb-banner" [class.fb-banner--ok]="lastAnswer()!.correct"
+             [class.fb-banner--err]="!lastAnswer()!.correct">
+          <span class="fb-text">
+            {{ lastAnswer()!.correct ? '🎉 Correto!' : (selectedOptionId() === null ? '⏱ Tempo esgotado!' : '❌ Errou!') }}
+          </span>
+          @if (lastAnswer()!.correct) {
+            <span class="fb-pts">+{{ lastAnswer()!.pointsEarned }} pts</span>
+          }
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- ── RESULTADO ──────────────────────────────────────────────────────────── -->
+  @if (step() === 'result') {
+    <div class="result-scene" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+
+      <!-- Estrelas de fundo decorativas -->
+      <div class="stars" aria-hidden="true">
+        @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12]; track $index) {
+          <div class="star" [style.--i]="$index"></div>
+        }
+      </div>
+
+      <div class="result-card glass-card">
+        <!-- Medalha -->
+        <div class="r-medal">{{ rankEmoji() }}</div>
+
+        <h1 class="r-congrats" [style.color]="quizText()">Parabéns!</h1>
+        <p class="r-name" [style.color]="quizText() + '99'">{{ session()?.playerName }}</p>
+
+        <!-- Score em destaque -->
+        <div class="r-score-wrap">
+          <p class="r-score-label">Sua pontuação foi</p>
+          <div class="r-score-box" [style.border-color]="quizPrimary() + '55'">
+            <span class="r-score-num" [style.color]="quizPrimary()">
+              {{ session()?.totalScore | number }}
+            </span>
+            <span class="r-score-unit">pts</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="r-stats">
+          <div class="r-stat">
+            <span class="r-stat-val" [style.color]="quizPrimary()">
+              {{ session()?.correctAnswers }}/{{ session()?.totalQuestions }}
+            </span>
+            <span class="r-stat-lbl">Acertos</span>
+          </div>
+          @if (session()?.rankPosition) {
+            <div class="r-stat r-stat--rank" [class]="rankClass()">
+              <span class="r-stat-val">
+                #{{ session()!.rankPosition }}
+              </span>
+              <span class="r-stat-lbl">Posição</span>
+            </div>
+          }
+        </div>
+
+        <button class="btn-ranking" (click)="goToRanking()"
+                [style.background]="quizPrimary()">
+          Ver Ranking Completo 📊
+        </button>
+      </div>
+
+    </div>
+  }
+
+</div>

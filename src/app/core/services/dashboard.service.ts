@@ -19,6 +19,10 @@ export interface TemplateStatResponse {
   /** Classificação do template: formulário simples, agendamento ou lista de presença. */
   type?: 'formulario' | 'agendamento' | 'lista-presenca';
   appointmentCancelled?: number;
+  // Quiz integrado — presentes quando o template tem quiz ativo
+  hasQuiz?: boolean;
+  quizLink?: string | null;
+  rankingLink?: string | null;
 }
 
 /**

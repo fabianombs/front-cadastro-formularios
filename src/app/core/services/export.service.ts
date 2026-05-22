@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { FormSubmission, AppointmentResponse, AttendanceRecord, AttendanceCompanion } from './form-template.service';
 import { DashboardSummary } from './dashboard.service';
+import { RankingResponse } from './quiz.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExportService {
@@ -195,6 +196,39 @@ export class ExportService {
     }
 
     XLSX.writeFile(wb, `dashboard_${this.formatFileDate()}.xlsx`);
+  }
+
+  // ─────────────────────────────────────────────
+  // RANKING DO QUIZ
+  // ─────────────────────────────────────────────
+  exportRanking(ranking: RankingResponse, quizName: string): void {
+    if (!ranking.top.length) return;
+
+    const rows = ranking.top.map((s, i) => ({
+      'Posição':       s.rankPosition ?? i + 1,
+      'Nome':          s.playerName,
+      'Contato':       s.playerContact ?? '',
+      'Acertos':       `${s.correctAnswers}/${s.totalQuestions}`,
+      'Pontuação':     s.totalScore,
+      'Concluído em':  s.completedAt ? this.formatDateTime(s.completedAt) : '',
+    }));
+
+    const wb = XLSX.utils.book_new();
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    this.autoWidth(ws, rows as any);
+    XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
+
+    // Aba de resumo
+    const resumo = [
+      { 'Quiz': quizName || ranking.templateName },
+      { 'Quiz': `Total de participantes: ${ranking.totalParticipants}` },
+      { 'Quiz': `Exportado em: ${new Date().toLocaleString('pt-BR')}` },
+    ];
+    const wsResumo = XLSX.utils.json_to_sheet(resumo);
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    XLSX.writeFile(wb, `ranking_${this.slug(quizName || ranking.templateName)}_${this.formatFileDate()}.xlsx`);
   }
 
   private formatFileDate(): string {

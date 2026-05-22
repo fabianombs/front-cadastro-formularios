@@ -51,16 +51,27 @@
         margin-bottom: 20px;
       "
     >
-      <div
-        style="
-          display: flex;
-          gap: 2px;
-          border-radius: 10px;
-          padding: 4px;
-          flex-wrap: wrap;
-        "
-      >
-
+      <div class="tl-tab-nav">
+        @if (template()?.hasSchedule) {
+          <button class="tl-tab" [class.tl-tab--active]="activeTab() === 'appointments'" (click)="changeTab('appointments')">
+            📅 Agendamentos
+          </button>
+        }
+        @if (!template()?.hasSchedule) {
+          <button class="tl-tab" [class.tl-tab--active]="activeTab() === 'submissions'" (click)="changeTab('submissions')">
+            📋 Respostas
+          </button>
+        }
+        @if (template()?.hasAttendance) {
+          <button class="tl-tab" [class.tl-tab--active]="activeTab() === 'attendance'" (click)="changeTab('attendance')">
+            ✅ Presença
+          </button>
+        }
+        @if (template()?.hasQuiz) {
+          <button class="tl-tab tl-tab--quiz" [class.tl-tab--active]="activeTab() === 'quiz'" (click)="changeTab('quiz')">
+            🎯 Quiz
+          </button>
+        }
       </div>
 
       <!-- Select de itens por página -->
@@ -537,26 +548,26 @@
                               (click)="$event.stopPropagation()"
                               (change)="saveRowField(r, col.key, $any($event.target).value)"
                             >
-                              <option value="" [selected]="!r.rowData?.[col.key]">—</option>
+                              <option value="" [selected]="!r.rowData[col.key]">—</option>
                               @for (opt of field?.options ?? []; track opt) {
-                                <option [value]="opt" [selected]="r.rowData?.[col.key] === opt">{{ opt }}</option>
+                                <option [value]="opt" [selected]="r.rowData[col.key] === opt">{{ opt }}</option>
                               }
                             </select>
                           } @else {
                             <input type="text" class="notes-input"
-                              [value]="r.rowData?.[col.key] ?? ''"
+                              [value]="r.rowData[col.key]"
                               (click)="$event.stopPropagation()"
                               (blur)="saveRowField(r, col.key, $any($event.target).value)"
                               placeholder="—" />
                           }
                         } @else {
-                          @if (!r.rowData?.[col.key]) {
+                          @if (!r.rowData[col.key]) {
                             <input type="text" class="notes-input" [value]="''"
                               (click)="$event.stopPropagation()"
                               (blur)="saveRowField(r, col.key, $any($event.target).value)"
                               placeholder="—" />
                           } @else {
-                            {{ r.rowData?.[col.key] }}
+                            {{ r.rowData[col.key] }}
                           }
                         }
                       </td>
@@ -618,7 +629,7 @@
                         <div class="companion-panel">
 
                           <!-- Lista de acompanhantes existentes -->
-                          @if (r.companions?.length) {
+                          @if (r.companions.length) {
                             <div class="companion-list">
                               @for (c of r.companions; track c.id) {
                                 <div class="companion-item" [class.companion-item--present]="c.attended">
@@ -714,6 +725,91 @@
         </div>
 
         <app-pagination [pagination]="attPagination()" (pageChange)="goToAttPage($event)" />
+      }
+    }
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABA: QUIZ                                                -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'quiz') {
+      <!-- Links públicos -->
+      <div class="quiz-report-links">
+        <a [href]="template()!.quizLink!" target="_blank" class="quiz-report-link-btn quiz-report-link-btn--play">
+          🎮 Abrir Quiz
+        </a>
+        <a [href]="template()!.rankingLink!" target="_blank" class="quiz-report-link-btn quiz-report-link-btn--rank">
+          🏆 Ranking Público
+        </a>
+        <button class="quiz-report-reset-btn" (click)="resetQuizRanking()" [disabled]="resettingQuiz()">
+          @if (resettingQuiz()) { <span class="spinner" style="width:12px;height:12px;border-width:2px"></span> }
+          @else { 🗑 Resetar ranking }
+        </button>
+      </div>
+
+      <!-- Loading -->
+      @if (quizLoading()) {
+        <div class="loading-center"><div class="spinner"></div></div>
+      }
+
+      <!-- Sem dados -->
+      @if (!quizLoading() && (!quizReport() || !quizReport()!.top.length)) {
+        <div class="empty-state">
+          <div class="empty-icon">🎯</div>
+          <p>Nenhum jogador ainda</p>
+          <small>Compartilhe o link do quiz para começar a receber participações.</small>
+        </div>
+      }
+
+      <!-- Tabela de resultados -->
+      @if (!quizLoading() && quizReport()?.top?.length) {
+        <div class="quiz-report-stats">
+          <div class="mini-stat-card">
+            <span class="mini-stat-value">{{ quizReport()!.top.length }}</span>
+            <span class="mini-stat-label">Jogadores</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="mini-stat-value">{{ quizReport()!.top[0]?.totalScore ?? 0 }}</span>
+            <span class="mini-stat-label">Maior pontuação</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="mini-stat-value">
+              {{ (quizReport()!.top[0]?.totalQuestions ?? 0) }}
+            </span>
+            <span class="mini-stat-label">Questões no quiz</span>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table quiz-report-table">
+            <thead>
+              <tr>
+                <th style="width:50px">#</th>
+                <th>Jogador</th>
+                <th style="width:120px;text-align:center">Pontuação</th>
+                <th style="width:110px;text-align:center">Acertos</th>
+                <th style="width:160px">Concluído em</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of quizReport()!.top; track s.id; let i = $index) {
+                <tr [class.quiz-top1]="i === 0" [class.quiz-top3]="i > 0 && i < 3">
+                  <td style="text-align:center;font-size:18px">{{ quizMedal(i + 1) }}</td>
+                  <td>
+                    <strong>{{ s.playerName }}</strong>
+                    @if (s.playerContact) {
+                      <span class="td-sub">{{ s.playerContact }}</span>
+                    }
+                  </td>
+                  <td style="text-align:center">
+                    <span class="quiz-score-badge">{{ s.totalScore }}</span>
+                  </td>
+                  <td style="text-align:center">{{ s.correctAnswers }}/{{ s.totalQuestions }}</td>
+                  <td class="td-mono">{{ s.completedAt | date:'dd/MM HH:mm' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     }
 
