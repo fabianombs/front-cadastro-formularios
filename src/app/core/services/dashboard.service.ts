@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { normalizeQuizLink } from './quiz.service';
 
 /** Estatísticas de um template individual exibidas no dashboard. */
 export interface TemplateStatResponse {
@@ -80,6 +82,16 @@ export class DashboardService {
    */
   getSummary(page = 0, size = 10): Observable<DashboardSummary> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<DashboardSummary>(this.base, { params });
+    return this.http.get<DashboardSummary>(this.base, { params }).pipe(
+      // Normaliza links de quiz para usar o domínio atual (corrige localhost hardcoded do backend)
+      map(summary => ({
+        ...summary,
+        templates: summary.templates.map(t => ({
+          ...t,
+          quizLink: normalizeQuizLink(t.quizLink),
+          rankingLink: normalizeQuizLink(t.rankingLink),
+        })),
+      }))
+    );
   }
 }

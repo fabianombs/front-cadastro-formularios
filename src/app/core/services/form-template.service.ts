@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
 import { environment } from '../../../environments/environment';
+import { normalizeQuizLink } from './quiz.service';
 
 export interface TemplateAppearance {
   backgroundColor?: string;
@@ -241,7 +242,14 @@ export class FormTemplateService {
   }
 
   getTemplateBySlug(slug: string): Observable<FormTemplate> {
-    return this.http.get<FormTemplate>(`${this.apiUrl}/slug/${slug}`);
+    return this.http.get<FormTemplate>(`${this.apiUrl}/slug/${slug}`).pipe(
+      // Normaliza links de quiz para usar o domínio atual (corrige localhost hardcoded do backend)
+      map(t => ({
+        ...t,
+        quizLink: normalizeQuizLink(t.quizLink),
+        rankingLink: normalizeQuizLink(t.rankingLink),
+      }))
+    );
   }
 
   // ================= SUBMISSIONS =================
