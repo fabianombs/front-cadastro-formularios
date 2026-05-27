@@ -21,6 +21,37 @@
     </div>
   }
 
+  <!-- ── PRONTO? (vindo de formulário — nome já conhecido) ─────────────────── -->
+  @if (step() === 'ready') {
+    <div class="q-center">
+      <div class="glass-card glass-card--register" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+
+        <div class="quiz-badge">QUIZ</div>
+
+        <h1 class="quiz-hero-title" [style.color]="quizText()">{{ quiz()?.name }}</h1>
+        <p class="quiz-hero-sub">
+          <span class="pill">{{ quiz()?.totalQuestions }} perguntas</span>
+          <span class="pill">{{ quiz()?.timePerQuestion }}s cada</span>
+        </p>
+
+        <!-- Saudação personalizada com o nome já preenchido no formulário -->
+        <div class="ready-greeting" [style.color]="quizText()">
+          <span class="ready-avatar">👋</span>
+          <p class="ready-name">Olá, <strong>{{ prefilledName() }}</strong>!</p>
+          <p class="ready-hint">Você está pronto para o quiz?</p>
+        </div>
+
+        @if (errorMsg()) {
+          <p class="reg-error">{{ errorMsg() }}</p>
+        }
+
+        <button class="btn-hero" (click)="confirmReady()" [style.background]="quizPrimary()">
+          Tudo pronto! Vamos lá 🚀
+        </button>
+      </div>
+    </div>
+  }
+
   <!-- ── CADASTRO ──────────────────────────────────────────────────────────── -->
   @if (step() === 'register') {
     <div class="q-center">

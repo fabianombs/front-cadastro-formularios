@@ -5,7 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { QuizService, QuizConfig, QuizSession, QuizQuestion, AnswerResult } from '../../core/services/quiz.service';
 import { FormTemplateService } from '../../core/services/form-template.service';
 
-type QuizStep = 'loading' | 'register' | 'countdown' | 'question' | 'feedback' | 'result' | 'error';
+// 'ready' = tela de confirmação quando o participante veio de um form (nome já conhecido)
+type QuizStep = 'loading' | 'ready' | 'register' | 'countdown' | 'question' | 'feedback' | 'result' | 'error';
 
 @Component({
   selector: 'app-quiz-public',
@@ -49,17 +50,32 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     playerContact: ['', [Validators.required]],
   });
 
+  // Dados pré-preenchidos quando o participante veio de um formulário
+  prefilledName    = signal('');
+  prefilledContact = signal('');
+
   private timerInterval: any = null;
   private questionStartTime = 0;
   slug = '';
 
   ngOnInit() {
     this.slug = this.route.snapshot.paramMap.get('slug') ?? '';
+
+    // Captura dados passados pelo formulário via query params
+    const qp      = this.route.snapshot.queryParamMap;
+    const name    = qp.get('playerName')    ?? '';
+    const contact = qp.get('playerContact') ?? '';
+
+    if (name) this.prefilledName.set(name);
+    if (contact) this.prefilledContact.set(contact);
+
     this.quizService.getQuizBySlug(this.slug).subscribe({
       next: (quiz) => {
         this.quiz.set(quiz);
         this.applyAppearance(quiz);
-        this.step.set('register');
+        // Se veio com dados pré-preenchidos, vai para a tela de confirmação
+        // em vez de pedir nome e telefone novamente
+        this.step.set(name ? 'ready' : 'register');
       },
       error: () => {
         this.errorMsg.set('Quiz não encontrado ou inativo.');
@@ -72,7 +88,21 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     this.clearTimer();
   }
 
-  // ── Cadastro ──────────────────────────────────────────────────────────────
+  // ── Confirmação (vindo de formulário) ────────────────────────────────────
+  confirmReady() {
+    this.quizService.startSession(this.slug, this.prefilledName(), this.prefilledContact()).subscribe({
+      next: (session) => {
+        this.session.set(session);
+        this.startCountdown();
+      },
+      error: () => {
+        this.errorMsg.set('Erro ao iniciar quiz. Tente novamente.');
+        this.step.set('error');
+      },
+    });
+  }
+
+  // ── Cadastro (quiz standalone, sem formulário) ────────────────────────────
   submitRegister() {
     if (this.registerForm.invalid) return;
     const { playerName, playerContact } = this.registerForm.value;

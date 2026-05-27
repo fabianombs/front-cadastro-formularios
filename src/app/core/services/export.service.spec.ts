@@ -156,12 +156,14 @@ describe('ExportService', () => {
         rowData: { nome: 'João', cpf: '111' },
         attended: true, attendedAt: '2024-06-15T10:00:00',
         notes: 'Presente', rowOrder: 1, createdAt: '2024-06-01',
+        companionsCount: 0, companions: [],
       },
       {
         id: 2, templateId: 1,
         rowData: { nome: 'Maria', cpf: '222' },
         attended: false, attendedAt: null,
         notes: null, rowOrder: 2, createdAt: '2024-06-01',
+        companionsCount: 0, companions: [],
       },
     ];
 

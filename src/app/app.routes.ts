@@ -28,6 +28,15 @@ export const routes: Routes = [
       ),
   },
 
+  // 🎫 CHECKIN PÚBLICO — cadastro de convidados sem login
+  {
+    path: 'forms/:slug/checkin',
+    loadComponent: () =>
+      import('./features/attendance-checkin/attendance-checkin.component').then(
+        (m) => m.AttendanceCheckinComponent,
+      ),
+  },
+
   // 🎮 QUIZ PÚBLICO
   {
     path: 'quiz/:slug',
