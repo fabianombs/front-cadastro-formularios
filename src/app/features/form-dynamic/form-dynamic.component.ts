@@ -35,6 +35,9 @@ export class FormDynamicComponent implements OnInit {
   public submitted = signal<boolean>(false);
   // Exibido após qualquer ação concluída quando o template tem quiz ativo
   public showQuizPrompt = signal<boolean>(false);
+  // Dados do participante capturados após submit — repassados ao quiz via query params
+  public submittedPlayerName    = signal<string>('');
+  public submittedPlayerContact = signal<string>('');
   public form: FormGroup;
   public formFields = signal<FormGroup[]>([]);
   public isEstrangeiro = signal<boolean>(false);
@@ -46,6 +49,21 @@ export class FormDynamicComponent implements OnInit {
       ['cpf', 'phone'].includes(fg.get('originalType')?.value ?? '')
     )
   );
+
+  // Monta o link do quiz com nome e contato do participante para pular a tela de registro
+  public quizLinkWithPlayer = computed(() => {
+    const base = this.template()?.quizLink;
+    if (!base) return null;
+    const name    = this.submittedPlayerName();
+    const contact = this.submittedPlayerContact();
+    if (!name && !contact) return base;
+    const params = new URLSearchParams();
+    if (name)    params.set('playerName', name);
+    if (contact) params.set('playerContact', contact);
+    // Preserva possíveis query params já existentes no link
+    const separator = base.includes('?') ? '&' : '?';
+    return `${base}${separator}${params.toString()}`;
+  });
 
   // Estado de agendamento
   public selectedDate = signal<string>('');
@@ -397,6 +415,9 @@ export class FormDynamicComponent implements OnInit {
     this.service.submitForm({ templateId: template.id, values }).subscribe({
       next: () => {
         this.messages.success('Formulário enviado com sucesso!');
+        // Captura nome e contato para repassar ao quiz sem precisar digitar de novo
+        this.submittedPlayerName.set(this.resolveNameField(values));
+        this.submittedPlayerContact.set(this.resolveContactField(values));
         this.form.reset();
         this.submitted.set(true);
         // Exibe o prompt do quiz se o template tiver quiz ativo
@@ -443,6 +464,9 @@ export class FormDynamicComponent implements OnInit {
       next: () => {
         this.bookingError.set('');
         this.messages.success('Agendamento realizado com sucesso!');
+        // Captura nome e contato para repassar ao quiz sem precisar digitar de novo
+        this.submittedPlayerName.set(bookedByName);
+        this.submittedPlayerContact.set(bookedByContact);
         this.submitted.set(true);
         this.form.reset();
         this.selectedSlot.set('');

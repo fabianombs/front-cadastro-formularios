@@ -886,6 +886,18 @@ export class TemplateListComponent implements OnInit {
     const fieldLabels = (t.fields ?? []).map((f) => f.label);
     this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels);
   }
+
+  // Copia o link público de checkin para a área de transferência
+  copyCheckinLink(): void {
+    const slug = this.template()?.slug;
+    if (!slug) return;
+    const url = `${window.location.origin}/forms/${slug}/checkin`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.messages.success('Link copiado! Compartilhe com o cliente.');
+    }).catch(() => {
+      this.messages.error('Não foi possível copiar o link.');
+    });
+  }
   doDelete(id: number) {
     this.confirmAction.set('delete');
     this.confirmTargetId.set(id);

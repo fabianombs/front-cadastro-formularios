@@ -1,0 +1,203 @@
+// ── Página ─────────────────────────────────────────────────────────────────
+.checkin-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #0a1020 0%, #0d1a3a 60%, #0a1020 100%);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+.checkin-center {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+}
+
+// ── Glassmorphism card ──────────────────────────────────────────────────────
+.glass-card {
+  background: rgba(8, 12, 26, 0.72);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.checkin-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.checkin-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.checkin-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 8px;
+}
+
+.muted {
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 14px;
+  margin: 0;
+}
+
+.text-center {
+  text-align: center;
+
+  h2 {
+    color: #e2e8f0;
+    margin: 12px 0 8px;
+  }
+}
+
+// ── Campos do formulário ────────────────────────────────────────────────────
+.checkin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.required {
+  color: #f87171;
+  margin-left: 3px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder { color: rgba(148, 163, 184, 0.5); }
+
+  &:focus {
+    border-color: rgba(77, 143, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(77, 143, 255, 0.12);
+  }
+
+  option {
+    background: #0d1a3a;
+    color: #e2e8f0;
+  }
+}
+
+textarea.field-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+// ── Botão de envio ──────────────────────────────────────────────────────────
+.btn-submit {
+  margin-top: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #4d8fff);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 20px;
+  }
+}
+
+// ── Feedback ────────────────────────────────────────────────────────────────
+.icon-big {
+  font-size: 56px;
+  margin-bottom: 4px;
+}
+
+.success-icon { filter: drop-shadow(0 0 16px rgba(74, 222, 128, 0.4)); }
+
+.error-msg {
+  color: #f87171;
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+}
+
+// ── Spinner ─────────────────────────────────────────────────────────────────
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #4d8fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.spinner-sm {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -711,3 +711,37 @@
     box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   }
 }
+
+// ── Tela de confirmação "Pronto?" (fluxo form → quiz) ─────────────────────────
+.ready-greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 24px 0 28px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.ready-avatar {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.ready-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--qtext, #e2e8f0);
+
+  strong { color: var(--qprimary, #5b8dee); }
+}
+
+.ready-hint {
+  font-size: 14px;
+  color: rgba(148, 163, 184, 0.85);
+  margin: 4px 0 0;
+}
