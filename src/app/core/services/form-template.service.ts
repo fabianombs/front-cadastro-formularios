@@ -377,4 +377,12 @@ export class FormTemplateService {
       { attended }
     );
   }
+
+  // Cadastro público de convidado via link compartilhado (sem autenticação)
+  addPublicGuest(slug: string, rowData: Record<string, string>): Observable<AttendanceRecord> {
+    return this.http.post<AttendanceRecord>(
+      `${this.attendanceUrl}/template/slug/${slug}/guest`,
+      rowData
+    );
+  }
 }

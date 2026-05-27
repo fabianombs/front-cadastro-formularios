@@ -34,6 +34,8 @@ describe('FormTemplateService', () => {
     hasAttendance: false,
     scheduleConfig: null,
     appearance: null,
+    lgpdEnabled: false,
+    hasQuiz: false,
   };
 
   beforeEach(() => {
@@ -81,6 +83,7 @@ describe('FormTemplateService', () => {
       name: 'Novo Template',
       clientId: 1,
       fields: [{ label: 'Nome', type: 'text', required: true, colSpan: 2 }],
+      lgpdEnabled: false,
     };
 
     service.createTemplate(1, payload).subscribe((t) => expect(t.id).toBe(1));
@@ -94,6 +97,7 @@ describe('FormTemplateService', () => {
     const payload: UpdateFormTemplateRequest = {
       name: 'Template Editado',
       fields: [{ label: 'Nome', type: 'text', required: true, colSpan: 2 }],
+      lgpdEnabled: false,
     };
 
     service.updateTemplate(1, payload).subscribe();

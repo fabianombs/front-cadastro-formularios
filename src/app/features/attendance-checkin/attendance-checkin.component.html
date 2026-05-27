@@ -1,0 +1,102 @@
+<div class="checkin-page">
+  <div class="checkin-center">
+
+    <!-- Loading -->
+    @if (step() === 'loading') {
+      <div class="glass-card">
+        <div class="spinner"></div>
+        <p class="muted">Carregando...</p>
+      </div>
+    }
+
+    <!-- Erro -->
+    @if (step() === 'error') {
+      <div class="glass-card text-center">
+        <div class="icon-big">❌</div>
+        <h2>Link inválido</h2>
+        <p class="muted">{{ errorMsg() }}</p>
+      </div>
+    }
+
+    <!-- Formulário de cadastro -->
+    @if (step() === 'form') {
+      <div class="glass-card">
+        <div class="checkin-header">
+          <div class="checkin-icon">🎫</div>
+          <h1 class="checkin-title">{{ template()?.name }}</h1>
+          <p class="muted">Preencha seus dados para ser adicionado à lista</p>
+        </div>
+
+        <form (ngSubmit)="submit()" class="checkin-form">
+          @for (field of fields(); track field.label) {
+            <div class="field-group">
+              <label class="field-label">
+                {{ field.label }}
+                @if (field.required) { <span class="required">*</span> }
+              </label>
+
+              @if (field.type === 'select') {
+                <select
+                  class="field-input"
+                  [ngModel]="formValues()[field.label]"
+                  [name]="field.label"
+                  (ngModelChange)="setValue(field.label, $event)"
+                >
+                  <option value="">Selecione...</option>
+                  @for (opt of field.options; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+              } @else if (field.type === 'textarea') {
+                <textarea
+                  class="field-input"
+                  [ngModel]="formValues()[field.label]"
+                  [name]="field.label"
+                  (ngModelChange)="setValue(field.label, $event)"
+                  rows="3"
+                ></textarea>
+              } @else {
+                <input
+                  class="field-input"
+                  [type]="field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'"
+                  [ngModel]="formValues()[field.label]"
+                  [name]="field.label"
+                  (ngModelChange)="setValue(field.label, $event)"
+                />
+              }
+            </div>
+          }
+
+          @if (errorMsg() && step() === 'form') {
+            <p class="error-msg">{{ errorMsg() }}</p>
+          }
+
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="!isValid() || submitting()"
+          >
+            @if (submitting()) {
+              <span class="spinner-sm"></span> Cadastrando...
+            } @else {
+              ✅ Confirmar cadastro
+            }
+          </button>
+        </form>
+      </div>
+    }
+
+    <!-- Sucesso -->
+    @if (step() === 'success') {
+      <div class="glass-card text-center">
+        <div class="icon-big success-icon">✅</div>
+        <h2>Cadastro realizado!</h2>
+        <p class="muted">Você foi adicionado à lista de convidados.</p>
+        <button class="btn-submit btn-secondary" (click)="addAnother()">
+          + Cadastrar outro convidado
+        </button>
+      </div>
+    }
+
+  </div>
+</div>

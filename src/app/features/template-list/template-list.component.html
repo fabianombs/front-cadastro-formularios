@@ -490,6 +490,15 @@
           <button
             class="btn-outline"
             style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+            (click)="copyCheckinLink()"
+            title="Gera um link público para o cliente cadastrar convidados sem precisar de login"
+          >
+            🔗 Link de Cadastro
+          </button>
+
+          <button
+            class="btn-outline"
+            style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
             (click)="exportAttendanceXlsx()"
           >
             ⬇ Exportar Excel

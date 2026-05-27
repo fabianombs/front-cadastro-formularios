@@ -22,6 +22,8 @@ const mockTemplate: FormTemplate = {
   hasSchedule: false,
   hasAttendance: false,
   scheduleConfig: null,
+  lgpdEnabled: false,
+  hasQuiz: false,
 };
 
 const mockScheduledTemplate: FormTemplate = {
