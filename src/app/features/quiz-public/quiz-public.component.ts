@@ -225,6 +225,13 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   quizText      = computed(() => this.quiz()?.textColor    || '#e2e8f0');
   // Cor de fundo dos cards de opção; sem valor usa o padrão glassmorphism via CSS
   quizCardColor = computed(() => this.quiz()?.cardColor    || null);
+  // Cor de fundo dos cards de cadastro/ready — controle independente
+  quizRegisterCardColor = computed(() => this.quiz()?.registerCardColor || null);
+  // Cor dos inputs de cadastro — null mantém o padrão semitransparente do SCSS
+  quizInputColor = computed(() => this.quiz()?.inputColor || null);
+  // Cor do botão — fallback para primaryColor se não configurado
+  quizButtonColor     = computed(() => this.quiz()?.buttonColor     || this.quiz()?.primaryColor || '#5b8dee');
+  quizButtonTextColor = computed(() => this.quiz()?.buttonTextColor || '#fff');
 
   // Classe de rank para a tela de resultado
   rankClass = computed(() => {

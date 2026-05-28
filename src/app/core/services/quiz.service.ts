@@ -40,6 +40,19 @@ export interface QuizConfig {
   textColor?: string | null;
   // Cor de fundo dos cards de opção — null usa o padrão glassmorphism
   cardColor?: string | null;
+  // Cor de fundo dos cards de cadastro/ready — null usa o padrão glassmorphism
+  registerCardColor?: string | null;
+  // Cor de fundo dos inputs de cadastro — null usa o padrão semitransparente
+  inputColor?: string | null;
+  // Cor de fundo dos cards do ranking/pódio — null usa o padrão glassmorphism
+  rankingCardColor?: string | null;
+  // Cor do botão principal — null usa primaryColor como fallback
+  buttonColor?: string | null;
+  // Cor do texto dos botões — null usa #fff como fallback
+  buttonTextColor?: string | null;
+  // Texto editável da tela "Tudo pronto!" — null usa os valores padrão
+  readyTitle?: string | null;
+  readyMessage?: string | null;
 }
 
 export interface QuizSession {
@@ -93,6 +106,16 @@ export interface QuizConfigRequest {
   primaryColor?: string | null;
   textColor?: string | null;
   cardColor?: string | null;
+  registerCardColor?: string | null;
+  inputColor?: string | null;
+  rankingCardColor?: string | null;
+  // Cor do botão principal — null usa primaryColor como fallback
+  buttonColor?: string | null;
+  // Cor do texto dos botões — null usa #fff como fallback
+  buttonTextColor?: string | null;
+  // Texto editável da tela "Tudo pronto!" — null usa padrão do frontend
+  readyTitle?: string | null;
+  readyMessage?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -44,30 +44,40 @@
       @if (activeTab() === 'content') {
         <div class="content-panel">
 
-          <!-- Identificação -->
-          <section class="edit-section">
-            <h2 class="section-title">Identificação</h2>
-            <div class="form-row">
-              <div class="form-group form-group--flex">
-                <label>Nome do Quiz *</label>
-                <input type="text" formControlName="name" placeholder="Ex: Quiz de Conhecimentos" class="input" />
+          <!-- Linha superior: Identificação + Configurações lado a lado -->
+          <div class="content-top-row">
+
+            <!-- Identificação -->
+            <section class="edit-section content-top-row__item">
+              <h2 class="section-title">Identificação</h2>
+              <div class="form-row">
+                <div class="form-group form-group--flex">
+                  <label>Nome do Quiz *</label>
+                  <input type="text" formControlName="name" placeholder="Ex: Quiz de Conhecimentos" class="input" />
+                </div>
+                <div class="form-group form-group--sm">
+                  <label>Slug (URL)</label>
+                  <input type="text" formControlName="slug" placeholder="gerado automaticamente" class="input" />
+                </div>
               </div>
-              <div class="form-group form-group--sm">
-                <label>Slug (URL)</label>
-                <input type="text" formControlName="slug" placeholder="gerado automaticamente" class="input" />
+            </section>
+
+            <!-- Configurações de tempo e pontuação -->
+            <section class="edit-section content-top-row__item">
+              <h2 class="section-title">⏱ Configurações</h2>
+              <div class="form-row">
+                <div class="form-group form-group--flex">
+                  <label>Tempo por questão (s)</label>
+                  <input type="number" formControlName="timePerQuestion" min="5" max="300" class="input" />
+                </div>
+                <div class="form-group form-group--flex">
+                  <label>Pontos por questão</label>
+                  <input type="number" formControlName="pointsPerQuestion" min="100" step="100" class="input" />
+                </div>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group form-group--flex">
-                <label>Tempo por questão (s)</label>
-                <input type="number" formControlName="timePerQuestion" min="5" max="300" class="input" />
-              </div>
-              <div class="form-group form-group--flex">
-                <label>Pontos por questão</label>
-                <input type="number" formControlName="pointsPerQuestion" min="100" step="100" class="input" />
-              </div>
-            </div>
-          </section>
+            </section>
+
+          </div>
 
           <!-- Perguntas -->
           <section class="edit-section">
@@ -140,7 +150,225 @@
       @if (activeTab() === 'appearance') {
         <div class="appearance-layout">
 
-          <!-- Coluna esquerda: controles -->
+          <!-- Barra de preview: todos os 3 lado a lado, sticky no topo enquanto o usuário rola os controles -->
+          <div class="preview-bar">
+
+            <!-- Preview: tela de pergunta -->
+            <div class="preview-bar-item">
+              <p class="preview-section-label">🎯 Pergunta</p>
+              <div class="preview-phone">
+                <div class="preview-screen"
+                     [style.background]="previewBg()"
+                     [style.color]="previewText()">
+                  <div class="prev-quiz-card">
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s por pergunta
+                    </p>
+
+                    <div class="prev-timer">
+                      <div class="prev-timer__bar">
+                        <div class="prev-timer__fill" [style.background]="previewPrimary()"></div>
+                      </div>
+                      <span class="prev-timer__val" [style.color]="previewText()">30s</span>
+                    </div>
+
+                    <div class="prev-question" [style.color]="previewText()">
+                      {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
+                    </div>
+
+                    <div class="prev-options">
+                      @for (label of ['A', 'B', 'C', 'D']; track label) {
+                        <div class="prev-option"
+                             [style.background]="previewCardColor()"
+                             [style.border-color]="previewPrimary() + '55'"
+                             [style.color]="previewText()">
+                          {{ label }}
+                        </div>
+                      }
+                    </div>
+
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">
+                      Começar Quiz 🚀
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview: tela de cadastro -->
+            <div class="preview-bar-item">
+              <p class="preview-section-label">📋 Cadastro</p>
+              <div class="preview-phone">
+                <div class="preview-screen"
+                     [style.background]="previewBg()"
+                     [style.color]="previewText()">
+                  <div class="prev-register-card"
+                       [style.background]="previewRegisterCardColor()"
+                       [style.color]="previewText()">
+
+                    <div class="prev-reg-badge">QUIZ</div>
+
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
+                    </p>
+
+                    <div class="prev-reg-field">
+                      <div class="prev-reg-label" [style.color]="previewText() + '88'">NOME COMPLETO</div>
+                      <div class="prev-reg-input"
+                           [style.background]="previewInputColor()"
+                           [style.border-color]="previewPrimary() + '44'">
+                        <span [style.color]="previewText() + '55'">Seu nome</span>
+                      </div>
+                    </div>
+                    <div class="prev-reg-field">
+                      <div class="prev-reg-label" [style.color]="previewText() + '88'">E-MAIL OU TELEFONE</div>
+                      <div class="prev-reg-input"
+                           [style.background]="previewInputColor()"
+                           [style.border-color]="previewPrimary() + '44'">
+                        <span [style.color]="previewText() + '55'">contato&#64;email.com</span>
+                      </div>
+                    </div>
+
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">
+                      Começar Quiz 🚀
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview: tela "Tudo pronto!" — exibida quando o participante veio de um formulário -->
+            <div class="preview-bar-item">
+              <p class="preview-section-label">✋ Tudo Pronto</p>
+              <div class="preview-phone">
+                <div class="preview-screen"
+                     [style.background]="previewBg()"
+                     [style.color]="previewText()">
+                  <div class="prev-register-card"
+                       [style.background]="previewRegisterCardColor()"
+                       [style.color]="previewText()">
+
+                    <div class="prev-reg-badge">QUIZ</div>
+
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
+                    </p>
+
+                    <!-- Saudação — usa readyTitle se preenchido, senão mostra o padrão -->
+                    <div class="prev-ready-greeting">
+                      <span class="prev-ready-avatar">👋</span>
+                      @if (quizForm.get('readyTitle')?.value) {
+                        <div class="prev-ready-name" [style.color]="previewText()">
+                          {{ quizForm.get('readyTitle')?.value }}
+                        </div>
+                      } @else {
+                        <div class="prev-ready-name" [style.color]="previewText()">
+                          Olá, <strong>Nome!</strong>
+                        </div>
+                      }
+                      <div class="prev-ready-hint" [style.color]="previewText() + '88'">
+                        {{ quizForm.get('readyMessage')?.value || 'Você está pronto para o quiz?' }}
+                      </div>
+                    </div>
+
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">
+                      Tudo pronto! Vamos lá 🚀
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview: tela de ranking -->
+            <div class="preview-bar-item">
+              <p class="preview-section-label">🏆 Ranking</p>
+              <div class="preview-phone">
+                <div class="preview-screen"
+                     [style.background]="previewBg()"
+                     [style.color]="previewText()">
+                  <div class="prev-ranking">
+
+                    <!-- Header mockado -->
+                    <div class="prev-rank-header">
+                      <span>🏆</span>
+                      <div class="prev-title" [style.color]="previewText()">Ranking</div>
+                      <div class="prev-subtitle" [style.color]="previewText() + '99'">
+                        {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                      </div>
+                    </div>
+
+                    <!-- Pódio mockado -->
+                    <div class="prev-podium">
+                      <!-- 2º -->
+                      <div class="prev-podium-col prev-podium-col--2nd">
+                        <div class="prev-p-card"
+                             [style.background]="previewRankingCardColor()"
+                             [style.color]="previewText()">
+                          <span>🥈</span>
+                          <div class="prev-p-name" [style.color]="previewText()">—</div>
+                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--2nd"
+                             [style.border-top-color]="previewPrimary() + '44'">2º</div>
+                      </div>
+                      <!-- 1º -->
+                      <div class="prev-podium-col prev-podium-col--1st">
+                        <div class="prev-p-card prev-p-card--1st"
+                             [style.background]="previewRankingCardColor()"
+                             [style.color]="previewText()"
+                             [style.border-color]="previewPrimary() + '55'">
+                          <span>🥇</span>
+                          <div class="prev-p-name" [style.color]="previewText()">Campeão</div>
+                          <div class="prev-p-score prev-p-score--1st" [style.color]="previewPrimary()">1000</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--1st"
+                             [style.background]="previewPrimary()">1º</div>
+                      </div>
+                      <!-- 3º -->
+                      <div class="prev-podium-col prev-podium-col--3rd">
+                        <div class="prev-p-card"
+                             [style.background]="previewRankingCardColor()"
+                             [style.color]="previewText()">
+                          <span>🥉</span>
+                          <div class="prev-p-name" [style.color]="previewText()">—</div>
+                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--3rd"
+                             [style.border-top-color]="previewPrimary() + '44'">3º</div>
+                      </div>
+                    </div>
+
+                    <!-- Botão Jogar -->
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">
+                      Quero jogar! 🎮
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <p class="preview-hint">As alterações aparecem em tempo real. Salve para aplicar no link público.</p>
+
+          <!-- Controles de aparência -->
           <div class="appearance-controls">
 
             <!-- Cores -->
@@ -182,6 +410,56 @@
                     <input type="color" formControlName="cardColor" class="picker" />
                     <input type="text"  formControlName="cardColor" placeholder="Ex: rgba(20,30,50,0.7)" class="input input--color-text" />
                     <button type="button" class="btn-clear" title="Limpar" (click)="clearField('cardColor')">✕</button>
+                  </div>
+                </div>
+
+                <!-- Cor dos cards das telas de cadastro e "Tudo pronto!" -->
+                <div class="color-field">
+                  <label>Cor do card de cadastro / "Tudo pronto!"</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="registerCardColor" class="picker" />
+                    <input type="text"  formControlName="registerCardColor" placeholder="Ex: #1a2040" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('registerCardColor')">✕</button>
+                  </div>
+                </div>
+
+                <!-- Cor dos cards do pódio e lista de ranking -->
+                <div class="color-field">
+                  <label>Cor dos cards do ranking / pódio</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="rankingCardColor" class="picker" />
+                    <input type="text"  formControlName="rankingCardColor" placeholder="Ex: #1a2040" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('rankingCardColor')">✕</button>
+                  </div>
+                </div>
+
+                <!-- Cor dos inputs de nome/contato nas telas de cadastro -->
+                <div class="color-field">
+                  <label>Cor dos campos de input (cadastro)</label>
+                  <div class="color-row">
+                    <input type="color" formControlName="inputColor" class="picker" />
+                    <input type="text"  formControlName="inputColor" placeholder="Ex: rgba(255,255,255,0.12)" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('inputColor')">✕</button>
+                  </div>
+                </div>
+
+                <!-- Cor do botão principal — fallback: usa primaryColor se não definido -->
+                <div class="color-field">
+                  <label>Cor do botão principal <span class="hint">(padrão: usa cor primária)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="buttonColor" class="picker" />
+                    <input type="text"  formControlName="buttonColor" placeholder="Ex: #5b8dee" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('buttonColor')">✕</button>
+                  </div>
+                </div>
+
+                <!-- Cor do texto dentro dos botões -->
+                <div class="color-field">
+                  <label>Cor do texto do botão <span class="hint">(padrão: branco)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="buttonTextColor" class="picker" />
+                    <input type="text"  formControlName="buttonTextColor" placeholder="#ffffff" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('buttonTextColor')">✕</button>
                   </div>
                 </div>
 
@@ -253,60 +531,26 @@
               </div>
             </section>
 
-          </div>
+            <!-- Tela "Tudo pronto!" — texto editável exibido quando vem de um formulário -->
+            <section class="edit-section">
+              <h2 class="section-title">✅ Tela "Tudo pronto!"</h2>
+              <p class="section-hint">Exibida quando o participante já preencheu um formulário. Deixe em branco para usar o texto padrão.</p>
 
-          <!-- Coluna direita: live preview -->
-          <div class="preview-column">
-            <div class="preview-sticky">
-              <h3 class="preview-header">👁 Preview ao vivo</h3>
-              <div class="preview-phone">
-                <div class="preview-screen"
-                     [style.background]="previewBg()"
-                     [style.color]="previewText()">
-
-                  <div class="prev-quiz-card">
-                    <div class="prev-title" [style.color]="previewText()">
-                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
-                    </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
-                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s por pergunta
-                    </p>
-
-                    <!-- Timer bar preview -->
-                    <div class="prev-timer">
-                      <div class="prev-timer__bar">
-                        <div class="prev-timer__fill" [style.background]="previewPrimary()"></div>
-                      </div>
-                      <span class="prev-timer__val" [style.color]="previewText()">30s</span>
-                    </div>
-
-                    <!-- Pergunta mockada -->
-                    <div class="prev-question" [style.color]="previewText()">
-                      {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
-                    </div>
-
-                    <!-- Opções mockadas -->
-                    <div class="prev-options">
-                      @for (label of ['A', 'B', 'C', 'D']; track label) {
-                        <div class="prev-option"
-                             [style.background]="previewCardColor()"
-                             [style.border-color]="previewPrimary() + '55'"
-                             [style.color]="previewText()">
-                          {{ label }}
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Botão de iniciar mockado -->
-                    <div class="prev-btn" [style.background]="previewPrimary()">
-                      Começar Quiz 🚀
-                    </div>
-                  </div>
-
-                </div>
+              <div class="form-field">
+                <label class="field-label">Título / saudação</label>
+                <input type="text" formControlName="readyTitle"
+                       placeholder="Olá, {nome}! (padrão)"
+                       class="input" maxlength="120" />
               </div>
-              <p class="preview-hint">As alterações aparecem em tempo real. Salve para aplicar no link público.</p>
-            </div>
+
+              <div class="form-field" style="margin-top: 0.75rem;">
+                <label class="field-label">Mensagem de confirmação</label>
+                <input type="text" formControlName="readyMessage"
+                       placeholder="Você está pronto para o quiz? (padrão)"
+                       class="input" maxlength="255" />
+              </div>
+            </section>
+
           </div>
 
         </div>
