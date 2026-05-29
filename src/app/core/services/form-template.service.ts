@@ -77,6 +77,12 @@ export interface FormTemplate {
   quizId?: number | null;
   quizLink?: string | null;
   rankingLink?: string | null;
+  // Configurações do link de visualização do cliente
+  viewToken?: string | null;
+  viewAllowExport: boolean;
+  viewShowSubmissions: boolean;
+  viewShowAttendance: boolean;
+  viewShowAppointments: boolean;
 }
 
 export interface CreateFormTemplateRequest {
@@ -89,6 +95,8 @@ export interface CreateFormTemplateRequest {
   lgpdText?: string | null;
   // Quiz selecionado antes de salvar — vinculado automaticamente pelo backend
   quizId?: number | null;
+  // Slug personalizado do link de visualização (ex: "coca-cola")
+  viewSlug?: string | null;
 }
 
 export interface UpdateFormTemplateRequest {
@@ -97,6 +105,13 @@ export interface UpdateFormTemplateRequest {
   appearance?: Partial<TemplateAppearance> | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Toggles do link de visualização do cliente (null = não alterar)
+  viewAllowExport?: boolean | null;
+  viewShowSubmissions?: boolean | null;
+  viewShowAttendance?: boolean | null;
+  viewShowAppointments?: boolean | null;
+  // Slug personalizado do link (ex: "coca-cola"). null = não alterar
+  viewSlug?: string | null;
 }
 
 export interface FormSubmission {
@@ -228,6 +243,15 @@ export class FormTemplateService {
     return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/schedule-config`, config);
   }
 
+  updateViewConfig(templateId: number, config: {
+    viewAllowExport?: boolean;
+    viewShowSubmissions?: boolean;
+    viewShowAttendance?: boolean;
+    viewShowAppointments?: boolean;
+  }): Observable<FormTemplate> {
+    return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/view-config`, config);
+  }
+
   deleteTemplate(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
@@ -249,6 +273,30 @@ export class FormTemplateService {
         quizLink: normalizeQuizLink(t.quizLink),
         rankingLink: normalizeQuizLink(t.rankingLink),
       }))
+    );
+  }
+
+  // Busca template pelo token de visualização do cliente (sem autenticação)
+  getTemplateByViewToken(viewToken: string): Observable<FormTemplate> {
+    return this.http.get<FormTemplate>(`${this.apiUrl}/view/${viewToken}`);
+  }
+
+  // Dados públicos via viewToken — não exigem JWT, usados na tela do cliente
+  getSubmissionsByViewToken(viewToken: string, page = 0, size = 500): Observable<PageResponse<FormSubmission>> {
+    return this.http.get<PageResponse<FormSubmission>>(
+      `${this.apiUrl}/view/${viewToken}/submissions?page=${page}&size=${size}`
+    );
+  }
+
+  getAttendanceByViewToken(viewToken: string, page = 0, size = 1000): Observable<PageResponse<AttendanceRecord>> {
+    return this.http.get<PageResponse<AttendanceRecord>>(
+      `${this.apiUrl}/view/${viewToken}/attendance?page=${page}&size=${size}`
+    );
+  }
+
+  getAppointmentsByViewToken(viewToken: string, page = 0, size = 500): Observable<PageResponse<AppointmentResponse>> {
+    return this.http.get<PageResponse<AppointmentResponse>>(
+      `${this.apiUrl}/view/${viewToken}/appointments?page=${page}&size=${size}`
     );
   }
 
