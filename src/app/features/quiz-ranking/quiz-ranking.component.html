@@ -60,7 +60,7 @@
 
           <!-- 2º lugar -->
           <div class="podium-col podium-col--2nd">
-            <div class="p-card glass-card p-card--2nd">
+            <div class="p-card glass-card p-card--2nd" [style.background]="quizRankingCard() ?? undefined">
               <span class="p-medal">🥈</span>
               <p class="p-name" [style.color]="quizText()">{{ podium().length >= 2 ? podium()[1].playerName : '—' }}</p>
               <p class="p-score" [style.color]="quizPrimary()">
@@ -80,7 +80,9 @@
             <div class="crown-wrap">
               <span class="crown">👑</span>
             </div>
-            <div class="p-card glass-card p-card--1st" [style.border-color]="quizPrimary() + '44'">
+            <div class="p-card glass-card p-card--1st"
+                 [style.background]="quizRankingCard() ?? undefined"
+                 [style.border-color]="quizPrimary() + '44'">
               <span class="p-medal p-medal--1st">🥇</span>
               <p class="p-name p-name--1st" [style.color]="quizText()">{{ podium()[0].playerName }}</p>
               <p class="p-score p-score--1st" [style.color]="quizPrimary()">{{ podium()[0].totalScore }}</p>
@@ -95,7 +97,7 @@
 
           <!-- 3º lugar -->
           <div class="podium-col podium-col--3rd">
-            <div class="p-card glass-card p-card--3rd">
+            <div class="p-card glass-card p-card--3rd" [style.background]="quizRankingCard() ?? undefined">
               <span class="p-medal">🥉</span>
               <p class="p-name" [style.color]="quizText()">{{ podium().length >= 3 ? podium()[2].playerName : '—' }}</p>
               <p class="p-score" [style.color]="quizPrimary()">
@@ -115,7 +117,7 @@
 
       <!-- ── Lista 4º+ ──────────────────────────────────────────────────── -->
       @if (rest().length > 0) {
-        <div class="rank-list glass-card">
+        <div class="rank-list glass-card" [style.background]="quizRankingCard() ?? undefined">
           @for (s of rest(); track s.id; let i = $index) {
             <div class="rank-row">
               <span class="rank-badge" [style.color]="quizPrimary()">{{ i + 4 }}º</span>

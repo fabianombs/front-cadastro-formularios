@@ -136,7 +136,6 @@ export class TemplateListComponent implements OnInit {
   attendance = signal<AttendanceRecord[]>([]);
   attendanceCols = computed<string[]>(() => {
     const rows = this.attendance();
-    if (!rows.length) return [];
 
     // Colunas da planilha na ordem salva no import (fonte mais confiável)
     const savedOrder = this.template()?.attendanceColumnOrder ?? [];
@@ -151,12 +150,19 @@ export class TemplateListComponent implements OnInit {
     // Base: savedOrder > templateFields > chaves do rowData
     const base: string[] = savedOrder.length ? [...savedOrder] : [...templateFields];
 
+    // Acrescenta campos do template adicionados DEPOIS do import (não estão no savedOrder)
+    templateFields.forEach(col => {
+      if (!base.includes(col)) base.push(col);
+    });
+
     // Acrescenta colunas extras da planilha que não estão na base
     allSheetCols.forEach(col => {
       if (!base.includes(col)) base.push(col);
     });
 
-    return base;
+    // Remove coluna de acompanhantes da planilha — já representada pelo botão de companion
+    // Cobre variações: "Acompanhantes", "Acomp.", "Acomp", "Qtd Acompanhantes", etc.
+    return base.filter(col => !col.trim().toLowerCase().includes('acomp'));
   });
 
   /** Labels dos campos do template — essas colunas são editáveis na tabela */
@@ -191,6 +197,50 @@ export class TemplateListComponent implements OnInit {
   });
   markingId = signal<number | null>(null);
   attendanceSearch = signal('');
+
+  // ── Adicionar convidado manualmente ─────────────────────────
+  addGuestOpen = signal(false);
+  newGuestData = signal<Record<string, string>>({});
+  savingGuest = signal(false);
+
+  openAddGuest(): void {
+    // Inicializa form com um campo vazio para cada coluna da tabela
+    const initial: Record<string, string> = {};
+    this.attendanceCols().forEach(col => { initial[col] = ''; });
+    this.newGuestData.set(initial);
+    this.addGuestOpen.set(true);
+  }
+
+  setGuestField(col: string, val: string): void {
+    this.newGuestData.update(d => ({ ...d, [col]: val }));
+  }
+
+  saveGuest(): void {
+    const slug = this.template()?.slug;
+    if (!slug || this.savingGuest()) return;
+
+    // Remove campos vazios antes de enviar
+    const rowData: Record<string, string> = {};
+    Object.entries(this.newGuestData()).forEach(([k, v]) => {
+      if (v.trim()) rowData[k] = v.trim();
+    });
+
+    this.savingGuest.set(true);
+    this.service.addPublicGuest(slug, rowData).subscribe({
+      next: (record) => {
+        // Adiciona o novo convidado no fim da lista local (sem recarregar toda a página)
+        this.attendance.update(list => [...list, record]);
+        this.attTotalElements.update(n => n + 1);
+        this.addGuestOpen.set(false);
+        this.savingGuest.set(false);
+        this.messages.success('Convidado adicionado com sucesso!');
+      },
+      error: () => {
+        this.messages.error('Erro ao adicionar convidado.');
+        this.savingGuest.set(false);
+      },
+    });
+  }
 
   // ID do convidado com o painel de acompanhantes expandido (null = nenhum)
   expandedCompanionId = signal<number | null>(null);
@@ -387,7 +437,7 @@ export class TemplateListComponent implements OnInit {
 
   attendanceDataColumns = computed(() =>
     this.attendanceColumnsMeta().filter(
-      c => !['attendance', 'notes', 'attendedAt'].includes(c.key)
+      c => !['attendance', 'notes', 'attendedAt', 'companions'].includes(c.key)
     )
   );
 

@@ -24,7 +24,12 @@
   <!-- ── PRONTO? (vindo de formulário — nome já conhecido) ─────────────────── -->
   @if (step() === 'ready') {
     <div class="q-center">
-      <div class="glass-card glass-card--register" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+      <!-- background usa registerCardColor (cor dedicada das telas de acesso); fallback glassmorphism -->
+      <div class="glass-card glass-card--register"
+           [style.--qprimary]="quizPrimary()"
+           [style.--qtext]="quizText()"
+           [style.background]="quizRegisterCardColor() ?? undefined"
+           [style.color]="quizText()">
 
         <div class="quiz-badge">QUIZ</div>
 
@@ -34,18 +39,24 @@
           <span class="pill">{{ quiz()?.timePerQuestion }}s cada</span>
         </p>
 
-        <!-- Saudação personalizada com o nome já preenchido no formulário -->
+        <!-- Saudação personalizada — hint editável no quiz editor (readyMessage) -->
         <div class="ready-greeting" [style.color]="quizText()">
           <span class="ready-avatar">👋</span>
-          <p class="ready-name">Olá, <strong>{{ prefilledName() }}</strong>!</p>
-          <p class="ready-hint">Você está pronto para o quiz?</p>
+          @if (quiz()?.readyTitle) {
+            <p class="ready-name">{{ quiz()!.readyTitle }}</p>
+          } @else {
+            <p class="ready-name">Olá, <strong>{{ prefilledName() }}</strong>!</p>
+          }
+          <p class="ready-hint">{{ quiz()?.readyMessage || 'Você está pronto para o quiz?' }}</p>
         </div>
 
         @if (errorMsg()) {
           <p class="reg-error">{{ errorMsg() }}</p>
         }
 
-        <button class="btn-hero" (click)="confirmReady()" [style.background]="quizPrimary()">
+        <button class="btn-hero" (click)="confirmReady()"
+                [style.background]="quizButtonColor()"
+                [style.color]="quizButtonTextColor()">
           Tudo pronto! Vamos lá 🚀
         </button>
       </div>
@@ -55,7 +66,12 @@
   <!-- ── CADASTRO ──────────────────────────────────────────────────────────── -->
   @if (step() === 'register') {
     <div class="q-center">
-      <div class="glass-card glass-card--register" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+      <!-- background usa registerCardColor (cor dedicada das telas de acesso); fallback glassmorphism -->
+      <div class="glass-card glass-card--register"
+           [style.--qprimary]="quizPrimary()"
+           [style.--qtext]="quizText()"
+           [style.background]="quizRegisterCardColor() ?? undefined"
+           [style.color]="quizText()">
 
         <!-- Badge do quiz -->
         <div class="quiz-badge">QUIZ</div>
@@ -70,18 +86,21 @@
           <div class="reg-field">
             <label class="reg-label">Nome completo</label>
             <input class="reg-input" formControlName="playerName" type="text"
-                   placeholder="Seu nome" autocomplete="name"/>
+                   placeholder="Seu nome" autocomplete="name"
+                   [style.background]="quizInputColor() ?? undefined"/>
           </div>
           <div class="reg-field">
             <label class="reg-label">E-mail ou telefone</label>
             <input class="reg-input" formControlName="playerContact" type="text"
-                   placeholder="contato@email.com"/>
+                   placeholder="contato@email.com"
+                   [style.background]="quizInputColor() ?? undefined"/>
           </div>
           @if (errorMsg()) {
             <p class="reg-error">{{ errorMsg() }}</p>
           }
           <button type="submit" class="btn-hero" [disabled]="registerForm.invalid"
-                  [style.background]="quizPrimary()">
+                  [style.background]="quizButtonColor()"
+                  [style.color]="quizButtonTextColor()">
             Começar Quiz 🚀
           </button>
         </form>
@@ -231,7 +250,8 @@
         </div>
 
         <button class="btn-ranking" (click)="goToRanking()"
-                [style.background]="quizPrimary()">
+                [style.background]="quizButtonColor()"
+                [style.color]="quizButtonTextColor()">
           Ver Ranking Completo 📊
         </button>
       </div>

@@ -130,13 +130,10 @@
   &:hover:not(&--active) { color: var(--text); }
 }
 
-// ── Body ──────────────────────────────────────────────────────────────────────
+// ── Body — ocupa a tela toda, sem centralização em coluna estreita ────────────
 .edit-body {
   flex: 1;
-  padding: 28px 24px 60px;
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
+  padding: 28px 32px 60px;
 }
 
 // ── Seções ────────────────────────────────────────────────────────────────────
@@ -162,6 +159,25 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 14px;
+}
+
+.section-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: -8px 0 14px;
+  opacity: 0.75;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
 }
 
 // ── Formulário ────────────────────────────────────────────────────────────────
@@ -319,6 +335,20 @@
   &:hover { border-color: var(--primary, #5b8dee); color: var(--primary, #5b8dee); }
 }
 
+// Aba Conteúdo: Identificação + Configurações lado a lado no topo
+.content-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+  align-items: start;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content-top-row__item { margin-bottom: 20px; }
+
 .questions-empty {
   text-align: center;
   padding: 32px;
@@ -329,19 +359,47 @@
   gap: 12px;
 }
 
-// ── Aparência: layout ─────────────────────────────────────────────────────────
+// ── Aparência: layout — preview bar sticky no topo + controles abaixo ────────
 .appearance-layout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 24px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+// 3 phones lado a lado, fica colado no topo enquanto o usuário rola
+.preview-bar {
+  position: sticky;
+  top: 64px;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--surface, #161b22);
+  padding: 12px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+
+  @media (max-width: 760px) {
+    flex-direction: column;
+    position: static;
   }
 }
 
-.appearance-controls { display: flex; flex-direction: column; }
+.preview-bar-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+// Controles em grid de 2 colunas para aproveitar a largura total
+.appearance-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 0 32px;
+  align-items: start;
+}
 
 // ── Cores ─────────────────────────────────────────────────────────────────────
 .color-grid {
@@ -522,23 +580,17 @@
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────
-.preview-column { }
 
-.preview-sticky {
-  position: sticky;
-  top: 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.preview-header {
-  font-size: 13px;
+// Label acima de cada phone na barra
+.preview-section-label {
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
-  margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  text-align: center;
+  opacity: 0.75;
 }
 
 .preview-phone {
@@ -550,8 +602,8 @@
 }
 
 .preview-screen {
-  min-height: 480px;
-  padding: 28px 20px;
+  min-height: 300px;
+  padding: 16px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -568,7 +620,7 @@
 }
 
 .prev-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   text-align: center;
   word-break: break-word;
@@ -650,6 +702,159 @@
   margin: 0;
   text-align: center;
   opacity: 0.7;
+}
+
+// ── Preview do ranking ────────────────────────────────────────────────────────
+
+.prev-ranking {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prev-rank-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 20px;
+}
+
+.prev-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
+
+.prev-podium-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+
+  &--1st { flex: 1.2; }
+}
+
+.prev-p-card {
+  width: 100%;
+  padding: 10px 6px 8px;
+  border-radius: 12px 12px 0 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.2s;
+
+  &--1st {
+    padding: 14px 8px 12px;
+    border-bottom: none;
+    border: 1px solid;
+  }
+}
+
+.prev-p-name {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.prev-p-score {
+  font-size: 11px;
+  font-weight: 800;
+
+  &--1st { font-size: 16px; }
+}
+
+.prev-p-stand {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  border-radius: 0 0 10px 10px;
+
+  &--1st { height: 28px; border-radius: 0 0 12px 12px; }
+  &--2nd { height: 20px; background: rgba(148,163,184,0.22); border-top: 2px solid; }
+  &--3rd { height: 15px; background: rgba(180,120,60,0.22); border-top: 2px solid; }
+}
+
+// ── Preview do card de cadastro ───────────────────────────────────────────────
+
+.prev-register-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 16px;
+  padding: 20px 16px;
+  backdrop-filter: blur(12px);
+  transition: background 0.3s;
+}
+
+.prev-reg-badge {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.08);
+  color: inherit;
+  align-self: center;
+}
+
+// Preview da tela "Tudo pronto!" — caixa de saudação centralizada
+.prev-ready-greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0 6px;
+  text-align: center;
+}
+
+.prev-ready-avatar {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.prev-ready-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.prev-ready-hint {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.prev-reg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.prev-reg-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.prev-reg-input {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  transition: background 0.2s;
 }
 
 // ── Spinner ───────────────────────────────────────────────────────────────────

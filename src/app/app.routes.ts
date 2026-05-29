@@ -22,9 +22,20 @@ export const routes: Routes = [
   },
   {
     path: 'forms/:slug/list',
+    // Rota protegida: apenas usuários autenticados (admin/funcionario/client) podem ver
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/template-list/template-list.component').then(
         (m) => m.TemplateListComponent,
+      ),
+  },
+
+  // 👁️ LINK DE VISUALIZAÇÃO DO CLIENTE — público, autenticado via token UUID na URL
+  {
+    path: 'view/:viewToken',
+    loadComponent: () =>
+      import('./features/template-view/template-view.component').then(
+        (m) => m.TemplateViewComponent,
       ),
   },
 

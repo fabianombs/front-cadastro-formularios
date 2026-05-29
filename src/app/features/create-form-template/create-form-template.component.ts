@@ -46,6 +46,10 @@ export class CreateTemplateComponent implements OnInit {
 
   // Upload state: qual campo está fazendo upload e preview local
   uploadingField = signal<string | null>(null);
+
+  // Slug editável do link do cliente
+  viewSlugEditing = signal(false);
+  viewSlugInput   = signal('');
   imagePreviews: Record<string, string> = {};
 
   // Image position modal
@@ -485,6 +489,12 @@ export class CreateTemplateComponent implements OnInit {
       hasQuiz: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
+      // Slug e toggles do link de visualização do cliente
+      viewSlug: [''],
+      viewAllowExport: [false],
+      viewShowSubmissions: [true],
+      viewShowAttendance: [true],
+      viewShowAppointments: [true],
       scheduleConfig: this.fb.group({
         startTime: ['08:00'],
         endTime: ['17:00'],
@@ -832,6 +842,8 @@ export class CreateTemplateComponent implements OnInit {
       lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
       // Vincula o quiz selecionado antes de salvar (se houver)
       quizId: this.pendingQuizId() ?? null,
+      // Slug do link de visualização do cliente definido na criação
+      viewSlug: formValue.viewSlug?.trim().toLowerCase() || null,
     };
 
     // ── MODO EDIÇÃO ─────────────────────────────────────────────
@@ -849,6 +861,13 @@ export class CreateTemplateComponent implements OnInit {
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
         lgpdEnabled: formValue.lgpdEnabled ?? false,
         lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+        // Salva as configurações do link de visualização do cliente
+        viewAllowExport: formValue.viewAllowExport ?? false,
+        viewShowSubmissions: formValue.viewShowSubmissions ?? true,
+        viewShowAttendance: formValue.viewShowAttendance ?? true,
+        viewShowAppointments: formValue.viewShowAppointments ?? true,
+        // Slug do link — null significa "não alterar"
+        viewSlug: formValue.viewSlug?.trim().toLowerCase() || null,
       };
 
       this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
@@ -922,7 +941,16 @@ export class CreateTemplateComponent implements OnInit {
       hasSchedule: template.hasSchedule,
       lgpdEnabled: template.lgpdEnabled ?? false,
       lgpdText: template.lgpdText ?? '',
+      viewAllowExport: template.viewAllowExport ?? false,
+      viewShowSubmissions: template.viewShowSubmissions ?? true,
+      viewShowAttendance: template.viewShowAttendance ?? true,
+      viewShowAppointments: template.viewShowAppointments ?? true,
     });
+
+    // viewSlugInput (signal) exibe o valor salvo no VIEW MODE
+    // viewSlug (form control) fica vazio — mudança só ocorre se admin digitar algo novo
+    this.viewSlugInput.set(template.viewToken ?? '');
+    this.templateForm.patchValue({ viewSlug: '' });
 
     // Carrega lista de quizzes e identifica qual está associado ao template
     this.loadQuizIfExists(template);
@@ -1056,6 +1084,15 @@ export class CreateTemplateComponent implements OnInit {
     this.exportService.exportAttendance(this.attendanceRecords, this.template.name);
   }
 
+  // Salva imediatamente um toggle de view config sem precisar reabrir o formulário de edição
+  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments', value: boolean) {
+    if (!this.template) return;
+    this.templateService.updateViewConfig(this.template.id, { [field]: value }).subscribe({
+      next: (res) => { this.template = res; this.cdr.detectChanges(); },
+      error: () => {},
+    });
+  }
+
   // ── Auto-contraste ────────────────────────────────────────────
   /** Retorna branco ou escuro dependendo da luminância do hex */
   getContrastColor(hex: string): string {
@@ -1112,6 +1149,57 @@ export class CreateTemplateComponent implements OnInit {
 
   get listLink(): string {
     return `/forms/${this.template?.slug ?? ''}/list`;
+  }
+
+  // Link público de visualização do cliente (sem necessidade de login)
+  get viewLink(): string {
+    return this.template?.viewToken ? `/view/${this.template.viewToken}` : '';
+  }
+
+  startEditSlug(): void {
+    this.viewSlugInput.set(this.template?.viewToken ?? '');
+    this.viewSlugEditing.set(true);
+  }
+
+  cancelEditSlug(): void {
+    this.viewSlugEditing.set(false);
+  }
+
+  saveSlug(): void {
+    if (!this.template) return;
+    const slug = this.viewSlugInput().trim().toLowerCase();
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+      this.messages.error('Use apenas letras minúsculas, números e hífens. Ex: coca-cola');
+      return;
+    }
+
+    const formValue = this.templateForm.value;
+    const updatePayload: UpdateFormTemplateRequest = {
+      name: this.template.name,
+      fields: this.template.fields.map(f => ({
+        label: f.label, type: f.type, required: f.required,
+        ...(f.fieldColor ? { fieldColor: f.fieldColor } : {}),
+        colSpan: (f as any).colSpan ?? 2,
+        ...(f.type === 'select' && f.options?.length ? { options: f.options } : {}),
+      })),
+      appearance: null,
+      lgpdEnabled: this.template.lgpdEnabled,
+      lgpdText: this.template.lgpdText ?? null,
+      viewSlug: slug,
+    };
+
+    this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
+      next: (res) => {
+        this.template = res;
+        this.viewSlugInput.set(res.viewToken ?? '');
+        this.viewSlugEditing.set(false);
+        this.messages.success('Link do cliente atualizado!');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.messages.error(err.error?.message ?? 'Erro ao salvar o slug.');
+      },
+    });
   }
 
   copyLink(path: string): void {

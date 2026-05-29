@@ -1,0 +1,179 @@
+<div [ngStyle]="pageStyle">
+
+  <!-- LOADING -->
+  @if (loading()) {
+  <div class="tv-center">
+    <div class="tv-spinner"></div>
+  </div>
+  }
+
+  <!-- ERRO -->
+  @if (!loading() && error()) {
+  <div class="tv-center tv-error-box">
+    <span class="tv-error-icon">🔒</span>
+    <p class="tv-error-title">{{ error() }}</p>
+    <p class="tv-error-sub">Verifique o link fornecido ou entre em contato com o responsável.</p>
+  </div>
+  }
+
+  <!-- CONTEÚDO -->
+  @if (!loading() && !error() && template(); as tmpl) {
+  <div class="tv-container">
+
+    <!-- Cabeçalho -->
+    <div class="tv-header">
+      @if (headerImageUrl) {
+      <img [src]="headerImageUrl" alt="" class="tv-header-img" />
+      }
+      <h1 class="tv-title">{{ tmpl.name }}</h1>
+      <p class="tv-subtitle">Visualização exclusiva — somente leitura</p>
+    </div>
+
+    <!-- Abas -->
+    <div class="tv-tabs">
+      @if (tmpl.viewShowSubmissions) {
+      <button class="tv-tab" [class.active]="isActive('submissions')" [ngStyle]="activeTabStyle('submissions')" (click)="setTab('submissions')">
+        📋 Respostas
+        <span class="tv-badge">{{ submissions().length }}</span>
+      </button>
+      }
+      @if (tmpl.viewShowAttendance && tmpl.hasAttendance) {
+      <button class="tv-tab" [class.active]="isActive('attendance')" [ngStyle]="activeTabStyle('attendance')" (click)="setTab('attendance')">
+        ✅ Presença
+        <span class="tv-badge">{{ attendance().length }}</span>
+      </button>
+      }
+      @if (tmpl.viewShowAppointments && tmpl.hasSchedule) {
+      <button class="tv-tab" [class.active]="isActive('appointments')" [ngStyle]="activeTabStyle('appointments')" (click)="setTab('appointments')">
+        📅 Agendamentos
+        <span class="tv-badge">{{ appointments().length }}</span>
+      </button>
+      }
+    </div>
+
+    <!-- Exportação condicional -->
+    @if (tmpl.viewAllowExport) {
+    <div class="tv-toolbar">
+      @if (isActive('submissions') && tmpl.viewShowSubmissions) {
+      <button class="tv-btn-export" (click)="exportSubmissions()">⬇ Exportar Respostas</button>
+      }
+      @if (isActive('attendance') && tmpl.viewShowAttendance) {
+      <button class="tv-btn-export" (click)="exportAttendance()">⬇ Exportar Presença</button>
+      }
+    </div>
+    }
+
+    <!-- ─── ABA: RESPOSTAS ─── -->
+    @if (isActive('submissions') && tmpl.viewShowSubmissions) {
+    <div [ngStyle]="cardStyle" class="tv-card">
+      @if (submissions().length === 0) {
+      <p class="tv-empty">Nenhuma resposta registrada.</p>
+      } @else {
+      <div class="tv-table-wrap">
+        <table class="tv-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              @for (col of submissionCols(); track col) { <th>{{ col }}</th> }
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sub of submissions(); track sub.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              @for (col of submissionCols(); track col) { <td>{{ sub.values[col] ?? '—' }}</td> }
+              <td>{{ sub.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ─── ABA: PRESENÇA ─── -->
+    @if (isActive('attendance') && tmpl.viewShowAttendance) {
+    <div [ngStyle]="cardStyle" class="tv-card">
+      @if (attendance().length === 0) {
+      <p class="tv-empty">Nenhum registro de presença.</p>
+      } @else {
+      <div class="tv-table-wrap">
+        <table class="tv-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              @for (col of attendanceCols(); track col) { <th>{{ col }}</th> }
+              <th>Presença</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rec of attendance(); track rec.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              @for (col of attendanceCols(); track col) { <td>{{ rec.rowData[col] ?? '—' }}</td> }
+              <td>
+                @if (rec.attended) { <span class="tv-badge-green">Presente</span> }
+                @else { <span class="tv-badge-gray">—</span> }
+              </td>
+              <td>{{ rec.createdAt | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ─── ABA: AGENDAMENTOS ─── -->
+    @if (isActive('appointments') && tmpl.viewShowAppointments) {
+    <div [ngStyle]="cardStyle" class="tv-card">
+      @if (appointments().length === 0) {
+      <p class="tv-empty">Nenhum agendamento registrado.</p>
+      } @else {
+      <div class="tv-table-wrap">
+        <table class="tv-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Contato</th>
+              <th>Data</th>
+              <th>Horário</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (apt of appointments(); track apt.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ apt.bookedByName }}</td>
+              <td>{{ apt.bookedByContact }}</td>
+              <td>{{ apt.slotDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ apt.slotTime.substring(0, 5) }}</td>
+              <td>
+                <span [class]="apt.status === 'AGENDADO' ? 'tv-badge-green' : 'tv-badge-red'">
+                  {{ apt.status }}
+                </span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Rodapé -->
+    @if (footerImageUrl) {
+    <img [src]="footerImageUrl" alt="" class="tv-footer-img" />
+    }
+
+  </div>
+  }
+
+</div>
