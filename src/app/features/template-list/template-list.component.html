@@ -487,6 +487,17 @@
             }
           </div>
 
+          <!-- Botão de adicionar convidado manualmente (somente admin/client) -->
+          @if (auth.isAdmin() || auth.isClient()) {
+            <button
+              class="btn-outline"
+              style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+              (click)="openAddGuest()"
+            >
+              ＋ Convidado
+            </button>
+          }
+
           <button
             class="btn-outline"
             style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
@@ -828,6 +839,66 @@
         <img [src]="template()!.appearance!.footerImageUrl!" alt="Footer do template" />
       </div>
     }
+  }
+
+  <!-- ══ MODAL: ADICIONAR CONVIDADO ══════════════════════════ -->
+  @if (addGuestOpen()) {
+    <div class="ag-backdrop" (click)="addGuestOpen.set(false)">
+      <div class="ag-dialog" (click)="$event.stopPropagation()">
+
+        <div class="ag-header">
+          <h2 class="ag-title">＋ Novo Convidado</h2>
+          <button class="ag-close" (click)="addGuestOpen.set(false)">✕</button>
+        </div>
+
+        <div class="ag-body">
+          <!-- Campos dinâmicos baseados nas colunas da planilha importada -->
+          @for (col of attendanceCols(); track col) {
+            <div class="ag-field">
+              <label class="ag-label">{{ formatLabel(col) }}</label>
+              @let field = templateFieldMap().get(col);
+              @if (field?.type === 'select' || (field?.options?.length ?? 0) > 0) {
+                <select
+                  class="ag-input"
+                  [ngModel]="newGuestData()[col]"
+                  [name]="col"
+                  (ngModelChange)="setGuestField(col, $event)"
+                >
+                  <option value="">—</option>
+                  @for (opt of field?.options ?? []; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+              } @else {
+                <input
+                  type="text"
+                  class="ag-input"
+                  [ngModel]="newGuestData()[col]"
+                  [name]="col"
+                  (ngModelChange)="setGuestField(col, $event)"
+                  [placeholder]="formatLabel(col)"
+                />
+              }
+            </div>
+          }
+        </div>
+
+        <div class="ag-footer">
+          <button class="btn-outline" (click)="addGuestOpen.set(false)" [disabled]="savingGuest()">
+            Cancelar
+          </button>
+          <button class="btn-primary" (click)="saveGuest()" [disabled]="savingGuest()">
+            @if (savingGuest()) {
+              <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
+              Salvando...
+            } @else {
+              ✓ Adicionar
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
   }
 
   <app-confirm-modal

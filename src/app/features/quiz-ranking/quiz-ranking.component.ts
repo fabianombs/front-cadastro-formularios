@@ -35,8 +35,10 @@ export class QuizRankingComponent implements OnInit, OnDestroy {
     return '#0d1117';
   });
 
-  quizPrimary = computed(() => this.quizConfig()?.primaryColor || '#5b8dee');
-  quizText    = computed(() => this.quizConfig()?.textColor    || '#e2e8f0');
+  quizPrimary     = computed(() => this.quizConfig()?.primaryColor    || '#5b8dee');
+  quizText        = computed(() => this.quizConfig()?.textColor        || '#e2e8f0');
+  // Cor dos cards do pódio/ranking — null mantém o glassmorphism padrão do SCSS
+  quizRankingCard = computed(() => this.quizConfig()?.rankingCardColor || null);
 
   podium = computed<QuizSession[]>(() => (this.ranking()?.top ?? []).slice(0, 3));
   rest   = computed<QuizSession[]>(() => (this.ranking()?.top ?? []).slice(3));

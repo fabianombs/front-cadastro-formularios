@@ -34,6 +34,9 @@ export class QuizEditComponent implements OnInit {
   // Aba ativa: 'content' | 'appearance'
   activeTab = signal<'content' | 'appearance'>('content');
 
+  // Modo do preview ao vivo: pergunta ou card de cadastro
+  previewMode = signal<'question' | 'register'>('question');
+
   quizForm!: FormGroup;
 
   // Espelho reativo do valor do form — atualizado via valueChanges para que os computed() reajam
@@ -93,6 +96,16 @@ export class QuizEditComponent implements OnInit {
       primaryColor:       [quiz.primaryColor       ?? null],
       textColor:          [quiz.textColor          ?? null],
       cardColor:          [quiz.cardColor          ?? null],
+      // Cor dos cards de cadastro/ready
+      registerCardColor:  [quiz.registerCardColor  ?? null],
+      inputColor:         [quiz.inputColor         ?? null],
+      rankingCardColor:   [quiz.rankingCardColor   ?? null],
+      // Cor do botão principal e do texto dentro dos botões
+      buttonColor:        [quiz.buttonColor        ?? null],
+      buttonTextColor:    [quiz.buttonTextColor    ?? null],
+      // Campos de texto da tela "Tudo pronto!"
+      readyTitle:         [quiz.readyTitle         ?? null],
+      readyMessage:       [quiz.readyMessage       ?? null],
     });
 
     // Inicializa snapshot e mantém atualizado para que computed() reajam ao form
@@ -179,7 +192,13 @@ export class QuizEditComponent implements OnInit {
 
   previewPrimary   = computed(() => this.formSnapshot()['primaryColor'] || '#5b8dee');
   previewText      = computed(() => this.formSnapshot()['textColor']    || '#e2e8f0');
-  previewCardColor = computed(() => this.formSnapshot()['cardColor']    || 'rgba(8,12,20,0.58)');
+  previewCardColor         = computed(() => this.formSnapshot()['cardColor']         || 'rgba(8,12,20,0.58)');
+  previewRegisterCardColor = computed(() => this.formSnapshot()['registerCardColor'] || 'rgba(8,12,20,0.68)');
+  previewInputColor        = computed(() => this.formSnapshot()['inputColor']        || 'rgba(255,255,255,0.06)');
+  previewRankingCardColor  = computed(() => this.formSnapshot()['rankingCardColor']  || 'rgba(8,12,20,0.65)');
+  // Fallback: se buttonColor não definido, usa primaryColor
+  previewButtonColor     = computed(() => this.formSnapshot()['buttonColor']     || this.formSnapshot()['primaryColor'] || '#5b8dee');
+  previewButtonTextColor = computed(() => this.formSnapshot()['buttonTextColor'] || '#ffffff');
 
   // ── Upload de imagem ──────────────────────────────────────────────────────
 
@@ -261,6 +280,13 @@ export class QuizEditComponent implements OnInit {
       primaryColor:       v.primaryColor       || null,
       textColor:          v.textColor          || null,
       cardColor:          v.cardColor          || null,
+      registerCardColor:  v.registerCardColor  || null,
+      inputColor:         v.inputColor         || null,
+      rankingCardColor:   v.rankingCardColor   || null,
+      buttonColor:        v.buttonColor        || null,
+      buttonTextColor:    v.buttonTextColor    || null,
+      readyTitle:         v.readyTitle         || null,
+      readyMessage:       v.readyMessage       || null,
     };
 
     if (this.isCreateMode) {

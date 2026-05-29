@@ -52,6 +52,100 @@
         Copiar
       </button>
     </div>
+
+    <!-- Separador -->
+    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0;" />
+
+    <!-- Link do cliente + toggles de controle -->
+    <p style="font-size: 12px; font-weight: 600; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: .05em;">
+      Link do cliente (visualização)
+    </p>
+
+    <!-- Estado de edição: input + salvar + cancelar -->
+    @if (viewSlugEditing()) {
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: #94a3b8; white-space: nowrap; min-width: 120px;">Visualização</span>
+      <div style="flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0;">
+        <span style="font-size: 13px; color: #64748b; white-space: nowrap;">/view/</span>
+        <input
+          type="text"
+          [value]="viewSlugInput()"
+          (input)="viewSlugInput.set($any($event.target).value)"
+          placeholder="ex: coca-cola"
+          style="flex: 1; min-width: 120px; max-width: 260px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 600;
+            color: #10b981; outline: none;"
+        />
+      </div>
+      <button type="button" class="btn-outline"
+        style="font-size: 12px; padding: 4px 12px; white-space: nowrap; border-color: #10b981; color: #10b981;"
+        (click)="saveSlug()">
+        Salvar
+      </button>
+      <button type="button" class="btn-outline"
+        style="font-size: 12px; padding: 4px 10px; white-space: nowrap;"
+        (click)="cancelEditSlug()">
+        Cancelar
+      </button>
+    </div>
+    }
+
+    <!-- Estado de visualização -->
+    @if (!viewSlugEditing()) {
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: #94a3b8; white-space: nowrap; min-width: 120px;">Visualização</span>
+
+      @if (viewLink) {
+      <a [routerLink]="viewLink"
+        style="flex: 1; font-size: 13px; font-weight: 600; color: #10b981; word-break: break-all;">
+        {{ viewLink }}
+      </a>
+      <button type="button" class="btn-outline"
+        style="font-size: 12px; padding: 4px 10px; white-space: nowrap;"
+        (click)="copyLink(viewLink)">
+        Copiar
+      </button>
+      } @else {
+      <span style="flex: 1; font-size: 13px; color: #475569; font-style: italic;">
+        Slug não definido — clique em Definir para criar o link
+      </span>
+      }
+
+      <button type="button" class="btn-outline"
+        style="font-size: 12px; padding: 4px 10px; white-space: nowrap;"
+        (click)="startEditSlug()">
+        {{ viewLink ? '✎ Editar' : '+ Definir' }}
+      </button>
+    </div>
+    }
+
+    <!-- Permissões de visualização — salva imediatamente ao clicar -->
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; padding: 8px 0 2px;">
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+        <input type="checkbox" [checked]="template.viewAllowExport"
+          (change)="patchViewConfig('viewAllowExport', $any($event.target).checked)" />
+        Exportar Excel
+      </label>
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+        <input type="checkbox" [checked]="template.viewShowSubmissions"
+          (change)="patchViewConfig('viewShowSubmissions', $any($event.target).checked)" />
+        Respostas
+      </label>
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+        <input type="checkbox" [checked]="template.viewShowAttendance"
+          (change)="patchViewConfig('viewShowAttendance', $any($event.target).checked)" />
+        Presença
+      </label>
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+        <input type="checkbox" [checked]="template.viewShowAppointments"
+          (change)="patchViewConfig('viewShowAppointments', $any($event.target).checked)" />
+        Agendamentos
+      </label>
+    </div>
+    <p style="font-size: 11px; color: #475569; margin: 0;">
+      As permissões são aplicadas imediatamente ao marcar/desmarcar.
+    </p>
   </div>
 
   <!-- Resumo agenda -->
@@ -429,6 +523,46 @@
               </label>
             </div>
 
+          </div>
+
+          <!-- Link de visualização do cliente — definido na criação ou edição -->
+          <div class="field" style="margin-top: 12px; margin-bottom: 0;">
+            <label style="font-size: 12px; color: #64748b;">
+              Link do cliente (visualização)
+              <span style="font-weight: 400; color: #94a3b8; margin-left: 4px;">ex: coca-cola</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 13px; color: #64748b; white-space: nowrap;">/view/</span>
+              <input
+                type="text"
+                formControlName="viewSlug"
+                placeholder="minha-empresa"
+                style="flex: 1;"
+              />
+            </div>
+            <p style="font-size: 11px; color: #475569; margin: 4px 0 0;">
+              Use apenas letras minúsculas, números e hífens. Deixe vazio para definir depois.
+            </p>
+          </div>
+
+          <!-- Toggles de permissão da tela de visualização do cliente -->
+          <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+              <input type="checkbox" formControlName="viewAllowExport" />
+              Permitir exportar Excel
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+              <input type="checkbox" formControlName="viewShowSubmissions" />
+              Exibir respostas
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+              <input type="checkbox" formControlName="viewShowAttendance" />
+              Exibir presença
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
+              <input type="checkbox" formControlName="viewShowAppointments" />
+              Exibir agendamentos
+            </label>
           </div>
 
           <!-- Texto do modal LGPD (aparece ao habilitar) -->

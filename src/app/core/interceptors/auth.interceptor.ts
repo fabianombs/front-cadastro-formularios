@@ -31,10 +31,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(newReq).pipe(
     catchError((err) => {
-      // Sessão expirada ou token inválido — encerra a sessão e redireciona
-      if (err.status === 401) {
-        auth.logout();
-        router.navigate(['/login']);
+      // Endpoints públicos de view do cliente nunca devem causar logout,
+      // mesmo que retornem 401/403 (ex: servidor não reiniciado ainda)
+      const isPublicViewRequest = newReq.url.includes('/form-templates/view/');
+
+      if (!isPublicViewRequest) {
+        // 401: token inválido/expirado
+        // 403: Spring Security retorna 403 para requests sem token em APIs stateless
+        if (err.status === 401 || (err.status === 403 && !auth.getToken())) {
+          auth.logout();
+          router.navigate(['/login']);
+        }
       }
 
       return throwError(() => err);
