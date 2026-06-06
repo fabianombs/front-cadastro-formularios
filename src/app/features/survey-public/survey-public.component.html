@@ -1,0 +1,104 @@
+<!-- LOADING -->
+<div *ngIf="step() === 'loading'" class="survey-wrapper">
+  <div class="glass-card loading-card">
+    <div class="spinner"></div>
+    <p>Carregando pesquisa...</p>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div *ngIf="step() === 'error'" class="survey-wrapper">
+  <div class="glass-card error-card">
+    <span class="error-icon">⚠️</span>
+    <h2>Pesquisa indisponível</h2>
+    <p>{{ errorMsg() }}</p>
+  </div>
+</div>
+
+<!-- TELAS 1, 2 e 3: wrapper único com posicionamento absoluto -->
+<div *ngIf="step() !== 'loading' && step() !== 'error'"
+     class="survey-wrapper"
+     [style.background]="bgStyle()">
+
+  <!-- Logo posicionável — visibilidade controlada por tela -->
+  <div *ngIf="survey()?.companyLogoUrl && (
+        (step() === 'welcome'  && showLogoWelcome())  ||
+        (step() === 'rating'   && showLogoRating())   ||
+        (step() === 'thankyou' && showLogoThankyou())
+       )"
+       class="pub-logo"
+       [style.left.%]="logoPosX()"
+       [style.top.%]="logoPosY()">
+    <img [src]="survey()!.companyLogoUrl!"
+         [style.width.px]="logoWidth()"
+         [style.borderRadius]="logoRadius()"
+         [alt]="survey()!.companyName || 'Logo'" />
+  </div>
+
+  <!-- Card posicionável -->
+  <div class="pub-card glass-card"
+       [style.left.%]="cardPosX()"
+       [style.top.%]="cardPosY()">
+
+    <!-- TELA 1: BOAS-VINDAS -->
+    <ng-container *ngIf="step() === 'welcome'">
+      <div *ngIf="survey()?.companyName && !survey()?.companyLogoUrl"
+           class="company-name" [style.color]="textClr()">
+        {{ survey()!.companyName }}
+      </div>
+      <h1 class="welcome-title" [style.color]="textClr()">{{ survey()?.welcomeTitle }}</h1>
+      <p *ngIf="welcomeSubtitle()" class="welcome-subtitle" [style.color]="textClr()">{{ welcomeSubtitle() }}</p>
+      <button class="btn-primary"
+              [style.background]="btnBg()"
+              [style.color]="btnText()"
+              (click)="start()">{{ welcomeBtnText() }}</button>
+    </ng-container>
+
+    <!-- TELA 2: AVALIAÇÃO -->
+    <ng-container *ngIf="step() === 'rating'">
+      <h2 class="question-text" [style.color]="textClr()">{{ survey()?.questionText }}</h2>
+      <div class="score-list">
+        <button *ngFor="let option of scoreOptions"
+                class="score-item"
+                [class.selected]="selectedScore() === option.score"
+                [style.--score-color]="option.color"
+                [style.--score-border]="option.borderColor"
+                [style.background]="selectedScore() !== option.score ? cardBg() : option.color"
+                (click)="selectScore(option.score)">
+          @if (scoreIcon(option.score)) {
+            <img [src]="scoreIcon(option.score)!" class="score-custom-icon" [alt]="option.label" />
+          } @else {
+            <span class="score-emoji">{{ option.emoji }}</span>
+          }
+          <span class="score-label" [style.color]="textClr()">{{ scoreLabel(option.score, option.label) }}</span>
+        </button>
+      </div>
+      <div *ngIf="survey()?.showComment" class="comment-container">
+        <label class="comment-label" [style.color]="textClr()">Comentário (opcional)</label>
+        <textarea class="comment-textarea" [(ngModel)]="comment"
+                  placeholder="Conta mais sobre sua experiência..." rows="3"></textarea>
+      </div>
+      <button class="btn-primary"
+              [style.background]="btnBg()"
+              [style.color]="btnText()"
+              [disabled]="!selectedScore() || submitting()"
+              (click)="submit()">
+        <span *ngIf="!submitting()">{{ ratingBtnText() }}</span>
+        <span *ngIf="submitting()">Enviando...</span>
+      </button>
+    </ng-container>
+
+    <!-- TELA 3: AGRADECIMENTO -->
+    <ng-container *ngIf="step() === 'thankyou'">
+      <div class="check-icon" [style.background]="btnBg()">✓</div>
+      <h2 class="thankyou-title" [style.color]="textClr()">{{ survey()?.thankYouMsg }}</h2>
+      <p *ngIf="thankyouSubtitle()" class="thankyou-subtitle" [style.color]="textClr()">{{ thankyouSubtitle() }}</p>
+      <div *ngIf="getSelectedOption() as opt"
+           class="selected-score-badge"
+           [style.background]="opt.color">
+        <span>{{ opt.emoji }} {{ scoreLabel(opt.score, opt.label) }}</span>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

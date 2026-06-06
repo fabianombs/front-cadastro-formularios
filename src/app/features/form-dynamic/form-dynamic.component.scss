@@ -478,6 +478,45 @@
 }
 
 /* ── Quiz Prompt overlay ────────────────────────────────────── */
+// Banner de redirect para pesquisa de satisfação
+.survey-redirect-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  backdrop-filter: blur(12px);
+  padding: 14px 24px;
+  border-radius: 14px;
+  color: #f59e0b;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  animation: fadeUp 0.4s ease both;
+
+  .survey-redirect-icon { font-size: 1.4rem; }
+
+  .survey-redirect-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: #f59e0b;
+    border-radius: 0 0 14px 14px;
+    animation: shrinkBar 0.4s linear forwards;
+  }
+}
+
+@keyframes shrinkBar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
 .quiz-prompt-overlay {
   position: fixed;
   inset: 0;

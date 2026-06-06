@@ -1,0 +1,138 @@
+.survey-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 4px 0 40px;
+}
+
+.survey-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--fast), box-shadow var(--fast);
+
+  &:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); }
+  &--inactive { opacity: 0.6; }
+
+  &__header {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  }
+
+  &__info { flex: 1; min-width: 0; }
+
+  &__name {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__slug { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+  &__badge {
+    flex-shrink: 0; padding: 3px 10px; border-radius: 99px;
+    font-size: 11px; font-weight: 600; border: 1px solid transparent;
+
+    &.badge--active {
+      background: var(--success-muted); color: var(--success);
+      border-color: rgba(16,201,138,0.25);
+    }
+    &.badge--inactive {
+      background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border);
+    }
+  }
+
+  &__meta {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    .meta-item { font-size: 12px; color: var(--text-muted); }
+  }
+
+  &__links {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px; background: var(--surface-high);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border); border-left: 3px solid var(--primary);
+  }
+
+  &__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+}
+
+.link-row {
+  display: flex; align-items: center; gap: 8px;
+
+  .link-label { font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+
+  .link-url {
+    flex: 1; font-size: 12px; color: var(--primary);
+    text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.btn-icon {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 14px; padding: 2px 4px; opacity: 0.7;
+  &:hover { opacity: 1; }
+}
+
+.delete-confirm {
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px; padding: 12px; text-align: center;
+
+  p { font-size: 13px; color: #f87171; margin: 0 0 10px; }
+}
+
+.delete-actions { display: flex; gap: 8px; justify-content: center; }
+
+.btn-danger-sm {
+  padding: 5px 14px; background: #ef4444; color: #fff;
+  border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+
+.btn-ghost-sm {
+  padding: 5px 14px; background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 6px; font-size: 12px; cursor: pointer;
+  &:hover { color: var(--text); }
+}
+
+.btn-ghost {
+  padding: 6px 12px; background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-muted); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+  &:hover { color: var(--text); border-color: var(--border-hover); }
+
+  &--sm { padding: 5px 10px; font-size: 11px; }
+  &.btn-edit:hover { color: var(--primary); border-color: var(--primary); }
+  &.btn-delete:hover { color: #ef4444; border-color: #ef4444; }
+}
+
+.btn-primary {
+  padding: 9px 20px; background: var(--primary); color: #fff;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+  &:hover { opacity: 0.88; }
+}
+
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 200px; gap: 12px;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  h3 { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 8px; }
+  p { color: var(--text-muted); font-size: 14px; max-width: 420px; margin: 0 auto 20px; }
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

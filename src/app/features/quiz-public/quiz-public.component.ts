@@ -58,6 +58,10 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   private questionStartTime = 0;
   slug = '';
 
+  // Survey vinculado — passado via query param pelo form-dynamic quando o template tem pesquisa
+  surveySlug   = '';
+  surveySource = '';
+
   ngOnInit() {
     this.slug = this.route.snapshot.paramMap.get('slug') ?? '';
 
@@ -65,6 +69,10 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     const qp      = this.route.snapshot.queryParamMap;
     const name    = qp.get('playerName')    ?? '';
     const contact = qp.get('playerContact') ?? '';
+
+    // Survey que deve ser exibido após a conclusão do quiz
+    this.surveySlug   = qp.get('surveySlug')   ?? '';
+    this.surveySource = qp.get('surveySource') ?? '';
 
     if (name) this.prefilledName.set(name);
     if (contact) this.prefilledContact.set(contact);
@@ -207,6 +215,19 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   goToRanking() {
     this.router.navigate(['/quiz', this.slug, 'ranking']);
+  }
+
+  // Redireciona para a pesquisa vinculada após o quiz — chamado pelo botão na tela de resultado
+  goToSurvey() {
+    if (!this.surveySlug) return;
+    const session = this.session();
+    const name = session?.playerName ?? '';
+    this.router.navigate(['/survey', this.surveySlug], {
+      queryParams: {
+        ref:    name    || undefined,
+        source: this.surveySource || this.slug,
+      },
+    });
   }
 
   // ── Aparência — signals computados diretamente do quiz ───────────────────

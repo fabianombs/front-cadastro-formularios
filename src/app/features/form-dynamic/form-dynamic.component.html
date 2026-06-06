@@ -60,7 +60,7 @@
               }
 
               <div class="fd-fields-grid">
-                @for (fg of formFields(); track fg.value.label; let i = $index) {
+                @for (fg of formFields(); track i; let i = $index) {
                   <div
                     [class.fd-field--full]="(fg.value.colSpan ?? 2) >= 2"
                     [class.fd-field--half]="fg.value.colSpan === 1"
@@ -207,6 +207,15 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+<!-- ── Survey Redirect — aviso breve antes de redirecionar para a pesquisa (sem quiz) ── -->
+@if (submitted() && !template()?.hasQuiz && template()?.hasSurvey && template()?.surveySlug) {
+  <div class="survey-redirect-banner">
+    <span class="survey-redirect-icon">⭐</span>
+    <span class="survey-redirect-text">Redirecionando para a pesquisa de satisfação...</span>
+    <div class="survey-redirect-bar"></div>
   </div>
 }
 
