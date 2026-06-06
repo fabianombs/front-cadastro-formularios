@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SurveyService, SurveyConfig } from '../../core/services/survey.service';
+import { normalizeQuizLink } from '../../core/services/quiz.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
@@ -26,7 +27,16 @@ export class SurveyLibraryComponent implements OnInit {
   loadSurveys() {
     this.loading.set(true);
     this.surveyService.listAll().subscribe({
-      next: (list) => { this.surveys.set(list); this.loading.set(false); },
+      next: (list) => {
+          // Normaliza os links para usar o domínio atual (corrige localhost em prod)
+          const normalized = list.map(s => ({
+            ...s,
+            publicLink: normalizeQuizLink(s.publicLink) ?? undefined,
+            reportLink: normalizeQuizLink(s.reportLink) ?? undefined,
+          }));
+          this.surveys.set(normalized);
+          this.loading.set(false);
+        },
       error: () => this.loading.set(false),
     });
   }
