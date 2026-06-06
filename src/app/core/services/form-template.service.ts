@@ -83,6 +83,11 @@ export interface FormTemplate {
   viewShowSubmissions: boolean;
   viewShowAttendance: boolean;
   viewShowAppointments: boolean;
+  // Pesquisa de satisfação vinculada
+  hasSurvey: boolean;
+  surveyId?: number | null;
+  surveySlug?: string | null;
+  surveyPublicLink?: string | null;
 }
 
 export interface CreateFormTemplateRequest {
@@ -97,6 +102,8 @@ export interface CreateFormTemplateRequest {
   quizId?: number | null;
   // Slug personalizado do link de visualização (ex: "coca-cola")
   viewSlug?: string | null;
+  // Pesquisa de satisfação selecionada antes de salvar — vinculada automaticamente pelo backend
+  surveyConfigId?: number | null;
 }
 
 export interface UpdateFormTemplateRequest {
@@ -112,6 +119,8 @@ export interface UpdateFormTemplateRequest {
   viewShowAppointments?: boolean | null;
   // Slug personalizado do link (ex: "coca-cola"). null = não alterar
   viewSlug?: string | null;
+  // ID da pesquisa de satisfação. null = não alterar, 0 = desvincular
+  surveyConfigId?: number | null;
 }
 
 export interface FormSubmission {

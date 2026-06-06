@@ -12,6 +12,7 @@ import { MessageService } from '../../core/services/message.service';
 import { ClientService, Client } from '../../core/services/client.service';
 import { ExportService } from '../../core/services/export.service';
 import { QuizService, QuizConfig } from '../../core/services/quiz.service';
+import { SurveyService, SurveyConfig } from '../../core/services/survey.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -471,12 +472,20 @@ export class CreateTemplateComponent implements OnInit {
   // Lista de quizzes disponíveis para associar ao template
   availableQuizzes = signal<QuizConfig[]>([]);
 
+  // ── Survey state ──────────────────────────────────────────────────────────
+  surveyConfig     = signal<SurveyConfig | null>(null);
+  savingSurvey     = signal(false);
+  availableSurveys = signal<SurveyConfig[]>([]);
+  // ID da survey selecionada antes de o template ser salvo (novo template)
+  pendingSurveyId  = signal<number | null>(null);
+
   constructor(
     private fb: FormBuilder,
     private templateService: FormTemplateService,
     private clientService: ClientService,
     private exportService: ExportService,
     private quizService: QuizService,
+    private surveyService: SurveyService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
   ) {
@@ -487,6 +496,7 @@ export class CreateTemplateComponent implements OnInit {
       hasSchedule: [false],
       hasAttendance: [false],
       hasQuiz: [false],
+      hasSurvey: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
       // Slug e toggles do link de visualização do cliente
@@ -542,6 +552,19 @@ export class CreateTemplateComponent implements OnInit {
 
   get hasQuiz(): boolean {
     return this.templateForm.get('hasQuiz')?.value === true;
+  }
+
+  get hasSurveyToggle(): boolean {
+    return this.templateForm.get('hasSurvey')?.value === true;
+  }
+
+  // Chamado quando o toggle "Pesquisa de Satisfação" é alterado
+  onSurveyToggleChange(checked: boolean) {
+    if (!checked) {
+      // Desmarcar o toggle desvincula a pesquisa
+      this.unlinkSurvey();
+    }
+    // Se marcado sem template salvo ainda, apenas aguarda o picker selecionar
   }
 
   get lgpdEnabled(): boolean {
@@ -624,6 +647,78 @@ export class CreateTemplateComponent implements OnInit {
     });
   }
 
+  // ── Survey picker methods ─────────────────────────────────────────────────
+
+  onSurveyPickerChange(surveyIdStr: string) {
+    const surveyId = Number(surveyIdStr);
+
+    if (!surveyIdStr || isNaN(surveyId)) {
+      this.unlinkSurvey();
+      return;
+    }
+
+    const selected = this.availableSurveys().find(s => s.id === surveyId) ?? null;
+    this.surveyConfig.set(selected);
+
+    // Template ainda não salvo — guarda o ID pendente para enviar junto na criação
+    if (!this.template) {
+      this.pendingSurveyId.set(surveyId);
+      return;
+    }
+
+    this.savingSurvey.set(true);
+    this.surveyService.assignToTemplate(surveyId, this.template.id).subscribe({
+      next: () => {
+        this.savingSurvey.set(false);
+        this.messages.success('Pesquisa vinculada com sucesso!');
+      },
+      error: () => {
+        this.savingSurvey.set(false);
+        this.messages.error('Erro ao vincular a pesquisa.');
+      },
+    });
+  }
+
+  unlinkSurvey() {
+    if (!this.template) {
+      this.surveyConfig.set(null);
+      this.pendingSurveyId.set(null);
+      return;
+    }
+
+    this.savingSurvey.set(true);
+    this.surveyService.unassignFromTemplate(this.template.id).subscribe({
+      next: () => {
+        this.surveyConfig.set(null);
+        this.savingSurvey.set(false);
+        this.messages.success('Pesquisa desvinculada.');
+      },
+      error: () => {
+        this.savingSurvey.set(false);
+        this.messages.error('Erro ao desvincular a pesquisa.');
+      },
+    });
+  }
+
+  // Carrega survey vinculada ao template atual (chamado no loadTemplateToForm)
+  loadSurveyIfExists(template: FormTemplate) {
+    this.surveyService.listAll().subscribe({
+      next: (surveys: SurveyConfig[]) => {
+        this.availableSurveys.set(surveys.filter(s => s.active));
+        if (template.hasSurvey && template.surveyId) {
+          const matched = surveys.find(s => s.id === template.surveyId) ?? null;
+          this.surveyConfig.set(matched);
+          // Sincroniza o toggle com a pesquisa já vinculada
+          this.templateForm.get('hasSurvey')?.setValue(true, { emitEvent: false });
+        } else {
+          this.surveyConfig.set(null);
+          this.templateForm.get('hasSurvey')?.setValue(false, { emitEvent: false });
+        }
+      },
+      error: () => {},
+    });
+  }
+
   get scheduleConfig(): FormGroup {
     return this.templateForm.get('scheduleConfig') as FormGroup;
   }
@@ -685,6 +780,12 @@ export class CreateTemplateComponent implements OnInit {
     // Carrega quizzes disponíveis sempre — necessário para o picker no create mode
     this.quizService.listAll().subscribe({
       next: (quizzes) => this.availableQuizzes.set(quizzes),
+      error: () => {},
+    });
+
+    // Carrega surveys disponíveis para o picker
+    this.surveyService.listAll().subscribe({
+      next: (surveys) => this.availableSurveys.set(surveys.filter(s => s.active)),
       error: () => {},
     });
 
@@ -844,6 +945,8 @@ export class CreateTemplateComponent implements OnInit {
       quizId: this.pendingQuizId() ?? null,
       // Slug do link de visualização do cliente definido na criação
       viewSlug: formValue.viewSlug?.trim().toLowerCase() || null,
+      // Vincula a pesquisa de satisfação selecionada antes de salvar (se houver)
+      surveyConfigId: this.pendingSurveyId() ?? null,
     };
 
     // ── MODO EDIÇÃO ─────────────────────────────────────────────
@@ -954,6 +1057,9 @@ export class CreateTemplateComponent implements OnInit {
 
     // Carrega lista de quizzes e identifica qual está associado ao template
     this.loadQuizIfExists(template);
+
+    // Carrega survey vinculada ao template
+    this.loadSurveyIfExists(template);
 
     if (template.hasSchedule && template.scheduleConfig) {
       this.scheduleConfig.patchValue({

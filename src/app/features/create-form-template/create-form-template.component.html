@@ -523,7 +523,60 @@
               </label>
             </div>
 
+            <!-- Pesquisa de Satisfação -->
+            <div class="feature-toggle-card feature-toggle-card--survey">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="hasSurvey" class="feature-toggle-check feature-toggle-check--survey"
+                       (change)="onSurveyToggleChange($any($event.target).checked)" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Pesquisa de Satisfação</span>
+                  <span class="feature-toggle-desc">Exibida ao final do fluxo do formulário</span>
+                </div>
+              </label>
+            </div>
+
           </div>
+
+          <!-- Picker de survey — aparece inline quando o toggle está ativado -->
+          @if (hasSurveyToggle) {
+            <div class="survey-inline-picker">
+              @if (availableSurveys().length === 0) {
+                <span class="survey-picker-empty">
+                  Nenhuma pesquisa ativa.
+                  <a routerLink="/surveys/new" class="survey-picker-link">Criar pesquisa</a>
+                </span>
+              } @else {
+                <div class="survey-picker-row">
+                  <span class="survey-picker-label">⭐ Selecionar pesquisa:</span>
+                  <select class="survey-picker-select"
+                          (change)="onSurveyPickerChange($any($event.target).value)">
+                    <option value="">— Escolha uma pesquisa —</option>
+                    @for (s of availableSurveys(); track s.id) {
+                      <option [value]="s.id" [selected]="surveyConfig()?.id === s.id">
+                        {{ s.name }}
+                      </option>
+                    }
+                  </select>
+                  @if (surveyConfig()) {
+                    <a [href]="surveyConfig()!.publicLink" target="_blank" class="survey-picker-preview">
+                      👁 Ver
+                    </a>
+                    <button type="button" class="survey-picker-unlink" (click)="unlinkSurvey(); templateForm.get('hasSurvey')?.setValue(false)">
+                      ✕
+                    </button>
+                  }
+                  @if (savingSurvey()) {
+                    <span class="survey-picker-saving">Salvando...</span>
+                  }
+                </div>
+                @if (surveyConfig()) {
+                  <span class="survey-picker-info">
+                    Esta pesquisa será exibida automaticamente ao final do preenchimento do formulário.
+                  </span>
+                }
+              }
+            </div>
+          }
 
           <!-- Link de visualização do cliente — definido na criação ou edição -->
           <div class="field" style="margin-top: 12px; margin-bottom: 0;">

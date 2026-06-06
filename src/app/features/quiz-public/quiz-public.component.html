@@ -254,6 +254,13 @@
                 [style.color]="quizButtonTextColor()">
           Ver Ranking Completo 📊
         </button>
+
+        <!-- Botão de pesquisa de satisfação — aparece quando o template tem survey vinculado -->
+        @if (surveySlug) {
+          <button class="btn-survey-prompt" (click)="goToSurvey()">
+            ⭐ Avaliar minha experiência
+          </button>
+        }
       </div>
 
     </div>

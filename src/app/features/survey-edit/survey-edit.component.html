@@ -1,0 +1,461 @@
+<div class="edit-layout" *ngIf="!loading(); else loadingTpl">
+
+  <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <button class="btn-back" (click)="goBack()">← Pesquisas</button>
+    <h1 class="toolbar-title">
+      {{ isCreateMode ? 'Nova Pesquisa de Satisfação' : (survey()?.name || 'Editar Pesquisa') }}
+    </h1>
+    <div class="toolbar-actions">
+      @if (saved()) {
+        <span class="saved-badge">✓ Salvo</span>
+      }
+      <button class="btn-primary" [disabled]="surveyForm.invalid || saving()" (click)="save()">
+        {{ saving() ? 'Salvando...' : (isCreateMode ? 'Criar Pesquisa' : 'Salvar') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Abas ────────────────────────────────────────────────────────────── -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'content'" (click)="activeTab.set('content')">
+      📝 Conteúdo
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'appearance'" (click)="activeTab.set('appearance')">
+      🎨 Aparência
+    </button>
+  </div>
+
+  <!-- ── Conteúdo da aba ─────────────────────────────────────────────────── -->
+  <div class="edit-body">
+
+    <!-- Formulário -->
+    <div class="form-panel" [formGroup]="surveyForm">
+
+      <!-- ABA: CONTEÚDO -->
+      @if (activeTab() === 'content') {
+        <div class="section-card">
+          <h2 class="section-title">Configurações gerais</h2>
+
+          <div class="field-group">
+            <label>Nome da pesquisa *</label>
+            <input type="text" formControlName="name" placeholder="Ex: NPS Junho 2024" />
+          </div>
+
+          <div class="field-group">
+            <label>Slug (URL amigável)</label>
+            <input type="text" formControlName="slug" placeholder="gerado automaticamente do nome" />
+            <span class="field-hint">Deixe vazio para gerar automaticamente</span>
+          </div>
+
+          <div class="field-group">
+            <label>Nome da empresa <span class="optional">(opcional)</span></label>
+            <input type="text" formControlName="companyName" placeholder="Acme Corp" />
+          </div>
+
+          <!-- Upload do logo -->
+          <div class="field-group">
+            <label>Logo da empresa <span class="optional">(opcional)</span></label>
+
+            @if (surveyForm.get('companyLogoUrl')?.value) {
+              <!-- Preview + remover -->
+              <div class="logo-preview-wrap">
+                <img [src]="surveyForm.get('companyLogoUrl')?.value"
+                     [style.borderRadius]="surveyForm.get('logoBorderRadius')?.value || '8px'"
+                     class="logo-preview-img" alt="Logo" />
+                <div class="logo-preview-actions">
+                  <label class="btn-upload-sm">
+                    Trocar imagem
+                    <input type="file" accept="image/*" (change)="onLogoFileSelect($event)" hidden />
+                  </label>
+                  <button type="button" class="btn-clear-sm" (click)="clearField('companyLogoUrl')">Remover</button>
+                </div>
+              </div>
+            } @else {
+              <!-- Drop zone de upload -->
+              <div class="logo-drop-zone">
+                @if (uploadingLogo()) {
+                  <div class="upload-loading">
+                    <div class="spinner-sm"></div>
+                    <span>Enviando...</span>
+                  </div>
+                } @else {
+                  <div class="logo-drop-inner">
+                    <span class="logo-drop-icon">🖼️</span>
+                    <span class="logo-drop-text">Arraste o logo ou</span>
+                    <label class="btn-upload">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onLogoFileSelect($event)" hidden />
+                    </label>
+                    <span class="logo-drop-hint">PNG, JPG, SVG ou WebP</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">Textos das telas</h2>
+
+          <!-- Tela 1 -->
+          <div class="screen-texts-block">
+            <span class="screen-texts-label">Tela 1 — Boas-vindas</span>
+            <div class="field-group">
+              <label>Título *</label>
+              <input type="text" formControlName="welcomeTitle" placeholder="Como foi sua experiência?" />
+            </div>
+            <div class="field-group">
+              <label>Subtítulo <span class="optional">(opcional)</span></label>
+              <input type="text" formControlName="welcomeSubtitle" placeholder="Sua opinião é muito importante para nós!" />
+            </div>
+            <div class="field-group">
+              <label>Texto do botão</label>
+              <input type="text" formControlName="welcomeBtnText" placeholder="Começar" />
+            </div>
+          </div>
+
+          <!-- Tela 2 -->
+          <div class="screen-texts-block">
+            <span class="screen-texts-label">Tela 2 — Avaliação</span>
+            <div class="field-group">
+              <label>Pergunta *</label>
+              <input type="text" formControlName="questionText" placeholder="Quão satisfeito você está com nosso serviço hoje?" />
+            </div>
+            <div class="field-group">
+              <label>Texto do botão</label>
+              <input type="text" formControlName="ratingBtnText" placeholder="Enviar avaliação" />
+            </div>
+          </div>
+
+          <!-- Tela 3 -->
+          <div class="screen-texts-block">
+            <span class="screen-texts-label">Tela 3 — Agradecimento</span>
+            <div class="field-group">
+              <label>Título *</label>
+              <input type="text" formControlName="thankYouMsg" placeholder="Muito obrigado pela sua avaliação!" />
+            </div>
+            <div class="field-group">
+              <label>Subtítulo <span class="optional">(opcional)</span></label>
+              <input type="text" formControlName="thankyouSubtitle" placeholder="Avaliação registrada com sucesso." />
+            </div>
+          </div>
+
+          <div class="field-toggle">
+            <label class="toggle-wrap">
+              <input type="checkbox" formControlName="showComment" />
+              <span class="toggle-label">Exibir campo de comentário opcional</span>
+            </label>
+            <span class="field-hint">Quando ativo, o respondente pode escrever um comentário após escolher o score</span>
+          </div>
+        </div>
+
+        <!-- Visibilidade do logo por tela -->
+        @if (surveyForm.get('companyLogoUrl')?.value) {
+          <div class="section-card">
+            <h2 class="section-title">🖼️ Exibir logo em cada tela</h2>
+            <p class="section-hint">Controle em quais telas o logo aparece</p>
+            <div class="logo-visibility-grid">
+              <label class="toggle-wrap">
+                <input type="checkbox" formControlName="showLogoWelcome" />
+                <span class="toggle-label">Tela de boas-vindas</span>
+              </label>
+              <label class="toggle-wrap">
+                <input type="checkbox" formControlName="showLogoRating" />
+                <span class="toggle-label">Tela de avaliação</span>
+              </label>
+              <label class="toggle-wrap">
+                <input type="checkbox" formControlName="showLogoThankyou" />
+                <span class="toggle-label">Tela de agradecimento</span>
+              </label>
+            </div>
+          </div>
+        }
+
+        <!-- Ícones das opções de score -->
+        <div class="section-card">
+          <h2 class="section-title">⭐ Ícones de avaliação</h2>
+          <div class="score-icons-guide">
+            <span class="guide-icon">ℹ️</span>
+            <div>
+              <strong>Formato recomendado:</strong> imagem quadrada ou circular, mínimo 64×64px
+              (PNG, JPG, SVG ou WebP). O sistema exibirá a imagem em <strong>48px</strong>.
+              Deixe vazio para usar o emoji padrão.
+            </div>
+          </div>
+
+          <div class="score-icons-list">
+            @for (opt of scoreOptions; track opt.score) {
+              <div class="score-icon-row">
+                <!-- Preview atual: imagem ou emoji padrão -->
+                <div class="score-icon-preview">
+                  @if (surveyForm.get('score' + opt.score + 'ImageUrl')?.value) {
+                    <img [src]="surveyForm.get('score' + opt.score + 'ImageUrl')!.value"
+                         class="score-icon-img" [alt]="opt.label" />
+                  } @else {
+                    <span class="score-icon-emoji">{{ opt.emoji }}</span>
+                  }
+                </div>
+
+                <!-- Label editável -->
+                <div class="score-icon-info">
+                  <input type="text"
+                         [formControlName]="'score' + opt.score + 'Label'"
+                         class="score-label-input"
+                         [placeholder]="opt.label" />
+                  <span class="score-icon-sublabel">Score {{ opt.score }}</span>
+                </div>
+
+                <!-- Ações -->
+                <div class="score-icon-actions">
+                  @if (uploadingScore() === opt.score) {
+                    <span class="uploading-text">Enviando...</span>
+                  } @else {
+                    <label class="btn-upload-sm">
+                      {{ surveyForm.get('score' + opt.score + 'ImageUrl')?.value ? 'Trocar' : 'Upload' }}
+                      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                             (change)="onScoreIconFileSelect(opt.score, $event)" hidden />
+                    </label>
+                    @if (surveyForm.get('score' + opt.score + 'ImageUrl')?.value) {
+                      <button type="button" class="btn-clear-sm" (click)="clearScoreIcon(opt.score)">
+                        Remover
+                      </button>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ABA: APARÊNCIA -->
+      @if (activeTab() === 'appearance') {
+        <div class="section-card">
+          <h2 class="section-title">Fundo</h2>
+
+          <div class="field-group">
+            <label>Cor sólida</label>
+            <div class="color-row">
+              <input type="color" formControlName="backgroundColor"
+                     (input)="surveyForm.get('backgroundGradient')?.setValue(null); surveyForm.get('backgroundImageUrl')?.setValue(null)" />
+              <input type="text" formControlName="backgroundColor" placeholder="#1e3a5f" class="color-text" />
+              <button class="btn-clear" (click)="clearField('backgroundColor')" title="Limpar">✕</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Gradiente</label>
+            <div class="gradient-presets">
+              @for (p of gradientPresets; track p.label) {
+                <button type="button" class="preset-chip"
+                        [style.background]="p.value"
+                        [class.active]="surveyForm.get('backgroundGradient')?.value === p.value"
+                        (click)="applyGradient(p.value)"
+                        [title]="p.label">
+                  {{ p.label }}
+                </button>
+              }
+            </div>
+            <button class="btn-clear-sm" (click)="clearField('backgroundGradient')">Remover gradiente</button>
+          </div>
+
+          <div class="field-group">
+            <label>Imagem de fundo</label>
+            <div class="drop-zone" [class.drag-active]="dragOver()"
+                 (dragover)="onDragOverZone($event)" (dragleave)="onDragLeaveZone()" (drop)="onDropZone($event)">
+              @if (uploading()) {
+                <span>Enviando...</span>
+              } @else if (surveyForm.get('backgroundImageUrl')?.value) {
+                <span>✓ Imagem carregada</span>
+                <button type="button" class="btn-clear-sm" (click)="clearField('backgroundImageUrl')">Remover</button>
+              } @else {
+                <span>Arraste uma imagem ou</span>
+                <label class="btn-upload">
+                  Selecionar arquivo
+                  <input type="file" accept="image/*" (change)="onFileSelect($event)" hidden />
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">Cores</h2>
+
+          <div class="colors-grid">
+            <div class="color-item">
+              <label>Cor primária (botão)</label>
+              <div class="color-row">
+                <input type="color" formControlName="primaryColor" />
+                <input type="text" formControlName="primaryColor" class="color-text" placeholder="#3b82f6" />
+                <button class="btn-clear" (click)="clearField('primaryColor')" title="Padrão">✕</button>
+              </div>
+            </div>
+            <div class="color-item">
+              <label>Cor do texto</label>
+              <div class="color-row">
+                <input type="color" formControlName="textColor" />
+                <input type="text" formControlName="textColor" class="color-text" placeholder="#ffffff" />
+                <button class="btn-clear" (click)="clearField('textColor')" title="Padrão">✕</button>
+              </div>
+            </div>
+            <div class="color-item">
+              <label>Fundo dos cards de score</label>
+              <div class="color-row">
+                <input type="color" formControlName="cardColor" />
+                <input type="text" formControlName="cardColor" class="color-text" placeholder="rgba(255,255,255,0.07)" />
+                <button class="btn-clear" (click)="clearField('cardColor')" title="Padrão">✕</button>
+              </div>
+            </div>
+            <div class="color-item">
+              <label>Cor do botão</label>
+              <div class="color-row">
+                <input type="color" formControlName="buttonColor" />
+                <input type="text" formControlName="buttonColor" class="color-text" placeholder="igual à primária" />
+                <button class="btn-clear" (click)="clearField('buttonColor')" title="Padrão">✕</button>
+              </div>
+            </div>
+            <div class="color-item">
+              <label>Texto do botão</label>
+              <div class="color-row">
+                <input type="color" formControlName="buttonTextColor" />
+                <input type="text" formControlName="buttonTextColor" class="color-text" placeholder="#ffffff" />
+                <button class="btn-clear" (click)="clearField('buttonTextColor')" title="Padrão">✕</button>
+              </div>
+            </div>
+            <div class="color-item">
+              <label>Border radius do logo</label>
+              <div class="color-row">
+                <input type="text" formControlName="logoBorderRadius" class="color-text" placeholder="8px" />
+                <button class="btn-clear" (click)="clearField('logoBorderRadius')" title="Padrão">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- Preview ao vivo -->
+    <div class="preview-panel">
+      <div class="preview-label-row">
+        <span class="preview-label">Preview ao vivo</span>
+        <span class="preview-hint">Arraste o card e o logo para reposicioná-los</span>
+      </div>
+
+      <!-- Nav de telas do preview -->
+      <div class="preview-nav">
+        <button [class.active]="previewScreen() === 'welcome'"   (click)="previewScreen.set('welcome')">Boas-vindas</button>
+        <button [class.active]="previewScreen() === 'rating'"    (click)="previewScreen.set('rating')">Avaliação</button>
+        <button [class.active]="previewScreen() === 'thankyou'"  (click)="previewScreen.set('thankyou')">Obrigado</button>
+      </div>
+
+      <!-- Container do preview com posicionamento absoluto -->
+      <div class="preview-phone" #previewContainer
+           [style.background]="previewBg()"
+           [class.is-dragging]="dragging()">
+
+        <!-- Logo draggable — visibilidade respeita os checkboxes por tela -->
+        @if (previewLogoUrl() && (
+          (previewScreen() === 'welcome'  && previewShowWelcome())  ||
+          (previewScreen() === 'rating'   && previewShowRating())   ||
+          (previewScreen() === 'thankyou' && previewShowThankyou())
+        )) {
+          <div class="draggable-logo"
+               [style.left.%]="logoPosX()"
+               [style.top.%]="logoPosY()"
+               [class.dragging]="dragging() === 'logo'">
+            <img [src]="previewLogoUrl()"
+                 [style.width.px]="logoWidth()"
+                 [style.borderRadius]="previewLogoRadius()"
+                 alt="Logo"
+                 (mousedown)="startDrag('logo', $event)"
+                 (touchstart)="startDrag('logo', $event)" />
+            <!-- Handle de resize -->
+            <div class="resize-handle"
+                 (mousedown)="startResize($event)"
+                 (touchstart)="startResize($event)"
+                 title="Redimensionar logo">⟷</div>
+          </div>
+        }
+
+        <!-- Card draggable -->
+        <div class="draggable-card"
+             [style.left.%]="cardPosX()"
+             [style.top.%]="cardPosY()"
+             [class.dragging]="dragging() === 'card'">
+
+          <!-- Handle de arrasto no topo do card -->
+          <div class="card-drag-handle"
+               (mousedown)="startDrag('card', $event)"
+               (touchstart)="startDrag('card', $event)"
+               title="Arraste para mover o card">
+            ⠿ Mover card
+          </div>
+
+          <!-- CONTEÚDO: BOAS-VINDAS -->
+          @if (previewScreen() === 'welcome') {
+            @if (previewCompanyName() && !previewLogoUrl()) {
+              <p class="preview-company" [style.color]="previewText()">{{ previewCompanyName() }}</p>
+            }
+            <h2 class="preview-welcome-title" [style.color]="previewText()">{{ previewWelcomeTitle() }}</h2>
+            @if (previewWelcomeSubtitle()) {
+              <p class="preview-subtitle" [style.color]="previewText()">{{ previewWelcomeSubtitle() }}</p>
+            }
+            <button class="preview-btn"
+                    [style.background]="previewButtonBg()"
+                    [style.color]="previewButtonText()">{{ previewWelcomeBtn() }}</button>
+          }
+
+          <!-- CONTEÚDO: AVALIAÇÃO -->
+          @if (previewScreen() === 'rating') {
+            <p class="preview-question" [style.color]="previewText()">{{ previewQuestionText() }}</p>
+            <div class="preview-scores">
+              @for (opt of scoreOptions; track opt.score) {
+                <div class="preview-score-item" [style.background]="previewCardBg()">
+                  @if (previewScoreIcon(opt.score)) {
+                    <img [src]="previewScoreIcon(opt.score)!" class="preview-score-custom-icon" [alt]="opt.label" />
+                  } @else {
+                    <span>{{ opt.emoji }}</span>
+                  }
+                  <span [style.color]="previewText()">{{ previewScoreLabel(opt.score) }}</span>
+                </div>
+              }
+            </div>
+            <button class="preview-btn"
+                    [style.background]="previewButtonBg()"
+                    [style.color]="previewButtonText()">{{ previewRatingBtn() }}</button>
+          }
+
+          <!-- CONTEÚDO: OBRIGADO -->
+          @if (previewScreen() === 'thankyou') {
+            <div class="preview-check" [style.background]="previewPrimary()">✓</div>
+            <h2 class="preview-thankyou" [style.color]="previewText()">{{ previewThankYouMsg() }}</h2>
+            @if (previewThankyouSub()) {
+              <p class="preview-subtitle" [style.color]="previewText()">{{ previewThankyouSub() }}</p>
+            }
+          }
+
+        </div>
+
+      </div>
+
+      <!-- Indicadores de posição -->
+      <div class="position-indicators">
+        @if (previewLogoUrl()) {
+          <span class="pos-badge">Logo: {{ logoPosX() | number:'1.0-0' }}%, {{ logoPosY() | number:'1.0-0' }}% · {{ logoWidth() }}px</span>
+        }
+        <span class="pos-badge">Card: {{ cardPosX() | number:'1.0-0' }}%, {{ cardPosY() | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Carregando...</p>
+  </div>
+</ng-template>

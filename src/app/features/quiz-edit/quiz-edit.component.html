@@ -40,6 +40,9 @@
     <!-- ── Body ───────────────────────────────────────────────────────────── -->
     <div class="edit-body" [formGroup]="quizForm">
 
+      <!-- Coluna esquerda: conteúdo das abas -->
+      <div class="form-content">
+
       <!-- ════ ABA CONTEÚDO ═══════════════════════════════════════════════ -->
       @if (activeTab() === 'content') {
         <div class="content-panel">
@@ -148,227 +151,6 @@
 
       <!-- ════ ABA APARÊNCIA ══════════════════════════════════════════════ -->
       @if (activeTab() === 'appearance') {
-        <div class="appearance-layout">
-
-          <!-- Barra de preview: todos os 3 lado a lado, sticky no topo enquanto o usuário rola os controles -->
-          <div class="preview-bar">
-
-            <!-- Preview: tela de pergunta -->
-            <div class="preview-bar-item">
-              <p class="preview-section-label">🎯 Pergunta</p>
-              <div class="preview-phone">
-                <div class="preview-screen"
-                     [style.background]="previewBg()"
-                     [style.color]="previewText()">
-                  <div class="prev-quiz-card">
-                    <div class="prev-title" [style.color]="previewText()">
-                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
-                    </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
-                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s por pergunta
-                    </p>
-
-                    <div class="prev-timer">
-                      <div class="prev-timer__bar">
-                        <div class="prev-timer__fill" [style.background]="previewPrimary()"></div>
-                      </div>
-                      <span class="prev-timer__val" [style.color]="previewText()">30s</span>
-                    </div>
-
-                    <div class="prev-question" [style.color]="previewText()">
-                      {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
-                    </div>
-
-                    <div class="prev-options">
-                      @for (label of ['A', 'B', 'C', 'D']; track label) {
-                        <div class="prev-option"
-                             [style.background]="previewCardColor()"
-                             [style.border-color]="previewPrimary() + '55'"
-                             [style.color]="previewText()">
-                          {{ label }}
-                        </div>
-                      }
-                    </div>
-
-                    <div class="prev-btn"
-                         [style.background]="previewButtonColor()"
-                         [style.color]="previewButtonTextColor()">
-                      Começar Quiz 🚀
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Preview: tela de cadastro -->
-            <div class="preview-bar-item">
-              <p class="preview-section-label">📋 Cadastro</p>
-              <div class="preview-phone">
-                <div class="preview-screen"
-                     [style.background]="previewBg()"
-                     [style.color]="previewText()">
-                  <div class="prev-register-card"
-                       [style.background]="previewRegisterCardColor()"
-                       [style.color]="previewText()">
-
-                    <div class="prev-reg-badge">QUIZ</div>
-
-                    <div class="prev-title" [style.color]="previewText()">
-                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
-                    </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
-                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
-                    </p>
-
-                    <div class="prev-reg-field">
-                      <div class="prev-reg-label" [style.color]="previewText() + '88'">NOME COMPLETO</div>
-                      <div class="prev-reg-input"
-                           [style.background]="previewInputColor()"
-                           [style.border-color]="previewPrimary() + '44'">
-                        <span [style.color]="previewText() + '55'">Seu nome</span>
-                      </div>
-                    </div>
-                    <div class="prev-reg-field">
-                      <div class="prev-reg-label" [style.color]="previewText() + '88'">E-MAIL OU TELEFONE</div>
-                      <div class="prev-reg-input"
-                           [style.background]="previewInputColor()"
-                           [style.border-color]="previewPrimary() + '44'">
-                        <span [style.color]="previewText() + '55'">contato&#64;email.com</span>
-                      </div>
-                    </div>
-
-                    <div class="prev-btn"
-                         [style.background]="previewButtonColor()"
-                         [style.color]="previewButtonTextColor()">
-                      Começar Quiz 🚀
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Preview: tela "Tudo pronto!" — exibida quando o participante veio de um formulário -->
-            <div class="preview-bar-item">
-              <p class="preview-section-label">✋ Tudo Pronto</p>
-              <div class="preview-phone">
-                <div class="preview-screen"
-                     [style.background]="previewBg()"
-                     [style.color]="previewText()">
-                  <div class="prev-register-card"
-                       [style.background]="previewRegisterCardColor()"
-                       [style.color]="previewText()">
-
-                    <div class="prev-reg-badge">QUIZ</div>
-
-                    <div class="prev-title" [style.color]="previewText()">
-                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
-                    </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
-                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
-                    </p>
-
-                    <!-- Saudação — usa readyTitle se preenchido, senão mostra o padrão -->
-                    <div class="prev-ready-greeting">
-                      <span class="prev-ready-avatar">👋</span>
-                      @if (quizForm.get('readyTitle')?.value) {
-                        <div class="prev-ready-name" [style.color]="previewText()">
-                          {{ quizForm.get('readyTitle')?.value }}
-                        </div>
-                      } @else {
-                        <div class="prev-ready-name" [style.color]="previewText()">
-                          Olá, <strong>Nome!</strong>
-                        </div>
-                      }
-                      <div class="prev-ready-hint" [style.color]="previewText() + '88'">
-                        {{ quizForm.get('readyMessage')?.value || 'Você está pronto para o quiz?' }}
-                      </div>
-                    </div>
-
-                    <div class="prev-btn"
-                         [style.background]="previewButtonColor()"
-                         [style.color]="previewButtonTextColor()">
-                      Tudo pronto! Vamos lá 🚀
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Preview: tela de ranking -->
-            <div class="preview-bar-item">
-              <p class="preview-section-label">🏆 Ranking</p>
-              <div class="preview-phone">
-                <div class="preview-screen"
-                     [style.background]="previewBg()"
-                     [style.color]="previewText()">
-                  <div class="prev-ranking">
-
-                    <!-- Header mockado -->
-                    <div class="prev-rank-header">
-                      <span>🏆</span>
-                      <div class="prev-title" [style.color]="previewText()">Ranking</div>
-                      <div class="prev-subtitle" [style.color]="previewText() + '99'">
-                        {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
-                      </div>
-                    </div>
-
-                    <!-- Pódio mockado -->
-                    <div class="prev-podium">
-                      <!-- 2º -->
-                      <div class="prev-podium-col prev-podium-col--2nd">
-                        <div class="prev-p-card"
-                             [style.background]="previewRankingCardColor()"
-                             [style.color]="previewText()">
-                          <span>🥈</span>
-                          <div class="prev-p-name" [style.color]="previewText()">—</div>
-                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
-                        </div>
-                        <div class="prev-p-stand prev-p-stand--2nd"
-                             [style.border-top-color]="previewPrimary() + '44'">2º</div>
-                      </div>
-                      <!-- 1º -->
-                      <div class="prev-podium-col prev-podium-col--1st">
-                        <div class="prev-p-card prev-p-card--1st"
-                             [style.background]="previewRankingCardColor()"
-                             [style.color]="previewText()"
-                             [style.border-color]="previewPrimary() + '55'">
-                          <span>🥇</span>
-                          <div class="prev-p-name" [style.color]="previewText()">Campeão</div>
-                          <div class="prev-p-score prev-p-score--1st" [style.color]="previewPrimary()">1000</div>
-                        </div>
-                        <div class="prev-p-stand prev-p-stand--1st"
-                             [style.background]="previewPrimary()">1º</div>
-                      </div>
-                      <!-- 3º -->
-                      <div class="prev-podium-col prev-podium-col--3rd">
-                        <div class="prev-p-card"
-                             [style.background]="previewRankingCardColor()"
-                             [style.color]="previewText()">
-                          <span>🥉</span>
-                          <div class="prev-p-name" [style.color]="previewText()">—</div>
-                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
-                        </div>
-                        <div class="prev-p-stand prev-p-stand--3rd"
-                             [style.border-top-color]="previewPrimary() + '44'">3º</div>
-                      </div>
-                    </div>
-
-                    <!-- Botão Jogar -->
-                    <div class="prev-btn"
-                         [style.background]="previewButtonColor()"
-                         [style.color]="previewButtonTextColor()">
-                      Quero jogar! 🎮
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <p class="preview-hint">As alterações aparecem em tempo real. Salve para aplicar no link público.</p>
-
-          <!-- Controles de aparência -->
           <div class="appearance-controls">
 
             <!-- Cores -->
@@ -551,14 +333,177 @@
               </div>
             </section>
 
-          </div>
+          </div><!-- /appearance-controls -->
+      }<!-- /appearance tab -->
 
-        </div>
-      }
+      </div><!-- /form-content -->
+
+      <!-- Coluna direita: preview sempre visível ──────────────────────── -->
+          <div class="preview-panel">
+            <div class="preview-label-row">
+              <span class="preview-label">PREVIEW AO VIVO</span>
+            </div>
+
+            <div class="preview-nav">
+              <button [class.active]="previewMode() === 'question'" (click)="previewMode.set('question')">🎯 Pergunta</button>
+              <button [class.active]="previewMode() === 'register'" (click)="previewMode.set('register')">📋 Cadastro</button>
+              <button [class.active]="previewMode() === 'ready'"    (click)="previewMode.set('ready')">✋ Pronto</button>
+              <button [class.active]="previewMode() === 'ranking'"  (click)="previewMode.set('ranking')">🏆 Ranking</button>
+            </div>
+
+            <div class="preview-phone">
+              <div class="preview-screen"
+                   [style.background]="previewBg()"
+                   [style.color]="previewText()">
+
+                @if (previewMode() === 'question') {
+                  <div class="prev-quiz-card">
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s por pergunta
+                    </p>
+                    <div class="prev-timer">
+                      <div class="prev-timer__bar">
+                        <div class="prev-timer__fill" [style.background]="previewPrimary()"></div>
+                      </div>
+                      <span class="prev-timer__val" [style.color]="previewText()">30s</span>
+                    </div>
+                    <div class="prev-question" [style.color]="previewText()">
+                      {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
+                    </div>
+                    <div class="prev-options">
+                      @for (label of ['A', 'B', 'C', 'D']; track label) {
+                        <div class="prev-option"
+                             [style.background]="previewCardColor()"
+                             [style.border-color]="previewPrimary() + '55'"
+                             [style.color]="previewText()">{{ label }}</div>
+                      }
+                    </div>
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">Começar Quiz 🚀</div>
+                  </div>
+                }
+
+                @if (previewMode() === 'register') {
+                  <div class="prev-register-card"
+                       [style.background]="previewRegisterCardColor()"
+                       [style.color]="previewText()">
+                    <div class="prev-reg-badge">QUIZ</div>
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
+                    </p>
+                    <div class="prev-reg-field">
+                      <div class="prev-reg-label" [style.color]="previewText() + '88'">NOME COMPLETO</div>
+                      <div class="prev-reg-input"
+                           [style.background]="previewInputColor()"
+                           [style.border-color]="previewPrimary() + '44'">
+                        <span [style.color]="previewText() + '55'">Seu nome</span>
+                      </div>
+                    </div>
+                    <div class="prev-reg-field">
+                      <div class="prev-reg-label" [style.color]="previewText() + '88'">E-MAIL OU TELEFONE</div>
+                      <div class="prev-reg-input"
+                           [style.background]="previewInputColor()"
+                           [style.border-color]="previewPrimary() + '44'">
+                        <span [style.color]="previewText() + '55'">contato&#64;email.com</span>
+                      </div>
+                    </div>
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">Começar Quiz 🚀</div>
+                  </div>
+                }
+
+                @if (previewMode() === 'ready') {
+                  <div class="prev-register-card"
+                       [style.background]="previewRegisterCardColor()"
+                       [style.color]="previewText()">
+                    <div class="prev-reg-badge">QUIZ</div>
+                    <div class="prev-title" [style.color]="previewText()">
+                      {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                      {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
+                    </p>
+                    <div class="prev-ready-greeting">
+                      <span class="prev-ready-avatar">👋</span>
+                      @if (quizForm.get('readyTitle')?.value) {
+                        <div class="prev-ready-name" [style.color]="previewText()">
+                          {{ quizForm.get('readyTitle')?.value }}
+                        </div>
+                      } @else {
+                        <div class="prev-ready-name" [style.color]="previewText()">
+                          Olá, <strong>Nome!</strong>
+                        </div>
+                      }
+                      <div class="prev-ready-hint" [style.color]="previewText() + '88'">
+                        {{ quizForm.get('readyMessage')?.value || 'Você está pronto para o quiz?' }}
+                      </div>
+                    </div>
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">Tudo pronto! Vamos lá 🚀</div>
+                  </div>
+                }
+
+                @if (previewMode() === 'ranking') {
+                  <div class="prev-ranking">
+                    <div class="prev-rank-header">
+                      <span>🏆</span>
+                      <div class="prev-title" [style.color]="previewText()">Ranking</div>
+                      <div class="prev-subtitle" [style.color]="previewText() + '99'">
+                        {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
+                      </div>
+                    </div>
+                    <div class="prev-podium">
+                      <div class="prev-podium-col prev-podium-col--2nd">
+                        <div class="prev-p-card" [style.background]="previewRankingCardColor()" [style.color]="previewText()">
+                          <span>🥈</span>
+                          <div class="prev-p-name" [style.color]="previewText()">—</div>
+                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--2nd" [style.border-top-color]="previewPrimary() + '44'">2º</div>
+                      </div>
+                      <div class="prev-podium-col prev-podium-col--1st">
+                        <div class="prev-p-card prev-p-card--1st"
+                             [style.background]="previewRankingCardColor()"
+                             [style.color]="previewText()"
+                             [style.border-color]="previewPrimary() + '55'">
+                          <span>🥇</span>
+                          <div class="prev-p-name" [style.color]="previewText()">Campeão</div>
+                          <div class="prev-p-score prev-p-score--1st" [style.color]="previewPrimary()">1000</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--1st" [style.background]="previewPrimary()">1º</div>
+                      </div>
+                      <div class="prev-podium-col prev-podium-col--3rd">
+                        <div class="prev-p-card" [style.background]="previewRankingCardColor()" [style.color]="previewText()">
+                          <span>🥉</span>
+                          <div class="prev-p-name" [style.color]="previewText()">—</div>
+                          <div class="prev-p-score" [style.color]="previewPrimary()">0</div>
+                        </div>
+                        <div class="prev-p-stand prev-p-stand--3rd" [style.border-top-color]="previewPrimary() + '44'">3º</div>
+                      </div>
+                    </div>
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">Quero jogar! 🎮</div>
+                  </div>
+                }
+
+              </div><!-- /preview-screen -->
+            </div><!-- /preview-phone -->
+
+            <p class="preview-hint">As alterações aparecem em tempo real. Salve para aplicar no link público.</p>
+          </div><!-- /preview-panel -->
 
     </div>
 
   </div>
 }
 
-<!-- Presets de gradiente (definidos no TS) -->

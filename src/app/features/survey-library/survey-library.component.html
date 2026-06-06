@@ -1,0 +1,94 @@
+<app-page-shell>
+  <app-page-header title="⭐ Pesquisas de Satisfação">
+    <button page-actions class="btn-primary" (click)="openCreate()">+ Nova Pesquisa</button>
+  </app-page-header>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Carregando pesquisas...</p>
+    </div>
+  }
+
+  @if (!loading() && surveys().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">⭐</div>
+      <h3>Nenhuma pesquisa criada ainda</h3>
+      <p>Crie pesquisas de satisfação independentes ou vincule-as ao final de qualquer formulário.</p>
+      <button class="btn-primary" (click)="openCreate()">Criar primeira pesquisa</button>
+    </div>
+  }
+
+  @if (!loading() && surveys().length > 0) {
+    <div class="survey-grid">
+      @for (s of surveys(); track s.id) {
+        <div class="survey-card" [class.survey-card--inactive]="!s.active">
+
+          <!-- Header do card -->
+          <div class="survey-card__header">
+            <div class="survey-card__info">
+              <h3 class="survey-card__name">{{ s.name }}</h3>
+              <span class="survey-card__slug">/survey/{{ s.slug }}</span>
+            </div>
+            <div class="survey-card__badge"
+                 [class.badge--active]="s.active"
+                 [class.badge--inactive]="!s.active">
+              {{ s.active ? 'Ativa' : 'Inativa' }}
+            </div>
+          </div>
+
+          <!-- Info rápida -->
+          <div class="survey-card__meta">
+            @if (s.companyName) {
+              <span class="meta-item">🏢 {{ s.companyName }}</span>
+            }
+            <span class="meta-item">💬 {{ s.showComment ? 'Com comentário' : 'Sem comentário' }}</span>
+          </div>
+
+          <!-- Links expandíveis -->
+          @if (expandedId() === s.id) {
+            <div class="survey-card__links">
+              <div class="link-row">
+                <span class="link-label">⭐ Público</span>
+                <a [href]="s.publicLink" target="_blank" class="link-url">{{ s.publicLink }}</a>
+                <button class="btn-icon" (click)="copyLink(s.publicLink)" title="Copiar link">📋</button>
+              </div>
+              <div class="link-row">
+                <span class="link-label">📊 Relatório</span>
+                <a [href]="s.reportLink" target="_blank" class="link-url">{{ s.reportLink }}</a>
+                <button class="btn-icon" (click)="copyLink(s.reportLink)" title="Copiar link">📋</button>
+              </div>
+            </div>
+          }
+
+          <!-- Confirmação de exclusão -->
+          @if (deletingId() === s.id) {
+            <div class="delete-confirm">
+              <p>Excluir esta pesquisa e todas as suas respostas?</p>
+              <div class="delete-actions">
+                <button class="btn-danger-sm" (click)="deleteSurvey(s.id)">Confirmar</button>
+                <button class="btn-ghost-sm" (click)="cancelDelete()">Cancelar</button>
+              </div>
+            </div>
+          }
+
+          <!-- Ações -->
+          <div class="survey-card__actions">
+            <button class="btn-ghost btn-ghost--sm" (click)="toggleExpanded(s.id)">
+              {{ expandedId() === s.id ? 'Ocultar links' : '🔗 Ver links' }}
+            </button>
+            <button class="btn-ghost btn-ghost--sm" (click)="openReport(s)" title="Ver relatório">
+              📊 Relatório
+            </button>
+            <button class="btn-ghost btn-ghost--sm" (click)="toggleActive(s)">
+              {{ s.active ? '⏸ Pausar' : '▶ Ativar' }}
+            </button>
+            <button class="btn-ghost btn-ghost--sm btn-edit" (click)="openEdit(s)">✏ Editar</button>
+            <button class="btn-ghost btn-ghost--sm btn-delete" (click)="confirmDelete(s.id)">🗑</button>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+</app-page-shell>

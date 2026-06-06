@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { FormSubmission, AppointmentResponse, AttendanceRecord, AttendanceCompanion } from './form-template.service';
 import { DashboardSummary } from './dashboard.service';
 import { RankingResponse } from './quiz.service';
+import { SurveyReport } from './survey.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExportService {
@@ -229,6 +230,47 @@ export class ExportService {
     XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
 
     XLSX.writeFile(wb, `ranking_${this.slug(quizName || ranking.templateName)}_${this.formatFileDate()}.xlsx`);
+  }
+
+  // ─────────────────────────────────────────────
+  // PESQUISA DE SATISFAÇÃO (SurveyReport)
+  // ─────────────────────────────────────────────
+  exportSurvey(report: SurveyReport, surveyName: string): void {
+    if (!report.responses.length && report.totalResponses === 0) return;
+
+    const wb = XLSX.utils.book_new();
+
+    // Aba 1 — Respostas detalhadas
+    const rows = report.responses.map((r, i) => ({
+      '#': i + 1,
+      'Data/Hora': this.formatDateTime(r.createdAt),
+      'Score': r.score,
+      'Avaliação': r.scoreLabel,
+      'Comentário': r.comment ?? '',
+      'Referência': r.respondentRef ?? '',
+      'Template Origem': r.sourceTemplateSlug ?? '',
+    }));
+    const wsRespostas = XLSX.utils.json_to_sheet(rows);
+    this.autoWidth(wsRespostas, rows as any);
+    XLSX.utils.book_append_sheet(wb, wsRespostas, 'Respostas');
+
+    // Aba 2 — Resumo e distribuição
+    const resumo = [
+      { Métrica: 'Pesquisa', Valor: report.surveyName },
+      { Métrica: 'Total de Respostas', Valor: report.totalResponses },
+      { Métrica: 'Média Geral', Valor: report.averageScore },
+      { Métrica: '', Valor: '' },
+      { Métrica: '— Distribuição —', Valor: '' },
+      ...Object.entries(report.scoreDistribution).map(([label, count]) => ({
+        Métrica: label,
+        Valor: count,
+      })),
+    ];
+    const wsResumo = XLSX.utils.json_to_sheet(resumo);
+    this.autoWidth(wsResumo, resumo as any);
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    XLSX.writeFile(wb, `satisfacao_${this.slug(surveyName)}_${this.formatFileDate()}.xlsx`);
   }
 
   private formatFileDate(): string {

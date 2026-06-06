@@ -1738,8 +1738,107 @@
   cursor: pointer;
   accent-color: #6366f1;
 
-  &--lgpd { accent-color: #6366f1; }
-  &--quiz  { accent-color: #7c3aed; }
+  &--lgpd   { accent-color: #6366f1; }
+  &--quiz   { accent-color: #7c3aed; }
+  &--survey { accent-color: #f59e0b; }
+}
+
+.feature-toggle-card--survey {
+  &:has(input:checked) {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.05);
+  }
+}
+
+// ── Survey inline picker ───────────────────────────────────────────────────────
+
+.survey-inline-picker {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.survey-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.survey-picker-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d97706;
+  white-space: nowrap;
+}
+
+.survey-picker-select {
+  flex: 1;
+  min-width: 180px;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border, rgba(100, 130, 180, 0.18));
+  border-radius: 8px;
+  background: var(--bg, #070d18);
+  color: var(--text, #e2e8f0);
+  cursor: pointer;
+  outline: none;
+
+  &:focus { border-color: #f59e0b; }
+}
+
+.survey-picker-preview {
+  font-size: 12px;
+  color: #f59e0b;
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(245, 158, 11, 0.12); }
+}
+
+.survey-picker-unlink {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(239, 68, 68, 0.1); }
+}
+
+.survey-picker-saving {
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.survey-picker-empty {
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.survey-picker-link {
+  color: #f59e0b;
+  text-decoration: underline;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.survey-picker-info {
+  font-size: 11px;
+  color: #d97706;
+  opacity: 0.8;
 }
 
 .feature-toggle-content {

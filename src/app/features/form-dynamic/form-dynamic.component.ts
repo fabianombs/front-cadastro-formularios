@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { cpfValidator, cnpjValidator } from '../../shared/validators/cpf-cnpj.validator';
 import { dateValidator, dateBrToIso } from '../../shared/validators/date.validator';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormTemplateService,
   FormTemplate,
@@ -50,17 +50,21 @@ export class FormDynamicComponent implements OnInit {
     )
   );
 
-  // Monta o link do quiz com nome e contato do participante para pular a tela de registro
+  // Monta o link do quiz com nome, contato e — se houver survey — o slug da pesquisa para redirect pós-quiz
   public quizLinkWithPlayer = computed(() => {
-    const base = this.template()?.quizLink;
+    const t = this.template();
+    const base = t?.quizLink;
     if (!base) return null;
+    const params = new URLSearchParams();
     const name    = this.submittedPlayerName();
     const contact = this.submittedPlayerContact();
-    if (!name && !contact) return base;
-    const params = new URLSearchParams();
     if (name)    params.set('playerName', name);
     if (contact) params.set('playerContact', contact);
-    // Preserva possíveis query params já existentes no link
+    // Passa o surveySlug para que o quiz redirecione para a pesquisa ao terminar
+    if (t?.hasSurvey && t.surveySlug) {
+      params.set('surveySlug', t.surveySlug);
+      params.set('surveySource', t.slug);
+    }
     const separator = base.includes('?') ? '&' : '?';
     return `${base}${separator}${params.toString()}`;
   });
@@ -85,6 +89,23 @@ export class FormDynamicComponent implements OnInit {
   }
 
   private messages = inject(MessageService);
+
+  private router = inject(Router);
+
+  // Survey integrado — exibido após qualquer ação concluída quando o template tem pesquisa ativa
+  public showSurveyPrompt = signal<boolean>(false);
+
+  // Link da pesquisa com referência do respondente e slug do template como origem
+  public surveyLink = computed(() => {
+    const t = this.template();
+    if (!t?.hasSurvey || !t.surveySlug) return null;
+    const base = `/survey/${t.surveySlug}`;
+    const params = new URLSearchParams();
+    const name = this.submittedPlayerName();
+    if (name) params.set('ref', name);
+    params.set('source', t.slug);
+    return `${base}?${params.toString()}`;
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -420,8 +441,15 @@ export class FormDynamicComponent implements OnInit {
         this.submittedPlayerContact.set(this.resolveContactField(values));
         this.form.reset();
         this.submitted.set(true);
-        // Exibe o prompt do quiz se o template tiver quiz ativo
-        if (template.hasQuiz) this.showQuizPrompt.set(true);
+        // Quiz e pesquisa são mutuamente exibidos — quiz tem prioridade (pesquisa aparece após o quiz)
+        if (template.hasQuiz) {
+          this.showQuizPrompt.set(true);
+        } else if (template.hasSurvey && template.surveySlug) {
+          // Redireciona diretamente para a pesquisa após breve delay
+          setTimeout(() => this.router.navigate(['/survey', template.surveySlug],
+            { queryParams: { ref: this.submittedPlayerName() || undefined, source: template.slug } }
+          ), 400);
+        }
       },
       error: () => this.messages.error('Erro ao enviar formulário'),
     });
@@ -472,8 +500,13 @@ export class FormDynamicComponent implements OnInit {
         this.selectedSlot.set('');
         this.selectedDate.set('');
         this.availableSlots.set([]);
-        // Exibe o prompt do quiz se o template tiver quiz ativo
-        if (template.hasQuiz) this.showQuizPrompt.set(true);
+        if (template.hasQuiz) {
+          this.showQuizPrompt.set(true);
+        } else if (template.hasSurvey && template.surveySlug) {
+          setTimeout(() => this.router.navigate(['/survey', template.surveySlug],
+            { queryParams: { ref: bookedByName || undefined, source: template.slug } }
+          ), 400);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
