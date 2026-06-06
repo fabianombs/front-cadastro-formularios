@@ -60,6 +60,20 @@ export const routes: Routes = [
       import('./features/quiz-ranking/quiz-ranking.component').then((m) => m.QuizRankingComponent),
   },
 
+  // ⭐ PESQUISA DE SATISFAÇÃO — pública (sem autenticação)
+  {
+    path: 'survey/:slug',
+    loadComponent: () =>
+      import('./features/survey-public/survey-public.component').then((m) => m.SurveyPublicComponent),
+  },
+  // Relatório admin — exige autenticação
+  {
+    path: 'survey/:slug/report',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/survey-report/survey-report.component').then((m) => m.SurveyReportComponent),
+  },
+
   // 🔐 ROTAS PRIVADAS COM LAYOUT
   {
     path: '',
@@ -149,6 +163,28 @@ export const routes: Routes = [
         data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
         loadComponent: () =>
           import('./features/quiz-edit/quiz-edit.component').then((m) => m.QuizEditComponent),
+      },
+      // ⭐ PESQUISAS DE SATISFAÇÃO (admin)
+      {
+        path: 'surveys',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/survey-library/survey-library.component').then((m) => m.SurveyLibraryComponent),
+      },
+      {
+        path: 'surveys/new',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/survey-edit/survey-edit.component').then((m) => m.SurveyEditComponent),
+      },
+      {
+        path: 'surveys/:id/edit',
+        canActivate: [authGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_FUNCIONARIO'] },
+        loadComponent: () =>
+          import('./features/survey-edit/survey-edit.component').then((m) => m.SurveyEditComponent),
       },
     ],
   },

@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -19,6 +19,7 @@ type Step = 'loading' | 'form' | 'success' | 'error';
 })
 export class AttendanceCheckinComponent implements OnInit {
   private route   = inject(ActivatedRoute);
+  private router  = inject(Router);
   private service = inject(FormTemplateService);
 
   step     = signal<Step>('loading');
@@ -79,8 +80,16 @@ export class AttendanceCheckinComponent implements OnInit {
 
     this.service.addPublicGuest(this.slug, rowData).subscribe({
       next: () => {
-        this.step.set('success');
         this.submitting.set(false);
+        const t = this.template();
+        if (t?.hasSurvey && t.surveySlug) {
+          // Redireciona para a pesquisa passando o nome do convidado como referência
+          const name = rowData['Nome'] || rowData['nome'] || Object.values(rowData)[0] || '';
+          this.router.navigate(['/survey', t.surveySlug],
+            { queryParams: { ref: name || undefined, source: this.slug } });
+        } else {
+          this.step.set('success');
+        }
       },
       error: () => {
         this.errorMsg.set('Erro ao cadastrar. Tente novamente.');

@@ -82,7 +82,7 @@
             @for (sub of submissions(); track sub.id; let i = $index) {
             <tr>
               <td>{{ i + 1 }}</td>
-              @for (col of submissionCols(); track col) { <td>{{ sub.values[col] ?? '—' }}</td> }
+              @for (col of submissionCols(); track col) { <td>{{ sub.values[col] || '—' }}</td> }
               <td>{{ sub.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
             </tr>
             }
@@ -113,7 +113,7 @@
             @for (rec of attendance(); track rec.id; let i = $index) {
             <tr>
               <td>{{ i + 1 }}</td>
-              @for (col of attendanceCols(); track col) { <td>{{ rec.rowData[col] ?? '—' }}</td> }
+              @for (col of attendanceCols(); track col) { <td>{{ rec.rowData[col] || '—' }}</td> }
               <td>
                 @if (rec.attended) { <span class="tv-badge-green">Presente</span> }
                 @else { <span class="tv-badge-gray">—</span> }

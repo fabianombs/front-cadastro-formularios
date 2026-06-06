@@ -4,7 +4,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   QuizService, QuizConfig,
   QuizConfigRequest, QuizQuestionRequest, QuizOptionRequest,
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-quiz-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './quiz-edit.component.html',
   styleUrls: ['./quiz-edit.component.scss'],
 })
@@ -34,8 +34,8 @@ export class QuizEditComponent implements OnInit {
   // Aba ativa: 'content' | 'appearance'
   activeTab = signal<'content' | 'appearance'>('content');
 
-  // Modo do preview ao vivo: pergunta ou card de cadastro
-  previewMode = signal<'question' | 'register'>('question');
+  // Modo do preview ao vivo: qual tela mostrar no painel lateral
+  previewMode = signal<'question' | 'register' | 'ready' | 'ranking'>('question');
 
   quizForm!: FormGroup;
 
@@ -113,6 +113,23 @@ export class QuizEditComponent implements OnInit {
     this.quizForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(v => this.formSnapshot.set(v));
+
+    // Sincroniza registerCardColor ↔ rankingCardColor: mudar um atualiza o outro
+    this.quizForm.get('registerCardColor')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(val => {
+        if (val !== this.quizForm.get('rankingCardColor')!.value) {
+          this.quizForm.get('rankingCardColor')!.setValue(val, { emitEvent: false });
+        }
+      });
+
+    this.quizForm.get('rankingCardColor')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(val => {
+        if (val !== this.quizForm.get('registerCardColor')!.value) {
+          this.quizForm.get('registerCardColor')!.setValue(val, { emitEvent: false });
+        }
+      });
   }
 
   // ── Getters form ──────────────────────────────────────────────────────────

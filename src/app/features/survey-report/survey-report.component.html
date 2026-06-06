@@ -1,0 +1,104 @@
+<div class="report-wrapper">
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Carregando relatório...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading() && errorMsg()" class="error-container">
+    <p>⚠️ {{ errorMsg() }}</p>
+  </div>
+
+  <!-- Conteúdo -->
+  <ng-container *ngIf="!loading() && report() as r">
+
+    <!-- Header -->
+    <div class="report-header">
+      <div class="header-info">
+        <h1>📊 {{ r.surveyName }}</h1>
+        <p class="header-sub">Relatório de Satisfação</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="copyPublicLink()">
+          🔗 Copiar Link Público
+        </button>
+        <button class="btn-primary" (click)="exportExcel()">
+          📥 Exportar Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards de resumo -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <span class="card-value">{{ r.totalResponses }}</span>
+        <span class="card-label">Total de Respostas</span>
+      </div>
+      <div class="summary-card highlight">
+        <span class="card-value">{{ averageStars }} <small>/ 5</small></span>
+        <span class="card-label">Média Geral</span>
+      </div>
+      <div class="summary-card">
+        <span class="card-value green">
+          {{ r.scoreDistribution['Muito Satisfeito'] + r.scoreDistribution['Satisfeito'] }}
+        </span>
+        <span class="card-label">Satisfeitos (4-5)</span>
+      </div>
+    </div>
+
+    <!-- Distribuição por score -->
+    <div class="section-card">
+      <h2>Distribuição por avaliação</h2>
+      <div class="distribution-list">
+        <div *ngFor="let entry of scoreEntries" class="distribution-item">
+          <span class="dist-label">{{ entry.label }}</span>
+          <div class="dist-bar-track">
+            <div
+              class="dist-bar-fill"
+              [style.width.%]="entry.pct"
+              [style.background]="scoreColors[entry.label]"
+            ></div>
+          </div>
+          <span class="dist-count">{{ entry.count }} <small>({{ entry.pct }}%)</small></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de respostas -->
+    <div class="section-card">
+      <h2>Todas as respostas</h2>
+      <div class="table-wrapper">
+        <table class="responses-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Data/Hora</th>
+              <th>Avaliação</th>
+              <th>Comentário</th>
+              <th>Referência</th>
+              <th>Template Origem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of r.responses; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="score-badge" [style.background]="scoreColors[item.scoreLabel]">
+                  {{ item.scoreLabel }}
+                </span>
+              </td>
+              <td>{{ item.comment || '—' }}</td>
+              <td>{{ item.respondentRef || '—' }}</td>
+              <td>{{ item.sourceTemplateSlug || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!r.responses.length" class="empty-msg">Nenhuma resposta ainda.</p>
+    </div>
+
+  </ng-container>
+</div>
