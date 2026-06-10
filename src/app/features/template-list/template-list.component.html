@@ -57,7 +57,7 @@
             📅 Agendamentos
           </button>
         }
-        @if (!template()?.hasSchedule) {
+        @if (!template()?.hasSchedule && !template()?.hasAttendance) {
           <button class="tl-tab" [class.tl-tab--active]="activeTab() === 'submissions'" (click)="changeTab('submissions')">
             📋 Respostas
           </button>
@@ -507,6 +507,8 @@
             🔗 Link de Cadastro
           </button>
 
+          <!-- Admin sempre; visitante público só se viewAllowExport ligado -->
+          @if (auth.isAdmin() || auth.isFuncionario() || auth.isClient() || template()?.viewAllowExport) {
           <button
             class="btn-outline"
             style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
@@ -514,6 +516,7 @@
           >
             ⬇ Exportar Excel
           </button>
+          }
         </div>
       </div>
 

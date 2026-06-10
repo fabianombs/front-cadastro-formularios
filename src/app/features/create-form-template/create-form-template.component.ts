@@ -1191,7 +1191,7 @@ export class CreateTemplateComponent implements OnInit {
   }
 
   // Salva imediatamente um toggle de view config sem precisar reabrir o formulário de edição
-  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments', value: boolean) {
+  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck', value: boolean) {
     if (!this.template) return;
     this.templateService.updateViewConfig(this.template.id, { [field]: value }).subscribe({
       next: (res) => { this.template = res; this.cdr.detectChanges(); },

@@ -31,7 +31,7 @@
 
     <!-- Abas -->
     <div class="tv-tabs">
-      @if (tmpl.viewShowSubmissions) {
+      @if (tmpl.viewShowSubmissions && !tmpl.hasAttendance) {
       <button class="tv-tab" [class.active]="isActive('submissions')" [ngStyle]="activeTabStyle('submissions')" (click)="setTab('submissions')">
         📋 Respostas
         <span class="tv-badge">{{ submissions().length }}</span>
@@ -54,7 +54,7 @@
     <!-- Exportação condicional -->
     @if (tmpl.viewAllowExport) {
     <div class="tv-toolbar">
-      @if (isActive('submissions') && tmpl.viewShowSubmissions) {
+      @if (isActive('submissions') && tmpl.viewShowSubmissions && !tmpl.hasAttendance) {
       <button class="tv-btn-export" (click)="exportSubmissions()">⬇ Exportar Respostas</button>
       }
       @if (isActive('attendance') && tmpl.viewShowAttendance) {
@@ -64,7 +64,7 @@
     }
 
     <!-- ─── ABA: RESPOSTAS ─── -->
-    @if (isActive('submissions') && tmpl.viewShowSubmissions) {
+    @if (isActive('submissions') && tmpl.viewShowSubmissions && !tmpl.hasAttendance) {
     <div [ngStyle]="cardStyle" class="tv-card">
       @if (submissions().length === 0) {
       <p class="tv-empty">Nenhuma resposta registrada.</p>
@@ -115,8 +115,17 @@
               <td>{{ i + 1 }}</td>
               @for (col of attendanceCols(); track col) { <td>{{ rec.rowData[col] || '—' }}</td> }
               <td>
+                @if (tmpl.viewAllowAttendanceCheck) {
+                <!-- Admin liberou: cliente marca presença direto (sem login) -->
+                <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" [checked]="rec.attended" (change)="togglePresence(rec)" />
+                  @if (rec.attended) { <span class="tv-badge-green">Presente</span> }
+                  @else { <span class="tv-badge-gray">Marcar</span> }
+                </label>
+                } @else {
                 @if (rec.attended) { <span class="tv-badge-green">Presente</span> }
                 @else { <span class="tv-badge-gray">—</span> }
+                }
               </td>
               <td>{{ rec.createdAt | date:'dd/MM/yyyy' }}</td>
             </tr>

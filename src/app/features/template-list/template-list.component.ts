@@ -294,7 +294,7 @@ export class TemplateListComponent implements OnInit {
     // prioridade 2: tenta detectar presença pelos dados reais
     this.service.getAttendance(t.id, 0, 1).subscribe({
       next: (res) => {
-        if (res.totalElements > 0) {
+        if (res.totalElements > 0 || t.hasAttendance) {
           this.activeTab.set('attendance');
         } else {
           this.activeTab.set('submissions');
@@ -302,7 +302,7 @@ export class TemplateListComponent implements OnInit {
         this.loadActiveTabData();
       },
       error: () => {
-        this.activeTab.set('submissions');
+        this.activeTab.set(t.hasAttendance ? 'attendance' : 'submissions');
         this.loadActiveTabData();
       }
     });
