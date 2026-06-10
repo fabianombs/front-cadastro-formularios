@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { attendanceListPublicGuard } from './core/guards/attendance-list-public.guard';
 
 export const routes: Routes = [
   // 🔓 ROTAS PÚBLICAS
@@ -22,8 +23,9 @@ export const routes: Routes = [
   },
   {
     path: 'forms/:slug/list',
-    // Rota protegida: apenas usuários autenticados (admin/funcionario/client) podem ver
-    canActivate: [authGuard],
+    // Lista (admin). Para listas de presença com opção pública ligada, fica acessível
+    // sem login para o cliente preencher. Demais templates seguem exigindo login (inalterado).
+    canActivate: [attendanceListPublicGuard],
     loadComponent: () =>
       import('./features/template-list/template-list.component').then(
         (m) => m.TemplateListComponent,

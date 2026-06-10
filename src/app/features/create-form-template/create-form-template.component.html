@@ -127,6 +127,8 @@
           (change)="patchViewConfig('viewAllowExport', $any($event.target).checked)" />
         Exportar Excel
       </label>
+      <!-- Toggles de abas: irrelevantes para lista de presença (que só tem presença) -->
+      @if (!template.hasAttendance) {
       <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; cursor: pointer;">
         <input type="checkbox" [checked]="template.viewShowSubmissions"
           (change)="patchViewConfig('viewShowSubmissions', $any($event.target).checked)" />
@@ -142,7 +144,17 @@
           (change)="patchViewConfig('viewShowAppointments', $any($event.target).checked)" />
         Agendamentos
       </label>
+      }
     </div>
+
+    <!-- Torna a lista de presença pública (link /view e /forms/:slug/list) p/ o cliente preencher sem login -->
+    @if (template.hasAttendance) {
+    <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10b981; cursor: pointer; padding-top: 4px;">
+      <input type="checkbox" [checked]="template.viewAllowAttendanceCheck"
+        (change)="patchViewConfig('viewAllowAttendanceCheck', $any($event.target).checked)" />
+      Tornar lista de presença pública (cliente preenche sem login)
+    </label>
+    }
     <p style="font-size: 11px; color: #475569; margin: 0;">
       As permissões são aplicadas imediatamente ao marcar/desmarcar.
     </p>
