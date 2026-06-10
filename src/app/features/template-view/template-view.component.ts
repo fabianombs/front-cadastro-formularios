@@ -67,7 +67,7 @@ export class TemplateViewComponent implements OnInit {
         this.loading.set(false);
 
         // Seleciona a primeira aba habilitada
-        if (tmpl.viewShowSubmissions)       this.activeTab.set('submissions');
+        if (tmpl.viewShowSubmissions && !tmpl.hasAttendance) this.activeTab.set('submissions');
         else if (tmpl.viewShowAttendance)   this.activeTab.set('attendance');
         else if (tmpl.viewShowAppointments) this.activeTab.set('appointments');
 
@@ -141,6 +141,19 @@ export class TemplateViewComponent implements OnInit {
     const tmpl = this.template();
     if (!tmpl) return;
     this.exportService.exportAttendance(this.attendance(), tmpl.name);
+  }
+
+  // Marca/desmarca presença pela view pública (sem login).
+  // Só age se o admin liberou a permissão; o endpoint /attendance/{id}/mark já é público.
+  togglePresence(rec: AttendanceRecord): void {
+    if (!this.template()?.viewAllowAttendanceCheck) return;
+    this.templateService.markAttendance(rec.id, { attended: !rec.attended, notes: rec.notes }).subscribe({
+      next: updated => {
+        this.attendance.update(list => list.map(r => r.id === rec.id ? updated : r));
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+    });
   }
 
   get headerImageUrl(): string {
