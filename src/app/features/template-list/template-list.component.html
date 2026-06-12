@@ -448,22 +448,30 @@
           <span class="mini-stat-value">{{ attendanceStats().total }}</span>
           <span class="mini-stat-label">Convidados</span>
         </div>
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--success">
           <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
           <span class="mini-stat-label">Presentes</span>
         </div>
+        }
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--warning">
           <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
           <span class="mini-stat-label">Ausentes</span>
         </div>
+        }
+        @if (template()?.attendanceShowCompanions !== false) {
         <div class="mini-stat-card mini-stat-card--info">
           <span class="mini-stat-value">{{ attendanceStats().totalAcompanhantes }}</span>
           <span class="mini-stat-label">Acompanhantes</span>
         </div>
+        }
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--success">
           <span class="mini-stat-value">{{ attendanceStats().presentesGeral }}</span>
           <span class="mini-stat-label">Total Presentes</span>
         </div>
+        }
         <div class="mini-stat-card">
           <span class="mini-stat-value">{{ attendanceStats().totalGeral }}</span>
           <span class="mini-stat-label">Total Geral</span>
@@ -534,13 +542,15 @@
               {{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)
             </span>
 
+            @if (template()?.attendanceShowPresence !== false) {
             <span class="result-count result-count--present">
               {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
-              @if (attendanceStats().totalAcompanhantes > 0) {
+              @if (template()?.attendanceShowCompanions !== false && attendanceStats().totalAcompanhantes > 0) {
                 · {{ attendanceStats().acompanhantesPresentes }}/{{ attendanceStats().totalAcompanhantes }} acompanhantes
                 · total: {{ attendanceStats().presentesGeral }} pessoas
               }
             </span>
+            }
           </div>
 
           <!-- Tabela manual para permitir linhas expansíveis de acompanhantes -->
