@@ -1,0 +1,86 @@
+<div class="eqi">
+  <div class="eqi-head">
+    <span class="eqi-title">Equipamentos — 2ª planilha (opcional)</span>
+    <span class="eqi-sub">Importe a planilha dos aparelhos para virar um select em cada linha da lista</span>
+  </div>
+
+  <label class="eqi-drop">
+    <input type="file" accept=".xlsx,.xls,.csv" (change)="onFile($event)" hidden />
+    @if (parsing) {
+      <span>Lendo planilha…</span>
+    } @else if (fileName) {
+      <span><strong>{{ fileName }}</strong> — escolha a coluna abaixo</span>
+    } @else {
+      <span>Clique para selecionar a planilha de equipamentos</span>
+    }
+  </label>
+
+  @if (columns.length > 0) {
+    <div class="eqi-config">
+      <label class="eqi-field">
+        <span>Coluna com os modelos</span>
+        <select [(ngModel)]="selectedColumn" (ngModelChange)="onColumnChange()">
+          <option value="">Selecione…</option>
+          @for (col of columns; track col) {
+            <option [value]="col">{{ col }}</option>
+          }
+        </select>
+        @if (previewCount > 0) {
+          <span class="eqi-hint">{{ previewCount }} modelos encontrados</span>
+        }
+      </label>
+
+      <label class="eqi-field">
+        <span>Nome da coluna na lista</span>
+        <input type="text" [(ngModel)]="columnName" placeholder="Ex: Aparelho" />
+      </label>
+    </div>
+
+    <div class="eqi-toggles">
+      <label><input type="checkbox" [(ngModel)]="stockControl" /> Controle de estoque</label>
+      <label><input type="checkbox" [(ngModel)]="visible" /> Mostrar coluna</label>
+    </div>
+
+    <div class="eqi-actions">
+      <button type="button" class="eqi-btn primary" [disabled]="importing || !selectedColumn" (click)="doImport()">
+        {{ importing ? 'Importando…' : (templateId ? 'Importar catálogo' : 'Adicionar equipamentos') }}
+      </button>
+      <button type="button" class="eqi-btn" (click)="resetImport()">Cancelar</button>
+    </div>
+  }
+
+  @if (pending) {
+    <div class="eqi-list">
+      <div class="eqi-list-title">Pendente (será adicionado ao salvar)</div>
+      <div class="eqi-item">
+        <div class="eqi-item-info">
+          <strong>{{ pending.name }}</strong>
+          <span>{{ pending.options.length }} itens · coluna “{{ pending.sourceColumn }}”
+            @if (pending.stockControl) { · com estoque }</span>
+        </div>
+        <div class="eqi-item-actions">
+          <button type="button" class="eqi-btn danger" (click)="removePending()">Remover</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (catalogs.length > 0) {
+    <div class="eqi-list">
+      <div class="eqi-list-title">Catálogos importados</div>
+      @for (cat of catalogs; track cat.id) {
+        <div class="eqi-item">
+          <div class="eqi-item-info">
+            <strong>{{ cat.name }}</strong>
+            <span>{{ cat.optionsCount }} itens · coluna “{{ cat.sourceColumn }}”</span>
+          </div>
+          <div class="eqi-item-actions">
+            <label class="mini"><input type="checkbox" [checked]="cat.stockControl" (change)="toggleStock(cat)" /> estoque</label>
+            <label class="mini"><input type="checkbox" [checked]="cat.visible" (change)="toggleVisible(cat)" /> visível</label>
+            <button type="button" class="eqi-btn danger" (click)="removeCatalog(cat)">Remover</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

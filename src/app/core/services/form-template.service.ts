@@ -85,6 +85,11 @@ export interface FormTemplate {
   viewShowAppointments: boolean;
   // Permite ao cliente marcar presença na view pública (sem login)
   viewAllowAttendanceCheck: boolean;
+  // Visibilidade das colunas internas da lista de presenca
+  attendanceShowCompanions?: boolean;
+  attendanceShowPresence?: boolean;
+  attendanceShowNotes?: boolean;
+  attendanceShowMarkedAt?: boolean;
   // Pesquisa de satisfação vinculada
   hasSurvey: boolean;
   surveyId?: number | null;
@@ -260,6 +265,10 @@ export class FormTemplateService {
     viewShowAttendance?: boolean;
     viewShowAppointments?: boolean;
     viewAllowAttendanceCheck?: boolean;
+    attendanceShowCompanions?: boolean;
+    attendanceShowPresence?: boolean;
+    attendanceShowNotes?: boolean;
+    attendanceShowMarkedAt?: boolean;
   }): Observable<FormTemplate> {
     return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/view-config`, config);
   }
