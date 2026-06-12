@@ -985,6 +985,32 @@ export class CreateTemplateComponent implements OnInit {
         next: (res: FormTemplate) => {
           this.template = res;
           this.loadTemplateToForm(res);
+
+          // Trocou a planilha de presenca no editar -> re-importa (substitui a antiga).
+          // importAttendance e destrutivo no backend: a lista nova substitui a anterior.
+          if (formValue.hasAttendance && this.pendingAttendanceRows.length > 0) {
+            const excelColOrder = [...this.pendingAttendanceCols];
+            const rows = this.pendingAttendanceRows;
+            this.importingAttendance = true;
+            this.templateService.importAttendance(res.id, { rows }).subscribe({
+              next: (records) => {
+                this.setAttendanceRecords(records, excelColOrder);
+                this.clearPendingFile();
+                if (this.template) this.template.hasAttendance = true;
+                this.importingAttendance = false;
+                this.editMode = false;
+                this.messages.success('Template e lista de presenca atualizados!');
+                this.cdr.detectChanges();
+              },
+              error: () => {
+                this.importingAttendance = false;
+                this.messages.error('Template salvo, mas houve erro ao importar a lista de presenca.');
+                this.cdr.detectChanges();
+              },
+            });
+            return;
+          }
+
           this.editMode = false;
           this.messages.success('Template atualizado com sucesso!');
           this.cdr.detectChanges();

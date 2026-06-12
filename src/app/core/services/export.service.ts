@@ -297,7 +297,9 @@ export class ExportService {
             defval: '',
             raw: false,
           });
-          resolve(json);
+          // Remove colunas sem cabecalho (o parser as nomeia __EMPTY/__EMPTY_1...)
+          // para o layout refletir so as colunas reais da nova planilha (vale p/ as 2).
+          resolve(this.dropJunkColumns(json));
         } catch {
           reject(new Error('Arquivo inválido ou corrompido'));
         }
@@ -349,6 +351,21 @@ export class ExportService {
     const keys = new Set<string>();
     records.forEach((r) => Object.keys(r.rowData || {}).forEach((k) => keys.add(k)));
     return Array.from(keys);
+  }
+
+  // Descarta colunas sem cabecalho real (auto-nomeadas __EMPTY pelo parser do xlsx).
+  // Mantem a ordem original das colunas validas.
+  private dropJunkColumns(rows: Record<string, string>[]): Record<string, string>[] {
+    if (!rows.length) return rows;
+    const allKeys: string[] = [];
+    rows.forEach((r) => Object.keys(r).forEach((k) => { if (!allKeys.includes(k)) allKeys.push(k); }));
+    const keep = allKeys.filter((k) => k && k.trim() !== '' && !/^__EMPTY/.test(k));
+    if (keep.length === allKeys.length) return rows;
+    return rows.map((r) => {
+      const o: Record<string, string> = {};
+      keep.forEach((k) => { o[k] = r[k] ?? ''; });
+      return o;
+    });
   }
 
   private formatDate(d: string): string {
