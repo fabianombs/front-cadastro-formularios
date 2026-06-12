@@ -28,6 +28,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
+import { EquipmentSelectComponent } from '../../shared/components/equipment-select/equipment-select.component';
+import { EquipmentService, EquipmentCatalog } from '../../core/services/equipment.service';
 import { QuizService, RankingResponse, QuizSession } from '../../core/services/quiz.service';
 
 interface FilterableField {
@@ -40,7 +42,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe],
+  imports: [CommonModule, DatePipe, FormsModule, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe, EquipmentSelectComponent],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
@@ -50,6 +52,7 @@ export class TemplateListComponent implements OnInit {
   private exporter = inject(ExportService);
   private messages = inject(MessageService);
   private quizService = inject(QuizService);
+  private equipmentService = inject(EquipmentService);
   public auth = inject(AuthService);
 
   readonly pageSizeOptions = [2, 5, 10, 50];
@@ -134,6 +137,9 @@ export class TemplateListComponent implements OnInit {
 
   // ── Presença ─────────────────────────────────────────────────
   attendance = signal<AttendanceRecord[]>([]);
+  // catalogos de equipamentos = colunas de select extra na lista de presenca
+  equipmentCatalogs = signal<EquipmentCatalog[]>([]);
+  visibleCatalogs = computed(() => this.equipmentCatalogs().filter((c) => c.visible));
   attendanceCols = computed<string[]>(() => {
     const rows = this.attendance();
 
@@ -162,7 +168,9 @@ export class TemplateListComponent implements OnInit {
 
     // Remove coluna de acompanhantes da planilha — já representada pelo botão de companion
     // Cobre variações: "Acompanhantes", "Acomp.", "Acomp", "Qtd Acompanhantes", etc.
-    return base.filter(col => !col.trim().toLowerCase().includes('acomp'));
+    // Exclui as chaves das colunas de equipamento (ja exibidas pelo select) e a de acompanhantes
+    const equipKeys = new Set(this.equipmentCatalogs().map((c) => c.columnKey).filter((k): k is string => !!k));
+    return base.filter(col => !col.trim().toLowerCase().includes('acomp') && !equipKeys.has(col));
   });
 
   /** Labels dos campos do template — essas colunas são editáveis na tabela */
@@ -444,6 +452,13 @@ export class TemplateListComponent implements OnInit {
   // ─────────────────────────────────────────────
   // loadAttendance (mesma correção)
 
+  private loadEquipmentCatalogs(templateId: number): void {
+    this.equipmentService.listCatalogs(templateId).subscribe({
+      next: (list) => this.equipmentCatalogs.set(list),
+      error: () => {},
+    });
+  }
+
   private loadAttendance(): void {
     const t = this.template();
     if (!t) return;
@@ -456,6 +471,7 @@ export class TemplateListComponent implements OnInit {
         this.attTotalPages.set(page.totalPages);
         this.attTotalElements.set(page.totalElements);
         this.attendanceLoaded.set(true);
+        this.loadEquipmentCatalogs(t.id);
       },
       error: () => {
         this.attendance.set([]);
@@ -934,7 +950,10 @@ export class TemplateListComponent implements OnInit {
     const t = this.template();
     if (!t) return;
     const fieldLabels = (t.fields ?? []).map((f) => f.label);
-    this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels);
+    // mapa chave->nome dos catalogos para o cabecalho do Excel sair com o nome (ex: CELULARES)
+    const equipLabels: Record<string, string> = {};
+    this.equipmentCatalogs().forEach((c) => { if (c.columnKey) equipLabels[c.columnKey] = c.name; });
+    this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels, equipLabels);
   }
 
   // Copia o link público de checkin para a área de transferência

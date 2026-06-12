@@ -448,22 +448,30 @@
           <span class="mini-stat-value">{{ attendanceStats().total }}</span>
           <span class="mini-stat-label">Convidados</span>
         </div>
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--success">
           <span class="mini-stat-value">{{ attendanceStats().presente }}</span>
           <span class="mini-stat-label">Presentes</span>
         </div>
+        }
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--warning">
           <span class="mini-stat-value">{{ attendanceStats().ausente }}</span>
           <span class="mini-stat-label">Ausentes</span>
         </div>
+        }
+        @if (template()?.attendanceShowCompanions !== false) {
         <div class="mini-stat-card mini-stat-card--info">
           <span class="mini-stat-value">{{ attendanceStats().totalAcompanhantes }}</span>
           <span class="mini-stat-label">Acompanhantes</span>
         </div>
+        }
+        @if (template()?.attendanceShowPresence !== false) {
         <div class="mini-stat-card mini-stat-card--success">
           <span class="mini-stat-value">{{ attendanceStats().presentesGeral }}</span>
           <span class="mini-stat-label">Total Presentes</span>
         </div>
+        }
         <div class="mini-stat-card">
           <span class="mini-stat-value">{{ attendanceStats().totalGeral }}</span>
           <span class="mini-stat-label">Total Geral</span>
@@ -534,13 +542,15 @@
               {{ filteredAttendance().length }} de {{ attTotalElements() }} registro(s)
             </span>
 
+            @if (template()?.attendanceShowPresence !== false) {
             <span class="result-count result-count--present">
               {{ attendanceStats().presente }} / {{ attendanceStats().total }} presentes
-              @if (attendanceStats().totalAcompanhantes > 0) {
+              @if (template()?.attendanceShowCompanions !== false && attendanceStats().totalAcompanhantes > 0) {
                 · {{ attendanceStats().acompanhantesPresentes }}/{{ attendanceStats().totalAcompanhantes }} acompanhantes
                 · total: {{ attendanceStats().presentesGeral }} pessoas
               }
             </span>
+            }
           </div>
 
           <!-- Tabela manual para permitir linhas expansíveis de acompanhantes -->
@@ -551,10 +561,21 @@
                   @for (col of attendanceDataColumns(); track col.key) {
                     <th>{{ col.label }}</th>
                   }
+                  @for (cat of visibleCatalogs(); track cat.id) {
+                    <th style="white-space:nowrap">{{ cat.name }}</th>
+                  }
+                  @if (template()?.attendanceShowCompanions !== false) {
                   <th style="width:90px;text-align:center">Acomp.</th>
+                  }
+                  @if (template()?.attendanceShowPresence !== false) {
                   <th style="width:110px;text-align:center">Presença</th>
+                  }
+                  @if (template()?.attendanceShowNotes !== false) {
                   <th>Obs.</th>
+                  }
+                  @if (template()?.attendanceShowMarkedAt !== false) {
                   <th style="width:120px">Marcado em</th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -595,8 +616,21 @@
                         }
                       </td>
                     }
+                    @for (cat of visibleCatalogs(); track cat.id) {
+                      <td (click)="$event.stopPropagation()">
+                        <app-equipment-select
+                          [catalogId]="cat.id"
+                          [recordId]="r.id"
+                          [columnKey]="cat.columnKey || ''"
+                          [value]="r.rowData[cat.columnKey || ''] || null"
+                          [onlyAvailable]="cat.stockControl"
+                          (valueChange)="r.rowData[cat.columnKey || ''] = $event || ''">
+                        </app-equipment-select>
+                      </td>
+                    }
 
                     <!-- BOTÃO + ACOMPANHANTES -->
+                    @if (template()?.attendanceShowCompanions !== false) {
                     <td class="td-center">
                       <button
                         class="companion-btn"
@@ -610,8 +644,10 @@
                         <span class="companion-plus">{{ expandedCompanionId() === r.id ? '−' : '+' }}</span>
                       </button>
                     </td>
+                    }
 
                     <!-- PRESENÇA -->
+                    @if (template()?.attendanceShowPresence !== false) {
                     <td class="td-center">
                       <button
                         class="attendance-toggle"
@@ -629,8 +665,10 @@
                         }
                       </button>
                     </td>
+                    }
 
                     <!-- OBS -->
+                    @if (template()?.attendanceShowNotes !== false) {
                     <td>
                       <input type="text" class="notes-input"
                         [value]="r.notes ?? ''"
@@ -638,17 +676,20 @@
                         (blur)="saveNote(r, $any($event.target).value)"
                         placeholder="Observação..." />
                     </td>
+                    }
 
                     <!-- MARCADO EM -->
+                    @if (template()?.attendanceShowMarkedAt !== false) {
                     <td class="td-mono">
                       {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
                     </td>
+                    }
                   </tr>
 
                   <!-- PAINEL DE ACOMPANHANTES (expansível) -->
                   @if (expandedCompanionId() === r.id) {
                     <tr class="companion-panel-row">
-                      <td [attr.colspan]="attendanceColumnsMeta().length">
+                      <td [attr.colspan]="attendanceColumnsMeta().length + visibleCatalogs().length">
                         <div class="companion-panel">
 
                           <!-- Lista de acompanhantes existentes -->

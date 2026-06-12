@@ -21,6 +21,9 @@ import { map } from 'rxjs/operators';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AbstractControl } from '@angular/forms';
 import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
+import { EquipmentImportComponent } from '../equipment-import/equipment-import.component';
+import { EquipmentSelectComponent } from '../../shared/components/equipment-select/equipment-select.component';
+import { EquipmentService, ImportEquipmentRequest, EquipmentCatalog } from '../../core/services/equipment.service';
 import {
   ImagePositionModalComponent,
   ImagePositionConfig,
@@ -29,7 +32,7 @@ import {
 @Component({
   selector: 'app-create-template',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent, FormFieldComponent, ImagePositionModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DragDropModule, PageShellComponent, PageHeaderComponent, FormFieldComponent, ImagePositionModalComponent, EquipmentImportComponent, EquipmentSelectComponent],
   templateUrl: './create-form-template.component.html',
   styleUrls: ['./create-form-template.component.scss'],
 })
@@ -456,6 +459,10 @@ export class CreateTemplateComponent implements OnInit {
   public pendingAttendanceRows: Record<string, string>[] = [];
   public pendingAttendanceCols: string[] = [];
   public pendingAttendanceFileName = '';
+  // 2a planilha (equipamentos) preparada no modo criacao; importada ao salvar
+  public pendingEquipment: ImportEquipmentRequest | null = null;
+  // catalogos de equipamentos = colunas de select da lista (carregados no edit)
+  public equipmentCatalogs: EquipmentCatalog[] = [];
   public parsingFile = false;
 
   // Presença — dados já salvos (view mode)
@@ -486,6 +493,7 @@ export class CreateTemplateComponent implements OnInit {
     private exportService: ExportService,
     private quizService: QuizService,
     private surveyService: SurveyService,
+    private equipmentService: EquipmentService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
   ) {
@@ -1028,12 +1036,34 @@ export class CreateTemplateComponent implements OnInit {
               },
             });
         }
+
+        // Importa o catalogo de equipamentos pendente (2a planilha), se houver
+        if (this.pendingEquipment) {
+          this.equipmentService.importCatalog(res.id, this.pendingEquipment).subscribe({
+            next: () => { this.pendingEquipment = null; this.loadEquipmentCatalogs(); },
+            error: () => this.messages.error('Template criado, mas houve erro ao importar os equipamentos.'),
+          });
+        }
       },
       error: (err) => {
         this.messages.error(
           `Erro ao criar template (${err.status}): ${err.error?.message ?? 'Verifique o console'}`,
         );
       },
+    });
+  }
+
+  get visibleCatalogs(): EquipmentCatalog[] {
+    return this.equipmentCatalogs.filter((c) => c.visible);
+  }
+
+  // Carrega os catalogos do template para renderizar as colunas de select na lista
+  loadEquipmentCatalogs(): void {
+    const id = this.template?.id;
+    if (!id) return;
+    this.equipmentService.listCatalogs(id).subscribe({
+      next: (list) => { this.equipmentCatalogs = list; this.cdr.detectChanges(); },
+      error: () => {},
     });
   }
 
@@ -1097,6 +1127,7 @@ export class CreateTemplateComponent implements OnInit {
       );
     });
 
+    if (template.hasAttendance && template.id) this.loadEquipmentCatalogs();
     this.cdr.detectChanges();
   }
 
@@ -1143,6 +1174,12 @@ export class CreateTemplateComponent implements OnInit {
     input.value = '';
   }
 
+  // Colunas da planilha sem as chaves de equipamento (essas viram coluna de select)
+  get visibleAttendanceCols(): string[] {
+    const equipKeys = new Set(this.equipmentCatalogs.map((c) => c.columnKey).filter((k): k is string => !!k));
+    return this.attendanceCols.filter((c) => !equipKeys.has(c));
+  }
+
   private setAttendanceRecords(records: AttendanceRecord[], colOrder: string[] = []) {
     this.attendanceRecords = records;
     if (colOrder.length) {
@@ -1187,11 +1224,13 @@ export class CreateTemplateComponent implements OnInit {
 
   exportAttendance() {
     if (!this.template) return;
-    this.exportService.exportAttendance(this.attendanceRecords, this.template.name);
+    const equipLabels: Record<string, string> = {};
+    this.equipmentCatalogs.forEach((c) => { if (c.columnKey) equipLabels[c.columnKey] = c.name; });
+    this.exportService.exportAttendance(this.attendanceRecords, this.template.name, [], equipLabels);
   }
 
   // Salva imediatamente um toggle de view config sem precisar reabrir o formulário de edição
-  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck', value: boolean) {
+  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck' | 'attendanceShowCompanions' | 'attendanceShowPresence' | 'attendanceShowNotes' | 'attendanceShowMarkedAt', value: boolean) {
     if (!this.template) return;
     this.templateService.updateViewConfig(this.template.id, { [field]: value }).subscribe({
       next: (res) => { this.template = res; this.cdr.detectChanges(); },

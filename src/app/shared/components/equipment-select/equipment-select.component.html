@@ -1,0 +1,46 @@
+<div class="eq-select" [class.disabled]="disabled">
+  <div class="eq-input">
+    <input
+      type="text"
+      [placeholder]="placeholder"
+      [ngModel]="query"
+      (ngModelChange)="onInput($event)"
+      (focus)="onFocus()"
+      [disabled]="disabled || saving"
+      autocomplete="off"
+    />
+    @if (value && !saving) {
+      <button type="button" class="eq-clear" (click)="clear($event)" title="Limpar selecao">&times;</button>
+    }
+    @if (saving) {
+      <span class="eq-spin" aria-label="salvando"></span>
+    }
+  </div>
+
+  @if (open) {
+    <div class="eq-dropdown" (scroll)="onScroll($event)">
+      @for (opt of options; track opt.id) {
+        <button
+          type="button"
+          class="eq-option"
+          [class.selected]="opt.label === value"
+          (click)="pick(opt)"
+        >
+          <span class="eq-label">{{ opt.label }}</span>
+          @if (onlyAvailable) {
+            <span class="eq-badge" [class.empty]="opt.available <= 0">
+              {{ opt.available }}/{{ opt.totalQty }}
+            </span>
+          }
+        </button>
+      } @empty {
+        @if (!loading) {
+          <div class="eq-empty">Nenhum item encontrado</div>
+        }
+      }
+      @if (loading) {
+        <div class="eq-loading">Carregando…</div>
+      }
+    </div>
+  }
+</div>
