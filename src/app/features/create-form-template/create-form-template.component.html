@@ -154,6 +154,29 @@
         (change)="patchViewConfig('viewAllowAttendanceCheck', $any($event.target).checked)" />
       Tornar lista de presença pública (cliente preenche sem login)
     </label>
+    <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:center; padding-top:8px;">
+      <span style="font-size:11px; color:#64748b; width:100%; font-weight:600;">Colunas da lista (mostrar/ocultar):</span>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;cursor:pointer;">
+        <input type="checkbox" [checked]="template.attendanceShowCompanions !== false"
+          (change)="patchViewConfig('attendanceShowCompanions', $any($event.target).checked)" />
+        Acompanhantes
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;cursor:pointer;">
+        <input type="checkbox" [checked]="template.attendanceShowPresence !== false"
+          (change)="patchViewConfig('attendanceShowPresence', $any($event.target).checked)" />
+        Presença
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;cursor:pointer;">
+        <input type="checkbox" [checked]="template.attendanceShowNotes !== false"
+          (change)="patchViewConfig('attendanceShowNotes', $any($event.target).checked)" />
+        Observação
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;cursor:pointer;">
+        <input type="checkbox" [checked]="template.attendanceShowMarkedAt !== false"
+          (change)="patchViewConfig('attendanceShowMarkedAt', $any($event.target).checked)" />
+        Marcado em
+      </label>
+    </div>
     }
     <p style="font-size: 11px; color: #475569; margin: 0;">
       As permissões são aplicadas imediatamente ao marcar/desmarcar.
@@ -344,7 +367,7 @@
       <table style="width: 100%; border-collapse: collapse; font-size: 13px">
         <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1">
           <tr>
-            @for (col of attendanceCols; track col) {
+            @for (col of visibleAttendanceCols; track col) {
             <th style="
                         padding: 8px 14px;
                         text-align: left;
@@ -359,14 +382,31 @@
               {{ col }}
             </th>
             }
+            @for (cat of visibleCatalogs; track cat.id) {
+            <th style="padding: 8px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #0e7490; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e2e8f0; white-space: nowrap;">
+              {{ cat.name }}
+            </th>
+            }
           </tr>
         </thead>
         <tbody>
           @for (r of attendanceRecords; track r.id) {
           <tr style="border-bottom: 1px solid #f1f5f9">
-            @for (col of attendanceCols; track col) {
+            @for (col of visibleAttendanceCols; track col) {
             <td style="padding: 8px 14px; color: #334155; white-space: nowrap">
               {{ r.rowData[col] || '-' }}
+            </td>
+            }
+            @for (cat of visibleCatalogs; track cat.id) {
+            <td style="padding: 6px 14px; min-width: 210px">
+              <app-equipment-select
+                [catalogId]="cat.id"
+                [recordId]="r.id"
+                [columnKey]="cat.columnKey || ''"
+                [value]="r.rowData[cat.columnKey || ''] || null"
+                [onlyAvailable]="cat.stockControl"
+                (valueChange)="r.rowData[cat.columnKey || ''] = $event || ''">
+              </app-equipment-select>
             </td>
             }
           </tr>
@@ -782,6 +822,9 @@
               }
             </div>
             }
+          </div>
+          <div style="margin-top: 12px">
+            <app-equipment-import [templateId]="template?.id" (pendingChange)="pendingEquipment = $event" (catalogsChanged)="loadEquipmentCatalogs()"></app-equipment-import>
           </div>
           }
         </div>

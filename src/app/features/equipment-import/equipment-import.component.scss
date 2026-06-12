@@ -1,0 +1,56 @@
+.eqi {
+  border: 1px solid var(--card-border-color, #d0d5dd);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--card-background-color, #fff);
+}
+
+.eqi-head { display: flex; flex-direction: column; gap: 2px; }
+.eqi-title { font-size: 14px; font-weight: 600; }
+.eqi-sub { font-size: 12px; color: #667085; }
+
+.eqi-drop {
+  display: block;
+  border: 1.5px dashed #98a2b3;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #475467;
+  cursor: pointer;
+
+  &:hover { border-color: var(--primary-color, #2563eb); }
+}
+
+.eqi-config { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.eqi-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475467; }
+.eqi-field select, .eqi-field input { padding: 7px 10px; border: 1px solid #d0d5dd; border-radius: 6px; font-size: 14px; }
+.eqi-hint { font-size: 11px; color: #027a48; }
+
+.eqi-toggles { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.eqi-toggles label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.eqi-actions { display: flex; gap: 8px; }
+.eqi-btn {
+  padding: 8px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+
+  &.primary { background: var(--primary-color, #2563eb); color: #fff; border-color: transparent; }
+  &.primary:disabled { opacity: .5; cursor: not-allowed; }
+  &.danger { color: #b42318; border-color: #fda29b; }
+}
+
+.eqi-list { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #eaecf0; padding-top: 12px; }
+.eqi-list-title { font-size: 12px; font-weight: 600; color: #475467; }
+.eqi-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid #eaecf0; border-radius: 8px; }
+.eqi-item-info { display: flex; flex-direction: column; font-size: 13px; }
+.eqi-item-info span { font-size: 11px; color: #667085; }
+.eqi-item-actions { display: flex; align-items: center; gap: 12px; }
+.eqi-item-actions .mini { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475467; cursor: pointer; }

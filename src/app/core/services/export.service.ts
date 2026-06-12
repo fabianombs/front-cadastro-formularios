@@ -63,8 +63,12 @@ export class ExportService {
     records: AttendanceRecord[],
     templateName: string,
     templateFieldLabels: string[] = [],
+    columnLabels: Record<string, string> = {},
   ): void {
     if (!records.length) return;
+
+    // Renomeia colunas internas (ex: chave de equipamento -> nome do catalogo)
+    const headerFor = (col: string) => columnLabels[col] ?? this.capitalize(col);
 
     // Campos do template entram primeiro (garantidos mesmo se ainda vazios),
     // depois qualquer coluna extra vinda da planilha que não esteja no template.
@@ -91,7 +95,7 @@ export class ExportService {
     for (const r of records) {
       const guestRow: Record<string, string> = { Tipo: 'Convidado' };
       dataCols.forEach((col) => {
-        guestRow[this.capitalize(col)] = r.rowData?.[col] ?? '';
+        guestRow[headerFor(col)] = r.rowData?.[col] ?? '';
       });
       // Colunas extras ficam vazias para convidados
       if (useExtraNameCol) guestRow['Nome (Acomp.)'] = '';
@@ -105,7 +109,7 @@ export class ExportService {
       for (const c of (r.companions ?? [])) {
         const companionRow: Record<string, string> = { Tipo: '↳ Acompanhante' };
         // Todas as colunas do template ficam vazias
-        dataCols.forEach((col) => { companionRow[this.capitalize(col)] = ''; });
+        dataCols.forEach((col) => { companionRow[headerFor(col)] = ''; });
 
         // Nome do acompanhante → coluna semântica "Nome" ou coluna dedicada
         if (nameCol) {
