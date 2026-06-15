@@ -459,8 +459,9 @@ export class CreateTemplateComponent implements OnInit {
   public pendingAttendanceRows: Record<string, string>[] = [];
   public pendingAttendanceCols: string[] = [];
   public pendingAttendanceFileName = '';
-  // 2a planilha (equipamentos) preparada no modo criacao; importada ao salvar
-  public pendingEquipment: ImportEquipmentRequest | null = null;
+  // Planilhas de equipamentos preparadas no modo criacao; importadas ao salvar.
+  // Lista: cada planilha vira uma coluna de select propria na lista de presenca.
+  public pendingEquipment: ImportEquipmentRequest[] = [];
   // catalogos de equipamentos = colunas de select da lista (carregados no edit)
   public equipmentCatalogs: EquipmentCatalog[] = [];
   public parsingFile = false;
@@ -1063,11 +1064,15 @@ export class CreateTemplateComponent implements OnInit {
             });
         }
 
-        // Importa o catalogo de equipamentos pendente (2a planilha), se houver
-        if (this.pendingEquipment) {
-          this.equipmentService.importCatalog(res.id, this.pendingEquipment).subscribe({
-            next: () => { this.pendingEquipment = null; this.loadEquipmentCatalogs(); },
-            error: () => this.messages.error('Template criado, mas houve erro ao importar os equipamentos.'),
+        // Importa cada planilha de equipamentos pendente como uma coluna propria
+        if (this.pendingEquipment.length > 0) {
+          const toImport = this.pendingEquipment;
+          this.pendingEquipment = [];
+          toImport.forEach((req) => {
+            this.equipmentService.importCatalog(res.id, req).subscribe({
+              next: () => this.loadEquipmentCatalogs(),
+              error: () => this.messages.error(`Template criado, mas houve erro ao importar a planilha “${req.name}”.`),
+            });
           });
         }
       },
