@@ -47,10 +47,61 @@
   &.danger { color: #b42318; border-color: #fda29b; }
 }
 
-.eqi-list { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #eaecf0; padding-top: 12px; }
-.eqi-list-title { font-size: 12px; font-weight: 600; color: #475467; }
-.eqi-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid #eaecf0; border-radius: 8px; }
-.eqi-item-info { display: flex; flex-direction: column; font-size: 13px; }
-.eqi-item-info span { font-size: 11px; color: #667085; }
-.eqi-item-actions { display: flex; align-items: center; gap: 12px; }
-.eqi-item-actions .mini { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475467; cursor: pointer; }
+/* ── Tags das planilhas anexadas ───────────────────────────── */
+.eqi-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.eqi-tag {
+  --accent: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, #e4e7ec);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 7%, #fff);
+  max-width: 100%;
+  transition: box-shadow .15s, transform .15s;
+
+  &:hover { box-shadow: 0 2px 8px rgba(16, 24, 40, .1); transform: translateY(-1px); }
+  &.hidden-col { opacity: .55; }
+}
+
+.eqi-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
+
+.eqi-tag-body { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.eqi-tag-body strong { font-size: 13px; color: #101828; }
+.eqi-tag-body small { font-size: 11px; color: #667085; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.eqi-tag.pending {
+  border-style: dashed;
+  background: #fffaeb;
+  --accent: #d97706;
+}
+
+.eqi-chips { display: inline-flex; gap: 5px; }
+.eqi-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #667085;
+  cursor: pointer;
+
+  &.on { background: var(--accent); border-color: transparent; color: #fff; }
+}
+
+.eqi-x {
+  flex: 0 0 auto;
+  width: 22px; height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #98a2b3;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: #fee4e2; color: #b42318; }
+}

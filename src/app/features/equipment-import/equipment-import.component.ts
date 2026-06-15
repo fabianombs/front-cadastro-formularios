@@ -6,12 +6,15 @@ import { ExportService } from '../../core/services/export.service';
 import { MessageService } from '../../core/services/message.service';
 
 /**
- * Card de import da 2a planilha (equipamentos), exibido na tela do admin.
+ * Card de import das planilhas de equipamentos, exibido na tela do admin.
+ * Suporta MULTIPLAS planilhas: cada uma vira uma coluna de select propria na
+ * lista de presenca (ex: uma de celulares, outra de notebooks). As planilhas
+ * anexadas aparecem como tags removiveis.
  *
  * Dois modos:
- *  - EDICAO (templateId presente): importa o catalogo na hora (POST).
- *  - CRIACAO (sem templateId): guarda a config como "pendente" e emite via
- *    pendingChange; o componente pai importa logo apos salvar o formulario.
+ *  - EDICAO (templateId presente): importa cada catalogo na hora (POST).
+ *  - CRIACAO (sem templateId): acumula as planilhas como "pendentes" e emite a
+ *    lista via pendingChange; o componente pai importa todas apos salvar o form.
  *
  * catalogsChanged avisa o pai para recarregar as colunas de select da lista.
  * Projeto ZONELESS: toda atualizacao via Promise/HTTP precisa de cdr.markForCheck().
@@ -25,7 +28,8 @@ import { MessageService } from '../../core/services/message.service';
 })
 export class EquipmentImportComponent implements OnInit {
   @Input() templateId?: number;
-  @Output() pendingChange = new EventEmitter<ImportEquipmentRequest | null>();
+  // Modo CRIACAO: emite a lista completa de planilhas pendentes (o pai importa ao salvar).
+  @Output() pendingChange = new EventEmitter<ImportEquipmentRequest[]>();
   @Output() catalogsChanged = new EventEmitter<void>();
 
   private equipmentService = inject(EquipmentService);
@@ -34,7 +38,8 @@ export class EquipmentImportComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   catalogs: EquipmentCatalog[] = [];
-  pending: ImportEquipmentRequest | null = null;
+  // Modo criacao: varias planilhas aguardando o salvamento do formulario.
+  pendingList: ImportEquipmentRequest[] = [];
 
   fileName = '';
   rows: Record<string, string>[] = [];
@@ -135,16 +140,28 @@ export class EquipmentImportComponent implements OnInit {
       return;
     }
 
-    this.pending = req;
-    this.pendingChange.emit(req);
-    this.messages.success('Equipamentos prontos — serao adicionados ao salvar o formulario.');
+    // Acumula como mais uma planilha pendente (suporta varias antes de salvar)
+    this.pendingList = [...this.pendingList, req];
+    this.pendingChange.emit(this.pendingList);
+    this.messages.success('Planilha adicionada — sera incluida ao salvar o formulario.');
     this.resetImport();
     this.cdr.markForCheck();
   }
 
-  removePending(): void {
-    this.pending = null;
-    this.pendingChange.emit(null);
+  removePending(index: number): void {
+    this.pendingList = this.pendingList.filter((_, i) => i !== index);
+    this.pendingChange.emit(this.pendingList);
+  }
+
+  /**
+   * Cor de destaque estavel por tag, derivada do nome — so visual, para
+   * diferenciar as planilhas anexadas de relance.
+   */
+  accent(seed: string): string {
+    const palette = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#db2777', '#dc2626', '#4f46e5'];
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+    return palette[Math.abs(hash) % palette.length];
   }
 
   resetImport(): void {
