@@ -29,6 +29,7 @@ import { PageShellComponent } from '../../shared/components/page-shell/page-shel
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
 import { EquipmentSelectComponent } from '../../shared/components/equipment-select/equipment-select.component';
+import { MaskDirective } from '../../shared/directives/mask.directive';
 import { EquipmentService, EquipmentCatalog } from '../../core/services/equipment.service';
 import { QuizService, RankingResponse, QuizSession } from '../../core/services/quiz.service';
 
@@ -42,7 +43,7 @@ interface FilterableField {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe, EquipmentSelectComponent],
+  imports: [CommonModule, DatePipe, FormsModule, PaginationComponent, DataTableComponent, FooterComponent, PageShellComponent, PageHeaderComponent, ConfirmModalComponent, LocalDatePipe, EquipmentSelectComponent, MaskDirective],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
@@ -929,6 +930,29 @@ export class TemplateListComponent implements OnInit {
       },
       error: () => this.messages.error('Erro ao salvar campo.'),
     });
+  }
+
+  // Máscara a aplicar na coluna editável, derivada do tipo do campo do template.
+  // Colunas importadas da planilha não têm tipo, logo não recebem máscara.
+  fieldMask(colKey: string): 'phone' | 'cpf' | 'cnpj' | 'date' | 'number' | null {
+    const type = this.templateFieldMap().get(colKey)?.type;
+    switch (type) {
+      case 'cpf':
+      case 'cnpj':
+      case 'date':
+      case 'number':
+        return type;
+      case 'phone':
+        return 'phone';
+      // phone-intl fica sem máscara: formato internacional varia
+      default:
+        return null;
+    }
+  }
+
+  // inputmode numérico abre teclado numérico no mobile para campos mascarados/número
+  fieldInputMode(colKey: string): string | null {
+    return this.fieldMask(colKey) ? 'numeric' : null;
   }
 
   // ── Exports ──────────────────────────────────────────────────
