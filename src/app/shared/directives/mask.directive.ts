@@ -9,13 +9,14 @@ import { NgControl } from '@angular/forms';
  * - `cpf`    → 333.444.555-66
  * - `cnpj`   → 33.444.555/0001-66
  * - `date`   → 31/12/2026
+ * - `number` → somente dígitos (remove letras/símbolos)
  */
 @Directive({
   selector: '[appMask]',
   standalone: true,
 })
 export class MaskDirective implements OnChanges {
-  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | 'date' | null | undefined;
+  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | 'date' | 'number' | null | undefined;
 
   constructor(
     private el: ElementRef<HTMLInputElement>,
@@ -59,6 +60,10 @@ export class MaskDirective implements OnChanges {
         break;
       case 'date':
         formatted = this.applyDateMask(digits);
+        break;
+      // número: mantém apenas dígitos
+      case 'number':
+        formatted = digits;
         break;
       default:
         return;
