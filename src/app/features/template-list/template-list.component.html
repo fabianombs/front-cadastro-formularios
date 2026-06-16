@@ -599,20 +599,20 @@
                             </select>
                           } @else {
                             <input type="text" class="notes-input"
-                              [value]="r.rowData[col.key]"
+                              [value]="r.rowData[col.key] ?? ''"
+                              [appMask]="fieldMask(col.key)"
+                              [attr.inputmode]="fieldInputMode(col.key)"
                               (click)="$event.stopPropagation()"
                               (blur)="saveRowField(r, col.key, $any($event.target).value)"
                               placeholder="—" />
                           }
                         } @else {
-                          @if (!r.rowData[col.key]) {
-                            <input type="text" class="notes-input" [value]="''"
-                              (click)="$event.stopPropagation()"
-                              (blur)="saveRowField(r, col.key, $any($event.target).value)"
-                              placeholder="—" />
-                          } @else {
-                            {{ r.rowData[col.key] }}
-                          }
+                          <!-- Coluna importada (ex: quantidade): editavel sempre, mesmo ja preenchida, para permitir correcao -->
+                          <input type="text" class="notes-input"
+                            [value]="r.rowData[col.key] || ''"
+                            (click)="$event.stopPropagation()"
+                            (blur)="saveRowField(r, col.key, $any($event.target).value)"
+                            placeholder="—" />
                         }
                       </td>
                     }
@@ -919,7 +919,10 @@
                   class="ag-input"
                   [ngModel]="newGuestData()[col]"
                   [name]="col"
+                  [appMask]="fieldMask(col)"
+                  [attr.inputmode]="fieldInputMode(col)"
                   (ngModelChange)="setGuestField(col, $event)"
+                  (blur)="setGuestField(col, $any($event.target).value)"
                   [placeholder]="formatLabel(col)"
                 />
               }
