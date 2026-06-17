@@ -87,6 +87,8 @@ export interface FormTemplate {
   viewAllowAttendanceCheck: boolean;
   // Permite ao cliente adicionar convidado na lista pública (botão "+ Convidado")
   viewAllowAddGuest?: boolean;
+  // Preset do tamanho base da fonte da lista de presença: SMALL | MEDIUM | LARGE | XLARGE
+  attendanceFontScale?: string;
   // Visibilidade das colunas internas da lista de presenca
   attendanceShowCompanions?: boolean;
   attendanceShowPresence?: boolean;
@@ -268,6 +270,7 @@ export class FormTemplateService {
     viewShowAppointments?: boolean;
     viewAllowAttendanceCheck?: boolean;
     viewAllowAddGuest?: boolean;
+    attendanceFontScale?: string;
     attendanceShowCompanions?: boolean;
     attendanceShowPresence?: boolean;
     attendanceShowNotes?: boolean;

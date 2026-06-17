@@ -1261,6 +1261,30 @@ export class CreateTemplateComponent implements OnInit {
   }
 
   // Salva imediatamente um toggle de view config sem precisar reabrir o formulário de edição
+  // Presets do tamanho base da fonte da lista de presença (a view ajusta por dispositivo)
+  readonly attendanceFontOptions = [
+    { value: 'SMALL', label: 'Pequeno' },
+    { value: 'MEDIUM', label: 'Médio' },
+    { value: 'LARGE', label: 'Grande' },
+    { value: 'XLARGE', label: 'Gigante' },
+  ];
+  private readonly attendanceFontMap: Record<string, number> = { SMALL: 13, MEDIUM: 15, LARGE: 18, XLARGE: 22 };
+
+  // px base usado no preview do painel de config
+  attendanceFontPreviewPx(): number {
+    return this.attendanceFontMap[this.template?.attendanceFontScale ?? 'MEDIUM'] ?? 15;
+  }
+
+  // Salva o preset (atualização otimista para o preview reagir na hora)
+  setAttendanceFontScale(value: string): void {
+    if (!this.template) return;
+    this.template = { ...this.template, attendanceFontScale: value };
+    this.templateService.updateViewConfig(this.template.id, { attendanceFontScale: value }).subscribe({
+      next: (res) => { this.template = res; this.cdr.detectChanges(); },
+      error: () => {},
+    });
+  }
+
   patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck' | 'viewAllowAddGuest' | 'attendanceShowCompanions' | 'attendanceShowPresence' | 'attendanceShowNotes' | 'attendanceShowMarkedAt', value: boolean) {
     if (!this.template) return;
     this.templateService.updateViewConfig(this.template.id, { [field]: value }).subscribe({
