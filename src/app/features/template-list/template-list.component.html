@@ -488,10 +488,10 @@
               class="search-input"
               placeholder="Buscar na lista..."
               [ngModel]="attendanceSearch()"
-              (ngModelChange)="attendanceSearch.set($event)"
+              (ngModelChange)="onAttendanceSearchChange($event)"
             />
             @if (attendanceSearch()) {
-              <button class="clear-input" (click)="attendanceSearch.set('')">×</button>
+              <button class="clear-input" (click)="onAttendanceSearchChange('')">×</button>
             }
           </div>
 
@@ -579,7 +579,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (r of filteredAttendance(); track r.id) {
+                @for (r of pagedAttendance(); track r.id) {
                   <!-- LINHA DO CONVIDADO -->
                   <tr [class.row--present]="r.attended">
                     @for (col of attendanceDataColumns(); track col.key) {
