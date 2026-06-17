@@ -496,7 +496,7 @@
           </div>
 
           <!-- Botão de adicionar convidado manualmente (somente admin/client) -->
-          @if (auth.isAdmin() || auth.isClient()) {
+          @if (auth.isAdmin() || auth.isClient() || template()?.viewAllowAddGuest) {
             <button
               class="btn-outline"
               style="font-size: 12px; padding: 8px 14px; white-space: nowrap"

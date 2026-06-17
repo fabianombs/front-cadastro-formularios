@@ -154,6 +154,11 @@
         (change)="patchViewConfig('viewAllowAttendanceCheck', $any($event.target).checked)" />
       Tornar lista de presença pública (cliente preenche sem login)
     </label>
+    <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10b981; cursor: pointer; padding-top: 4px;">
+      <input type="checkbox" [checked]="template.viewAllowAddGuest"
+        (change)="patchViewConfig('viewAllowAddGuest', $any($event.target).checked)" />
+      Permitir adicionar convidado na lista pública
+    </label>
     <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:center; padding-top:8px;">
       <span style="font-size:11px; color:#64748b; width:100%; font-weight:600;">Colunas da lista (mostrar/ocultar):</span>
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;cursor:pointer;">
