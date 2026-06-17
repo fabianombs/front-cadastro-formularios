@@ -85,6 +85,8 @@ export interface FormTemplate {
   viewShowAppointments: boolean;
   // Permite ao cliente marcar presença na view pública (sem login)
   viewAllowAttendanceCheck: boolean;
+  // Permite ao cliente adicionar convidado na lista pública (botão "+ Convidado")
+  viewAllowAddGuest?: boolean;
   // Visibilidade das colunas internas da lista de presenca
   attendanceShowCompanions?: boolean;
   attendanceShowPresence?: boolean;
@@ -265,6 +267,7 @@ export class FormTemplateService {
     viewShowAttendance?: boolean;
     viewShowAppointments?: boolean;
     viewAllowAttendanceCheck?: boolean;
+    viewAllowAddGuest?: boolean;
     attendanceShowCompanions?: boolean;
     attendanceShowPresence?: boolean;
     attendanceShowNotes?: boolean;
