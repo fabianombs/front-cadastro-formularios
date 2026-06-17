@@ -100,12 +100,17 @@ export class TemplateListComponent implements OnInit {
     totalPages: this.subTotalPages(),
   }));
 
-  attPagination = computed<SpringPage>(() => ({
-    page: this.attPage(),
-    size: this.pageSize(),
-    totalElements: this.attTotalElements(),
-    totalPages: this.attTotalPages(),
-  }));
+  // Paginação da presença é client-side: a planilha inteira já está em memória.
+  // totalElements/totalPages derivam da lista filtrada para refletir a busca.
+  attPagination = computed<SpringPage>(() => {
+    const total = this.filteredAttendance().length;
+    return {
+      page: this.attPage(),
+      size: this.pageSize(),
+      totalElements: total,
+      totalPages: Math.max(1, Math.ceil(total / this.pageSize())),
+    };
+  });
 
   // ── Aba ativa ────────────────────────────────────────────────
   activeTab = signal<'appointments' | 'submissions' | 'attendance' | 'quiz'>('submissions');
@@ -188,6 +193,8 @@ export class TemplateListComponent implements OnInit {
     return map;
   });
   attendanceStats = computed(() => {
+    // Estatísticas sobre a planilha INTEIRA (todos os registros carregados),
+    // não apenas a página exibida — por isso presentes/ausentes batem com o total.
     const records = this.attendance();
     const presentes = records.filter((r) => r.attended);
     const allCompanions = records.flatMap((r) => r.companions ?? []);
@@ -195,12 +202,12 @@ export class TemplateListComponent implements OnInit {
     // Acompanhantes com presença marcada individualmente
     const acompanhantesPresentes = allCompanions.filter((c) => c.attended).length;
     return {
-      total: this.attTotalElements(),
+      total: records.length,
       presente: presentes.length,
       ausente: records.filter((r) => !r.attended).length,
       totalAcompanhantes,
       acompanhantesPresentes,
-      totalGeral: this.attTotalElements() + totalAcompanhantes,
+      totalGeral: records.length + totalAcompanhantes,
       presentesGeral: presentes.length + acompanhantesPresentes,
     };
   });
@@ -466,12 +473,16 @@ export class TemplateListComponent implements OnInit {
 
     this.loading.set(true);
 
-    this.service.getAttendance(t.id, this.attPage(), this.pageSize()).subscribe({
-      next: (page) => {
-        this.attendance.set([...page.content]); // 🔥 GARANTE NOVA REFERÊNCIA
-        this.attTotalPages.set(page.totalPages);
-        this.attTotalElements.set(page.totalElements);
+    // Carrega a planilha INTEIRA de uma vez. Assim a busca varre todos os
+    // convidados (não só a página atual) e os contadores de presentes/ausentes
+    // refletem o total. A paginação passa a ser feita no front (pagedAttendance).
+    this.service.getAllAttendance(t.id).subscribe({
+      next: (records) => {
+        this.attendance.set([...records]); // 🔥 GARANTE NOVA REFERÊNCIA
+        this.attTotalElements.set(records.length);
+        this.attTotalPages.set(Math.max(1, Math.ceil(records.length / this.pageSize())));
         this.attendanceLoaded.set(true);
+        this.attPage.set(0);
         this.loadEquipmentCatalogs(t.id);
       },
       error: () => {
@@ -489,7 +500,7 @@ export class TemplateListComponent implements OnInit {
     this.attPage.set(0);
     if (this.appointmentsLoaded()) this.loadAppointments();
     if (this.submissionsLoaded()) this.loadSubmissions();
-    if (this.attendanceLoaded()) this.loadAttendance();
+    // Presença não recarrega: já está toda em memória, só repagina no front.
   }
 
   goToApptPage(n: number): void {
@@ -504,7 +515,6 @@ export class TemplateListComponent implements OnInit {
 
   goToAttPage(n: number): void {
     this.attPage.set(n);
-    this.loadAttendance();
   }
 
   // ── Build colunas dinâmicas (submissions) ───────────────────
@@ -777,6 +787,8 @@ export class TemplateListComponent implements OnInit {
   }
 
   // ── Presença filtrada ────────────────────────────────────────
+  // Busca varre a planilha INTEIRA (this.attendance() = todos os registros),
+  // não apenas a página exibida. Inclui rowData, observações e acompanhantes.
   filteredAttendance = computed<AttendanceRecord[]>(() => {
     const search = this.attendanceSearch()?.toLowerCase().trim();
 
@@ -786,9 +798,26 @@ export class TemplateListComponent implements OnInit {
       Object.values(r.rowData || {}).some((v) =>
         String(v).toLowerCase().includes(search)
       ) ||
-      String(r.notes ?? '').toLowerCase().includes(search)
+      String(r.notes ?? '').toLowerCase().includes(search) ||
+      (r.companions ?? []).some((c) =>
+        String(c.name ?? '').toLowerCase().includes(search)
+      )
     );
   });
+
+  // Fatia a lista filtrada para a página atual (paginação client-side).
+  pagedAttendance = computed<AttendanceRecord[]>(() => {
+    const filtered = this.filteredAttendance();
+    const start = this.attPage() * this.pageSize();
+    return filtered.slice(start, start + this.pageSize());
+  });
+
+  // Atualiza a busca e volta para a primeira página, evitando ficar numa
+  // página vazia quando o filtro reduz o número de resultados.
+  onAttendanceSearchChange(value: string): void {
+    this.attendanceSearch.set(value);
+    this.attPage.set(0);
+  }
 
   toggleAttendance(record: AttendanceRecord) {
     this.markingId.set(record.id);
