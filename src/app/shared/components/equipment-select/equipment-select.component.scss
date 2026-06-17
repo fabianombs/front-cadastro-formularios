@@ -17,7 +17,7 @@
     padding: 5px 28px 5px 9px;
     border: 1px solid var(--border, #1c2e4a);
     border-radius: 6px;
-    font-size: 18px;
+    font-size: var(--att-font, 15px);
     font-family: 'DM Sans', sans-serif;
     outline: none;
     background: var(--bg-subtle, #0a1020);
@@ -82,7 +82,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 20px;
+  font-size: var(--att-font, 15px);
   text-align: left;
   color: var(--text, #d8e4f8);
 
@@ -112,15 +112,13 @@
 /* Fonte responsiva do select de equipamentos — alinhado à lista de presença.
    Tablet maior (uso do cliente em tablet), celular menor p/ caber. */
 @media (min-width: 641px) and (max-width: 1024px) {
-  .eq-input input { font-size: 20px; }
-  .eq-option { font-size: 20px; }
-  .eq-badge { font-size: 15px; }
+  .eq-input input { font-size: calc(var(--att-font, 15px) * 1.2); }
+  .eq-option { font-size: calc(var(--att-font, 15px) * 1.2); }
   .eq-empty,
-  .eq-loading { font-size: 18px; }
+  .eq-loading { font-size: calc(var(--att-font, 15px) * 1.1); }
 }
 
 @media (max-width: 640px) {
-  .eq-input input { font-size: 20px; }
-  .eq-option { font-size: 20px; }
-  .eq-badge { font-size: 14px; }
+  .eq-input input { font-size: calc(var(--att-font, 15px) * 0.9); }
+  .eq-option { font-size: calc(var(--att-font, 15px) * 0.9); }
 }
