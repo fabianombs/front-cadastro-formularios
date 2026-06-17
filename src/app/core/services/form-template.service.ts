@@ -1,7 +1,7 @@
 // src/app/core/services/form-template.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, tap, switchMap, forkJoin, of } from 'rxjs';
 import { PageResponse } from '../models/page-response.model';
 import { environment } from '../../../environments/environment';
 import { normalizeQuizLink } from './quiz.service';
@@ -403,6 +403,26 @@ export class FormTemplateService {
   ): Observable<PageResponse<AttendanceRecord>> {
     return this.http.get<PageResponse<AttendanceRecord>>(
       `${this.attendanceUrl}/template/${templateId}?page=${page}&size=${size}`,
+    );
+  }
+
+  // Carrega TODOS os registros de presenca percorrendo todas as paginas do backend.
+  // Necessario para que busca e estatisticas (presentes/ausentes) considerem a
+  // planilha inteira, nao apenas a pagina exibida. pageSize fica abaixo do limite
+  // padrao do Spring (max-page-size) para evitar truncamento da resposta.
+  getAllAttendance(templateId: number, pageSize = 500): Observable<AttendanceRecord[]> {
+    return this.getAttendance(templateId, 0, pageSize).pipe(
+      switchMap((first) => {
+        if (first.totalPages <= 1) return of(first.content);
+        const rest: Observable<PageResponse<AttendanceRecord>>[] = [];
+        for (let p = 1; p < first.totalPages; p++) {
+          rest.push(this.getAttendance(templateId, p, pageSize));
+        }
+        // forkJoin preserva a ordem das paginas, mantendo a ordem de importacao
+        return forkJoin(rest).pipe(
+          map((pages) => [...first.content, ...pages.flatMap((pg) => pg.content)]),
+        );
+      }),
     );
   }
 
