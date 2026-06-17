@@ -555,7 +555,7 @@
 
           <!-- Tabela manual para permitir linhas expansíveis de acompanhantes -->
           <div style="overflow-x: auto">
-            <table class="data-table attendance-table">
+            <table class="data-table attendance-table" [style.--att-font]="attendanceFontPx() + 'px'">
               <thead>
                 <tr>
                   @for (col of attendanceDataColumns(); track col.key) {

@@ -1126,25 +1126,26 @@
    para nao afetar respostas, agendamentos e quiz).
    Desktop = base | Tablet = maior (uso do cliente) | Celular = menor p/ caber. */
 .attendance-table {
-  // Desktop (base)
-  thead th { font-size: 12px; }
-  tbody td { font-size: 14px; }
+  // Base = var --att-font (definida no template conforme o preset escolhido pelo cliente;
+  // fallback 15px = MEDIUM). O corpo segue a base; o cabeçalho fica proporcionalmente menor.
+  thead th { font-size: calc(var(--att-font, 15px) * 0.78); }
+  tbody td { font-size: var(--att-font, 15px); }
   .notes-input,
-  .notes-select { font-size: 14px; }
+  .notes-select { font-size: var(--att-font, 15px); }
 
-  // Tablet: cliente usa nesse tamanho — fonte maior p/ leitura e toque
+  // Tablet: +20% sobre a base (uso do cliente em tablet)
   @media (min-width: 641px) and (max-width: 1024px) {
-    thead th { font-size: 15px; }
-    tbody td { font-size: 20px; }
+    thead th { font-size: calc(var(--att-font, 15px) * 0.85); }
+    tbody td { font-size: calc(var(--att-font, 15px) * 1.2); }
     .notes-input,
-    .notes-select { font-size: 20px; }
+    .notes-select { font-size: calc(var(--att-font, 15px) * 1.2); }
   }
 
-  // Celular: tela estreita — fonte menor p/ caber
+  // Celular: -10% sobre a base p/ caber na tela estreita
   @media (max-width: 640px) {
-    thead th { font-size: 14px; }
-    tbody td { font-size: 20px; }
+    thead th { font-size: calc(var(--att-font, 15px) * 0.75); }
+    tbody td { font-size: calc(var(--att-font, 15px) * 0.9); }
     .notes-input,
-    .notes-select { font-size: 20px; }
+    .notes-select { font-size: calc(var(--att-font, 15px) * 0.9); }
   }
 }

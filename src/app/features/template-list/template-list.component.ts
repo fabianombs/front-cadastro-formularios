@@ -192,6 +192,11 @@ export class TemplateListComponent implements OnInit {
     this.template()?.fields?.forEach((f) => map.set(f.label, f));
     return map;
   });
+  // Tamanho base da fonte da lista, derivado do preset do template (default MEDIUM).
+  // Aplicado via CSS var --att-font; o scss ajusta +/- por dispositivo.
+  private attendanceFontMap: Record<string, number> = { SMALL: 13, MEDIUM: 15, LARGE: 18, XLARGE: 22 };
+  attendanceFontPx = computed(() => this.attendanceFontMap[this.template()?.attendanceFontScale ?? 'MEDIUM'] ?? 15);
+
   attendanceStats = computed(() => {
     // Estatísticas sobre a planilha INTEIRA (todos os registros carregados),
     // não apenas a página exibida — por isso presentes/ausentes batem com o total.
