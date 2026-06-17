@@ -1121,3 +1121,30 @@
   border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   flex-shrink: 0;
 }
+
+/* Fonte responsiva da lista de presenca (escopada em .attendance-table
+   para nao afetar respostas, agendamentos e quiz).
+   Desktop = base | Tablet = maior (uso do cliente) | Celular = menor p/ caber. */
+.attendance-table {
+  // Desktop (base)
+  thead th { font-size: 12px; }
+  tbody td { font-size: 14px; }
+  .notes-input,
+  .notes-select { font-size: 14px; }
+
+  // Tablet: cliente usa nesse tamanho — fonte maior p/ leitura e toque
+  @media (min-width: 641px) and (max-width: 1024px) {
+    thead th { font-size: 15px; }
+    tbody td { font-size: 20px; }
+    .notes-input,
+    .notes-select { font-size: 20px; }
+  }
+
+  // Celular: tela estreita — fonte menor p/ caber
+  @media (max-width: 640px) {
+    thead th { font-size: 14px; }
+    tbody td { font-size: 20px; }
+    .notes-input,
+    .notes-select { font-size: 20px; }
+  }
+}
