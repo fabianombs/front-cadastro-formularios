@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx ng build --configuration=production",
+  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then npx ng build --configuration=production; else npx ng build --configuration=staging; fi",
   "outputDirectory": "dist/app-forms-clients/browser",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
