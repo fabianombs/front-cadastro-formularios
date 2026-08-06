@@ -192,6 +192,8 @@ export interface AttendanceRecord {
   companions: AttendanceCompanion[];
   rowOrder: number;
   createdAt: string;
+  // Quando a linha foi preenchida/editada na tabela (null = só importada, ainda não preenchida)
+  filledAt: string | null;
 }
 
 export interface ImportAttendanceRequest {

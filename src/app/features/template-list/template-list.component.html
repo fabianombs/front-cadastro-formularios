@@ -574,7 +574,7 @@
                   <th>Obs.</th>
                   }
                   @if (template()?.attendanceShowMarkedAt !== false) {
-                  <th style="width:120px">Marcado em</th>
+                  <th style="width:120px">{{ template()?.attendanceShowPresence === false ? 'Preenchido em' : 'Marcado em' }}</th>
                   }
                 </tr>
               </thead>
@@ -681,7 +681,13 @@
                     <!-- MARCADO EM -->
                     @if (template()?.attendanceShowMarkedAt !== false) {
                     <td class="td-mono">
-                      {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
+                      @if (template()?.attendanceShowPresence === false) {
+                        <!-- Sem check: mostra quando a linha foi preenchida (em branco até preencher) -->
+                        {{ r.filledAt ? (r.filledAt | localDate: 'dd/MM HH:mm') : '—' }}
+                      } @else {
+                        <!-- Com check: mostra o horário em que a presença foi marcada -->
+                        {{ r.attendedAt ? (r.attendedAt | localDate: 'dd/MM HH:mm') : '—' }}
+                      }
                     </td>
                     }
                   </tr>

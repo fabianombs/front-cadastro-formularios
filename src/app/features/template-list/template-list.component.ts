@@ -1011,7 +1011,8 @@ export class TemplateListComponent implements OnInit {
     // mapa chave->nome dos catalogos para o cabecalho do Excel sair com o nome (ex: CELULARES)
     const equipLabels: Record<string, string> = {};
     this.equipmentCatalogs().forEach((c) => { if (c.columnKey) equipLabels[c.columnKey] = c.name; });
-    this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels, equipLabels);
+    // Sem coluna de check, o Excel mostra a data de preenchimento no lugar do horário de presença
+    this.exporter.exportAttendance(this.filteredAttendance(), t.name, fieldLabels, equipLabels, t.attendanceShowPresence === false);
   }
 
   // Copia o link público de checkin para a área de transferência

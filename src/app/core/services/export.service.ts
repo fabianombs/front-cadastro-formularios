@@ -64,6 +64,7 @@ export class ExportService {
     templateName: string,
     templateFieldLabels: string[] = [],
     columnLabels: Record<string, string> = {},
+    presenceHidden = false,
   ): void {
     if (!records.length) return;
 
@@ -100,8 +101,14 @@ export class ExportService {
       // Colunas extras ficam vazias para convidados
       if (useExtraNameCol) guestRow['Nome (Acomp.)'] = '';
       if (useExtraPhoneCol) guestRow['Tel. (Acomp.)'] = '';
-      guestRow['Presente'] = r.attended ? 'Sim' : 'Não';
-      guestRow['Horário Presença'] = r.attendedAt ? this.formatDateTime(r.attendedAt) : '';
+      // Sem coluna de check: exporta a data de preenchimento da linha (createdAt).
+      // Com check: exporta presença + horário da marcação (attendedAt).
+      if (presenceHidden) {
+        guestRow['Preenchido em'] = r.filledAt ? this.formatDateTime(r.filledAt) : '';
+      } else {
+        guestRow['Presente'] = r.attended ? 'Sim' : 'Não';
+        guestRow['Horário Presença'] = r.attendedAt ? this.formatDateTime(r.attendedAt) : '';
+      }
       guestRow['Observações'] = r.notes ?? '';
       dataRows.push(guestRow);
 
@@ -125,8 +132,12 @@ export class ExportService {
           companionRow['Tel. (Acomp.)'] = c.phone ?? '';
         }
 
-        companionRow['Presente'] = c.attended ? 'Sim' : 'Não';
-        companionRow['Horário Presença'] = c.attendedAt ? this.formatDateTime(c.attendedAt) : '';
+        if (presenceHidden) {
+          companionRow['Preenchido em'] = c.createdAt ? this.formatDateTime(c.createdAt) : '';
+        } else {
+          companionRow['Presente'] = c.attended ? 'Sim' : 'Não';
+          companionRow['Horário Presença'] = c.attendedAt ? this.formatDateTime(c.attendedAt) : '';
+        }
         companionRow['Observações'] = '';
         dataRows.push(companionRow);
       }
@@ -145,15 +156,21 @@ export class ExportService {
     const totalAcomp = allCompanions.length;
     // Conta acompanhantes com presença marcada individualmente
     const acompPresentes = allCompanions.filter((c) => c.attended).length;
-    const resumo = [
-      { Métrica: 'Total de Convidados', Valor: records.length },
-      { Métrica: 'Convidados Presentes', Valor: presentes.length },
-      { Métrica: 'Convidados Ausentes', Valor: records.length - presentes.length },
-      { Métrica: 'Total de Acompanhantes', Valor: totalAcomp },
-      { Métrica: 'Acompanhantes Presentes', Valor: acompPresentes },
-      { Métrica: 'Total Geral de Pessoas', Valor: records.length + totalAcomp },
-      { Métrica: 'Total Geral Presentes', Valor: presentes.length + acompPresentes },
-    ];
+    const resumo = presenceHidden
+      ? [
+          { Métrica: 'Total de Convidados', Valor: records.length },
+          { Métrica: 'Total de Acompanhantes', Valor: totalAcomp },
+          { Métrica: 'Total Geral de Pessoas', Valor: records.length + totalAcomp },
+        ]
+      : [
+          { Métrica: 'Total de Convidados', Valor: records.length },
+          { Métrica: 'Convidados Presentes', Valor: presentes.length },
+          { Métrica: 'Convidados Ausentes', Valor: records.length - presentes.length },
+          { Métrica: 'Total de Acompanhantes', Valor: totalAcomp },
+          { Métrica: 'Acompanhantes Presentes', Valor: acompPresentes },
+          { Métrica: 'Total Geral de Pessoas', Valor: records.length + totalAcomp },
+          { Métrica: 'Total Geral Presentes', Valor: presentes.length + acompPresentes },
+        ];
     const wsResumo = XLSX.utils.json_to_sheet(resumo);
     this.autoWidth(wsResumo, resumo as any);
     XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
