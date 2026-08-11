@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
@@ -273,16 +273,10 @@ export class TemplateListComponent implements OnInit {
   removingCompanionId = signal<number | null>(null);
   markingCompanionId = signal<number | null>(null);
 
-  constructor() {
-    effect(() => {
-      const t = this.template();
-
-      if (t) {
-        console.log('Template mudou, carregando presença...');
-        this.loadAttendance();
-      }
-    });
-  }
+  // Nao ha effect() reagindo a template() de proposito. Havia um, e ele era
+  // uma das tres origens da carga duplicada (FABIANO-72): disparava
+  // loadAttendance() em paralelo ao resolveTemplateType(), que ja decide a aba
+  // e manda carregar. Quem carrega e o loadActiveTabData(), um caminho so.
 
   // ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
@@ -293,17 +287,17 @@ export class TemplateListComponent implements OnInit {
       next: (t) => {
         this.template.set(t);
         if (t.appearance?.fontFamily) this.loadGoogleFont(t.appearance.fontFamily);
-        // 🔥 se existir attendance mesmo com flag errada, usa ela
-        this.resolveTemplateType(t); // 👈 usa esse cara
-        this.loadActiveTabData();
+        // O resolveTemplateType chama loadActiveTabData() em TODOS os caminhos
+        // dele. Chamar aqui tambem carregava a aba errada: o activeTab ainda
+        // vale 'submissions' neste ponto, entao buscava submissoes de uma aba
+        // que nem seria exibida.
+        this.resolveTemplateType(t);
       },
       error: () => this.loading.set(false),
-      complete: () => this.loading.set(false), // 🔥 ADICIONADO
     });
   }
 
-  //TODO VERIFICAR ISSO DPS PARA FAZER NO BACK
-
+  // Decide qual aba abrir e dispara a carga dela. E o unico ponto que faz isso.
   private resolveTemplateType(t: FormTemplate) {
     // prioridade 1: agendamento
     if (t.scheduleConfig) {
@@ -312,20 +306,27 @@ export class TemplateListComponent implements OnInit {
       return;
     }
 
-    // prioridade 2: tenta detectar presença pelos dados reais
+    // prioridade 2: quando a flag ja afirma que ha presenca, nao ha o que
+    // descobrir — sondar o banco seria uma requisicao so para confirmar o que o
+    // proprio template acabou de informar.
+    if (t.hasAttendance) {
+      this.activeTab.set('attendance');
+      this.loadActiveTabData();
+      return;
+    }
+
+    // prioridade 3: a flag falsa nao e prova. Ja houve template com presenca e
+    // hasAttendance = false, e e por isso que esta sondagem existe. size=1
+    // basta: a pergunta e "existe alguma linha?", nao "quais sao elas".
     this.service.getAttendance(t.id, 0, 1).subscribe({
       next: (res) => {
-        if (res.totalElements > 0 || t.hasAttendance) {
-          this.activeTab.set('attendance');
-        } else {
-          this.activeTab.set('submissions');
-        }
+        this.activeTab.set(res.totalElements > 0 ? 'attendance' : 'submissions');
         this.loadActiveTabData();
       },
       error: () => {
-        this.activeTab.set(t.hasAttendance ? 'attendance' : 'submissions');
+        this.activeTab.set('submissions');
         this.loadActiveTabData();
-      }
+      },
     });
   }
 
@@ -472,10 +473,20 @@ export class TemplateListComponent implements OnInit {
     });
   }
 
+  // Trava de reentrancia. O attendanceLoaded() so vira true quando a resposta
+  // CHEGA, entao quem chamava conferindo aquele sinal deixava passar duas
+  // cargas disparadas dentro da mesma janela de carregamento — e cada carga
+  // pagina a planilha inteira (1005 registros com pageSize 500 sao TRES
+  // requisicoes). Medido em producao antes desta correcao: 7 chamadas em
+  // /attendance/template/39 para abrir a tela uma vez.
+  private attendanceLoading = false;
+
   private loadAttendance(): void {
     const t = this.template();
     if (!t) return;
+    if (this.attendanceLoading) return;
 
+    this.attendanceLoading = true;
     this.loading.set(true);
 
     // Carrega a planilha INTEIRA de uma vez. Assim a busca varre todos os
@@ -490,11 +501,17 @@ export class TemplateListComponent implements OnInit {
         this.attPage.set(0);
         this.loadEquipmentCatalogs(t.id);
       },
+      // A trava e liberada no erro E no complete: em erro o complete nao roda,
+      // e sem isto a tela ficaria impossibilitada de tentar de novo.
       error: () => {
         this.attendance.set([]);
+        this.attendanceLoading = false;
         this.loading.set(false);
       },
-      complete: () => this.loading.set(false),
+      complete: () => {
+        this.attendanceLoading = false;
+        this.loading.set(false);
+      },
     });
   }
 
