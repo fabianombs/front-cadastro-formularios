@@ -10,6 +10,10 @@ export interface TemplateAppearance {
   backgroundColor?: string;
   backgroundGradient?: string;
   backgroundImageUrl?: string;
+  /** Imagem de fundo específica para celular (opcional; sem ela, usa backgroundImageUrl) */
+  backgroundImageMobileUrl?: string;
+  /** Imagem de fundo específica para tablet (opcional; sem ela, usa backgroundImageUrl) */
+  backgroundImageTabletUrl?: string;
   headerImageUrl?: string;
   footerImageUrl?: string;
   primaryColor?: string;

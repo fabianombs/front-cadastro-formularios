@@ -1,4 +1,8 @@
 <div class="fd-page" [ngStyle]="pageStyle()">
+  @if (template()?.appearance?.backgroundImageUrl) {
+    <!-- Camada de fundo fixa ao tamanho da tela (ver backgroundImageStyle() no .ts) -->
+    <div class="fd-bg-layer" [ngStyle]="backgroundImageStyle()"></div>
+  }
   @if (loading()) {
     <div class="fd-container">
       <div class="loading-center"><div class="spinner"></div></div>

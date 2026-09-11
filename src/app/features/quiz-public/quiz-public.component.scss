@@ -8,6 +8,29 @@
   --qtext: #e2e8f0;
 }
 
+// Camada de fundo fixa ao tamanho da tela — desacopla "cover" da altura do
+// conteúdo (que pode passar de 100vh, ex.: ranking com muitos participantes),
+// e troca a imagem por dispositivo via @media (ver qpBgImageStyle() no .ts).
+.qp-bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: var(--qp-bg-web);
+
+  @media (max-width: 767px) {
+    background-image: var(--qp-bg-mobile, var(--qp-bg-web));
+  }
+  @media (min-width: 768px) and (max-width: 1024px) {
+    background-image: var(--qp-bg-tablet, var(--qp-bg-web));
+  }
+}
+
 // ── Página raiz ───────────────────────────────────────────────────────────────
 .quiz-page {
   min-height: 100vh;
@@ -16,9 +39,6 @@
   justify-content: center;
   padding: 24px 16px;
   position: relative;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
 
   // Overlay leve — só para contraste mínimo, sem sufocar gradientes ou imagens
   &::before {

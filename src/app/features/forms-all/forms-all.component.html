@@ -92,6 +92,9 @@
         <div class="tc-meta">
           <h3 class="tc-name">{{ t.name }}</h3>
           <span class="badge badge-blue">{{ t.clientName }}</span>
+          @if (t.createdAt) {
+            <span class="tc-created">🗓 Criado em {{ t.createdAt | localDate: 'dd/MM/yyyy' }}</span>
+          }
         </div>
       </div>
 

@@ -40,6 +40,7 @@ describe('FormTemplateService', () => {
     viewShowSubmissions: true,
     viewShowAttendance: false,
     viewShowAppointments: false,
+    viewAllowAttendanceCheck: false,
     hasSurvey: false,
   };
 

@@ -1079,11 +1079,14 @@
             </div>
             }
 
-            <!-- Imagem de fundo -->
+            <!-- Imagem de fundo (Web/Desktop) -->
             <div class="ap-color-field">
               <label class="ap-label">
                 Imagem de fundo
                 <span class="ap-label-hint">sobrepõe cor e gradiente</span>
+                <span class="img-info-icon" tabindex="0" role="img"
+                  aria-label="Recomendado: 1200 por 400 pixels, paisagem, JPG ou PNG, até 5 MB"
+                  data-tip="Recomendado: 1200×400px (paisagem) · usada em qualquer tela, a não ser que envie versões específicas de celular/tablet abaixo · JPG ou PNG · até 5 MB">i</span>
               </label>
               <div class="img-upload-area"
                 [class.img-upload-area--has-image]="imagePreviews['backgroundImageUrl'] || templateForm.get('appearance.backgroundImageUrl')?.value">
@@ -1114,6 +1117,92 @@
                     (change)="onImageFileChange('backgroundImageUrl', $event)" [disabled]="uploadingField() !== null" />
                 </label>
                 }
+              </div>
+            </div>
+
+            <!-- Imagem de fundo — versões específicas por dispositivo (opcional) -->
+            <p class="ap-section-label" style="margin-top:14px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              Fundo específico por aparelho <span class="ap-label-hint">opcional — sem isso, a imagem de fundo acima é usada em toda tela</span>
+            </p>
+            <div class="ap-images-row">
+              <div class="ap-color-field">
+                <label class="ap-label">
+                  Celular
+                  <span class="img-info-icon" tabindex="0" role="img"
+                    aria-label="Recomendado: 1080 por 2160 pixels, retrato, JPG ou PNG, até 5 MB"
+                    data-tip="Recomendado: 1080×2160px (retrato) · JPG ou PNG · até 5 MB">i</span>
+                </label>
+                <div class="img-upload-area img-upload-area--portrait"
+                  [class.img-upload-area--has-image]="imagePreviews['backgroundImageMobileUrl'] || templateForm.get('appearance.backgroundImageMobileUrl')?.value">
+                  @if (imagePreviews['backgroundImageMobileUrl'] || templateForm.get('appearance.backgroundImageMobileUrl')?.value) {
+                  <div class="img-upload-preview img-upload-preview--portrait">
+                    <img [src]="imagePreviews['backgroundImageMobileUrl'] || templateForm.get('appearance.backgroundImageMobileUrl')?.value"
+                      alt="Preview fundo celular" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageMobileUrl')"
+                      title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'backgroundImageMobileUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" style="opacity:.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Enviar fundo celular</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('backgroundImageMobileUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+
+              <div class="ap-color-field">
+                <label class="ap-label">
+                  Tablet
+                  <span class="img-info-icon" tabindex="0" role="img"
+                    aria-label="Recomendado: 1200 por 1600 pixels, retrato, JPG ou PNG, até 5 MB"
+                    data-tip="Recomendado: 1200×1600px (retrato) · JPG ou PNG · até 5 MB">i</span>
+                </label>
+                <div class="img-upload-area img-upload-area--portrait"
+                  [class.img-upload-area--has-image]="imagePreviews['backgroundImageTabletUrl'] || templateForm.get('appearance.backgroundImageTabletUrl')?.value">
+                  @if (imagePreviews['backgroundImageTabletUrl'] || templateForm.get('appearance.backgroundImageTabletUrl')?.value) {
+                  <div class="img-upload-preview img-upload-preview--portrait">
+                    <img [src]="imagePreviews['backgroundImageTabletUrl'] || templateForm.get('appearance.backgroundImageTabletUrl')?.value"
+                      alt="Preview fundo tablet" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('backgroundImageTabletUrl')"
+                      title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'backgroundImageTabletUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" style="opacity:.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    <span>Enviar fundo tablet</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('backgroundImageTabletUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -1383,7 +1472,12 @@
 
             <div class="ap-images-row">
               <div class="ap-color-field">
-                <label class="ap-label">Topo</label>
+                <label class="ap-label">
+                  Topo
+                  <span class="img-info-icon" tabindex="0" role="img"
+                    aria-label="Recomendado: 1200 por 220 pixels, faixa horizontal, JPG ou PNG, até 5 MB"
+                    data-tip="Recomendado: 1200×220px (faixa horizontal) · JPG ou PNG · até 5 MB">i</span>
+                </label>
                 <div class="img-upload-area"
                   [class.img-upload-area--has-image]="imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value">
                   @if (imagePreviews['headerImageUrl'] || templateForm.get('appearance.headerImageUrl')?.value) {
@@ -1415,7 +1509,12 @@
               </div>
 
               <div class="ap-color-field">
-                <label class="ap-label">Rodapé</label>
+                <label class="ap-label">
+                  Rodapé
+                  <span class="img-info-icon" tabindex="0" role="img"
+                    aria-label="Recomendado: 1200 por 180 pixels, faixa horizontal, JPG ou PNG, até 5 MB"
+                    data-tip="Recomendado: 1200×180px (faixa horizontal) · JPG ou PNG · até 5 MB">i</span>
+                </label>
                 <div class="img-upload-area"
                   [class.img-upload-area--has-image]="imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value">
                   @if (imagePreviews['footerImageUrl'] || templateForm.get('appearance.footerImageUrl')?.value) {

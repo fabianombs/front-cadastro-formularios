@@ -9,12 +9,13 @@ import {
   SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  HostListener,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface ImagePositionConfig {
-  field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl';
+  field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl' | 'backgroundImageMobileUrl' | 'backgroundImageTabletUrl';
   dataUrl: string;
   canvasWidth: number;
   canvasHeight: number;
@@ -57,19 +58,45 @@ export class ImagePositionModalComponent implements OnChanges {
   naturalWidth = 0;
   naturalHeight = 0;
 
-  /** Escala "cover" — usada apenas pelo botão Ajustar, não como mínimo */
-  coverScale = 1.0;
+  /**
+   * Escala "contain" — a imagem inteira cabe na moldura, sem cortar nada.
+   * Calculada a cada imagem carregada; também vira o teto de zoom (MAX_SCALE)
+   * para que nunca seja possível ampliar a ponto de cortar uma borda.
+   */
+  containScale = 1.0;
   /** Escala mínima livre: 5% do tamanho natural */
   readonly MIN_SCALE = 0.05;
-  readonly MAX_SCALE = 6.0;
+  /**
+   * Teto de zoom. Recalculado por imagem em fitImage() como a escala
+   * "contain" — nunca um valor fixo — para garantir que o usuário jamais
+   * consiga ampliar a imagem além do ponto em que ela deixaria de caber
+   * inteira na moldura (o que cortaria uma borda).
+   */
+  MAX_SCALE = 6.0;
+
+  /**
+   * Tamanho REAL (em px) da moldura de recorte, calculado explicitamente em
+   * JS a partir do espaço disponível e da proporção do canvas de destino.
+   *
+   * Antes a moldura usava CSS puro (width:100% + aspect-ratio + max-height).
+   * Para imagens portrait (celular/tablet), quando a altura é limitada pelo
+   * max-height, o navegador NÃO recalcula a largura a partir do aspect-ratio
+   * — ela fica presa no width:100% do container. Isso faz clientWidth ficar
+   * bem maior que o correto, então mapX (canvasWidth/clientWidth) e mapY
+   * (canvasHeight/clientHeight) em confirmCrop() ficam diferentes um do
+   * outro, e a imagem exportada acaba desenhada apenas numa faixa estreita
+   * do canvas, com o resto transparente — a "imagem achatada/faixa fina"
+   * reportada. Calculando width/height explicitamente aqui, sempre na
+   * proporção exata do canvas, cW/cH nunca diverge de canvasWidth/canvasHeight
+   * e mapX sempre é igual a mapY.
+   */
+  cropBoxWidthPx = 0;
+  cropBoxHeightPx = 0;
+
+  private readonly CROP_BOX_MAX_HEIGHT = 300;
 
   get scalePercent(): number {
     return Math.round(this.scale * 100);
-  }
-
-  get cropAspectRatio(): string {
-    if (!this.config) return '3 / 1';
-    return `${this.config.canvasWidth} / ${this.config.canvasHeight}`;
   }
 
   get zoomFillPercent(): number {
@@ -105,6 +132,9 @@ export class ImagePositionModalComponent implements OnChanges {
       this.offsetY = 0;
       this.imageReady = false;
       this.exporting = false;
+      // Precisa do próximo tick: cropAreaRef só existe depois que o Angular
+      // renderizar o @if (config) do template.
+      requestAnimationFrame(() => this.computeCropBoxSize());
     }
   }
 
@@ -114,12 +144,54 @@ export class ImagePositionModalComponent implements OnChanges {
     this.naturalHeight = img.naturalHeight;
     this.imageReady = true;
     requestAnimationFrame(() => {
+      this.computeCropBoxSize();
       this.fitImage();
       this.cdr.markForCheck();
     });
   }
 
-  /** Ajusta ao modo "cover" — cobre toda a área sem bordas */
+  /**
+   * Ajusta ao modo "contain" — mostra a imagem INTEIRA dentro da moldura,
+   * sem cortar nenhuma borda (a área que sobrar é preenchida com fillColor).
+   * Antes usava a MAIOR das duas escalas ("cover"), que cobria a moldura
+   * cortando o excesso; o cliente pedia para a imagem nunca ser cortada,
+   * então agora usa a MENOR escala e essa mesma escala vira o teto de zoom
+   * (MAX_SCALE), tornando o corte estruturalmente impossível.
+   */
+  /**
+   * Calcula o tamanho real (px) da moldura de recorte a partir do espaço
+   * disponível no modal e da proporção EXATA do canvas de destino
+   * (config.canvasWidth / config.canvasHeight) — nunca deixa o CSS inferir
+   * isso sozinho (ver comentário em cropBoxWidthPx acima).
+   */
+  private computeCropBoxSize(): void {
+    if (!this.config) return;
+    const el = this.cropAreaRef?.nativeElement;
+    const stage = el?.parentElement;
+    const maxW = stage?.clientWidth || el?.clientWidth || 600;
+    const maxH = this.CROP_BOX_MAX_HEIGHT;
+    const ratio = this.config.canvasWidth / this.config.canvasHeight;
+
+    let w = maxW;
+    let h = w / ratio;
+    if (h > maxH) {
+      h = maxH;
+      w = h * ratio;
+    }
+    this.cropBoxWidthPx = Math.round(w);
+    this.cropBoxHeightPx = Math.round(h);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (!this.config) return;
+    this.computeCropBoxSize();
+    // Mantém a mesma escala relativa (contain) e centraliza de novo, já que
+    // a moldura pode ter mudado de tamanho.
+    this.fitImage();
+    this.cdr.markForCheck();
+  }
+
   fitImage(): void {
     const el = this.cropAreaRef?.nativeElement;
     if (!el || !this.imageReady) return;
@@ -127,8 +199,9 @@ export class ImagePositionModalComponent implements OnChanges {
     const cH = el.clientHeight;
     const scaleX = cW / this.naturalWidth;
     const scaleY = cH / this.naturalHeight;
-    this.coverScale = Math.max(scaleX, scaleY);
-    this.scale = this.coverScale;
+    this.containScale = Math.min(scaleX, scaleY);
+    this.MAX_SCALE = this.containScale;
+    this.scale = this.containScale;
     const sw = this.naturalWidth * this.scale;
     const sh = this.naturalHeight * this.scale;
     this.offsetX = (cW - sw) / 2;
@@ -195,7 +268,8 @@ export class ImagePositionModalComponent implements OnChanges {
 
   private applyZoom(pivotX: number, pivotY: number, delta: number): void {
     const oldScale = this.scale;
-    // Zoom completamente livre — só o mínimo absoluto de 5%
+    // Zoom livre para reduzir (min 5%); para ampliar, o teto é MAX_SCALE
+    // (escala "contain" da imagem atual) — nunca deixa cortar uma borda.
     const newScale = Math.max(this.MIN_SCALE, Math.min(this.MAX_SCALE, oldScale * (1 + delta)));
     const ratio = newScale / oldScale;
     this.offsetX = pivotX - ratio * (pivotX - this.offsetX);
@@ -204,7 +278,12 @@ export class ImagePositionModalComponent implements OnChanges {
     this.clampOffset();
   }
 
-  /** Mantém pelo menos 10% da imagem visível para não perder o controle */
+  /**
+   * Mantém a imagem INTEIRA dentro da moldura — nunca deixa cortar uma
+   * borda ao arrastar. Como this.scale nunca ultrapassa MAX_SCALE (a escala
+   * "contain" calculada em fitImage()), sw <= cW e sh <= cH sempre valem,
+   * então o intervalo [0, cW - sw] / [0, cH - sh] nunca fica invertido.
+   */
   private clampOffset(): void {
     const el = this.cropAreaRef?.nativeElement;
     if (!el) return;
@@ -212,10 +291,10 @@ export class ImagePositionModalComponent implements OnChanges {
     const cH = el.clientHeight;
     const sw = this.naturalWidth * this.scale;
     const sh = this.naturalHeight * this.scale;
-    const minVisibleX = Math.max(sw * 0.1, 15);
-    const minVisibleY = Math.max(sh * 0.1, 15);
-    this.offsetX = Math.min(cW - minVisibleX, Math.max(minVisibleX - sw, this.offsetX));
-    this.offsetY = Math.min(cH - minVisibleY, Math.max(minVisibleY - sh, this.offsetY));
+    const maxOffsetX = Math.max(0, cW - sw);
+    const maxOffsetY = Math.max(0, cH - sh);
+    this.offsetX = Math.min(maxOffsetX, Math.max(0, this.offsetX));
+    this.offsetY = Math.min(maxOffsetY, Math.max(0, this.offsetY));
   }
 
   // ── Export ────────────────────────────────────────────────────

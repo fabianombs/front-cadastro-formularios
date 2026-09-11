@@ -1,5 +1,7 @@
 <!-- Background dinâmico — mesma aparência da tela do quiz -->
 <div class="ranking-page" [style.background]="quizBg()">
+  <!-- Camada de fundo fixa ao tamanho da tela (ver rkBgImageStyle() no .ts) -->
+  <div class="rk-bg-layer" [ngStyle]="rkBgImageStyle()"></div>
 
   <!-- Partículas decorativas para 1º lugar -->
   <div class="particles" aria-hidden="true">

@@ -311,6 +311,41 @@
                 <input type="text" formControlName="backgroundImageUrl"
                        placeholder="https://..." class="input input--sm" />
               </div>
+
+              <!-- Fundo específico por aparelho (opcional) -->
+              <p class="hint" style="margin-top:16px;display:block">
+                Fundo específico por aparelho <em>(opcional — sem isso, a imagem acima é usada em toda tela)</em>
+              </p>
+              <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px">
+                <div style="flex:1; min-width:180px">
+                  <label class="url-alt__label" style="display:block; margin-bottom:6px">Celular (recomendado: 1080×1920px)</label>
+                  @if (quizForm.get('backgroundImageMobileUrl')?.value) {
+                    <div class="drop-zone__preview" style="height:80px"
+                         [style.background-image]="'url(' + quizForm.get('backgroundImageMobileUrl')?.value + ')'">
+                      <button type="button" class="btn-remove-img" (click)="clearField('backgroundImageMobileUrl')">✕ Remover</button>
+                    </div>
+                  } @else {
+                    <label class="btn-file-select">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageMobileUrl', $event)" hidden />
+                    </label>
+                  }
+                </div>
+                <div style="flex:1; min-width:180px">
+                  <label class="url-alt__label" style="display:block; margin-bottom:6px">Tablet (recomendado: 1200×1600px)</label>
+                  @if (quizForm.get('backgroundImageTabletUrl')?.value) {
+                    <div class="drop-zone__preview" style="height:80px"
+                         [style.background-image]="'url(' + quizForm.get('backgroundImageTabletUrl')?.value + ')'">
+                      <button type="button" class="btn-remove-img" (click)="clearField('backgroundImageTabletUrl')">✕ Remover</button>
+                    </div>
+                  } @else {
+                    <label class="btn-file-select">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageTabletUrl', $event)" hidden />
+                    </label>
+                  }
+                </div>
+              </div>
             </section>
 
             <!-- Tela "Tudo pronto!" — texto editável exibido quando vem de um formulário -->

@@ -1,5 +1,7 @@
 <!-- Background aplicado via signal — funciona com cor, gradiente ou imagem -->
 <div class="quiz-page" [style.background]="quizBg()">
+  <!-- Camada de fundo fixa ao tamanho da tela (ver qpBgImageStyle() no .ts) -->
+  <div class="qp-bg-layer" [ngStyle]="qpBgImageStyle()"></div>
 
   <!-- ── LOADING ──────────────────────────────────────────────────────────── -->
   @if (step() === 'loading') {
