@@ -60,6 +60,17 @@ export interface QuizConfig {
   thankYouTitle?: string | null;
   thankYouSubtitle?: string | null;
   thankYouParagraph?: string | null;
+  // Aparência opcional e independente da tela de agradecimento final (null = herda do quiz)
+  thankYouBgColor?: string | null;
+  thankYouBgGradient?: string | null;
+  thankYouBgImageUrl?: string | null;
+  thankYouBgImageMobileUrl?: string | null;
+  thankYouBgImageTabletUrl?: string | null;
+  thankYouIconColor?: string | null;
+  thankYouTitleColor?: string | null;
+  thankYouTextColor?: string | null;
+  thankYouFontFamily?: string | null;
+  thankYouTitleFontSize?: string | null;
 }
 
 export interface QuizSession {
@@ -130,6 +141,17 @@ export interface QuizConfigRequest {
   thankYouTitle?: string | null;
   thankYouSubtitle?: string | null;
   thankYouParagraph?: string | null;
+  // Aparência opcional e independente da tela de agradecimento final (null = herda do quiz)
+  thankYouBgColor?: string | null;
+  thankYouBgGradient?: string | null;
+  thankYouBgImageUrl?: string | null;
+  thankYouBgImageMobileUrl?: string | null;
+  thankYouBgImageTabletUrl?: string | null;
+  thankYouIconColor?: string | null;
+  thankYouTitleColor?: string | null;
+  thankYouTextColor?: string | null;
+  thankYouFontFamily?: string | null;
+  thankYouTitleFontSize?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

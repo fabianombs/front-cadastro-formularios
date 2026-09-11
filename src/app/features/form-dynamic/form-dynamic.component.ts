@@ -128,6 +128,9 @@ export class FormDynamicComponent implements OnInit {
           if (template.appearance?.fontFamily) {
             this.loadGoogleFont(template.appearance.fontFamily);
           }
+          if (template.thankYouFontFamily) {
+            this.loadGoogleFont(template.thankYouFontFamily);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -323,6 +326,55 @@ export class FormDynamicComponent implements OnInit {
   thankYouParagraph = computed(() =>
     this.template()?.thankYouParagraph?.trim() || ''
   );
+
+  // Aparência independente e opcional da tela de agradecimento — qualquer
+  // campo não preenchido cai na aparência do formulário (comportamento atual).
+  thankYouCardStyle = computed(() => {
+    const t = this.template();
+    const base = this.formCardStyle();
+    if (!t) return base;
+    const hasOverride = t.thankYouBgColor || t.thankYouBgGradient || t.thankYouBgImageUrl;
+    if (!hasOverride) return base;
+    const style: Record<string, string> = { ...(base as Record<string, string>) };
+    delete style['backdrop-filter'];
+    delete style['-webkit-backdrop-filter'];
+    if (t.thankYouBgImageUrl) {
+      style['background'] = 'none';
+      style['background-image'] = `url(${t.thankYouBgImageUrl})`;
+      style['background-size'] = 'cover';
+      style['background-position'] = 'center';
+      style['background-repeat'] = 'no-repeat';
+    } else if (t.thankYouBgGradient) {
+      style['background'] = t.thankYouBgGradient;
+    } else if (t.thankYouBgColor) {
+      style['background'] = t.thankYouBgColor;
+    }
+    return style;
+  });
+
+  thankYouIconStyle = computed(() => {
+    const c = this.template()?.thankYouIconColor;
+    if (!c) return {};
+    return { color: c, background: this.hexToRgba(c, 0.15) };
+  });
+
+  thankYouTitleStyle = computed(() => {
+    const t = this.template();
+    const style: Record<string, string> = { ...this.titleStyle() };
+    if (t?.thankYouTitleColor) style['color'] = t.thankYouTitleColor;
+    if (t?.thankYouFontFamily) style['font-family'] = `'${t.thankYouFontFamily}', sans-serif`;
+    if (t?.thankYouTitleFontSize) style['font-size'] = t.thankYouTitleFontSize;
+    return style;
+  });
+
+  thankYouTextStyle = computed(() => {
+    const t = this.template();
+    const style: Record<string, string> = {};
+    const textColor = t?.thankYouTextColor || t?.appearance?.formTextColor;
+    if (textColor) style['color'] = textColor;
+    if (t?.thankYouFontFamily) style['font-family'] = `'${t.thankYouFontFamily}', sans-serif`;
+    return style;
+  });
 
   submitBtnStyle = computed(() => {
     const a = this.template()?.appearance;

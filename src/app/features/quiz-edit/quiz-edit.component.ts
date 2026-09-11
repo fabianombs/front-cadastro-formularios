@@ -112,6 +112,16 @@ export class QuizEditComponent implements OnInit {
       thankYouTitle:      [quiz.thankYouTitle      ?? null],
       thankYouSubtitle:   [quiz.thankYouSubtitle   ?? null],
       thankYouParagraph:  [quiz.thankYouParagraph  ?? null],
+      thankYouBgColor:          [quiz.thankYouBgColor          ?? null],
+      thankYouBgGradient:       [quiz.thankYouBgGradient       ?? null],
+      thankYouBgImageUrl:       [quiz.thankYouBgImageUrl       ?? null],
+      thankYouBgImageMobileUrl: [quiz.thankYouBgImageMobileUrl ?? null],
+      thankYouBgImageTabletUrl: [quiz.thankYouBgImageTabletUrl ?? null],
+      thankYouIconColor:        [quiz.thankYouIconColor        ?? null],
+      thankYouTitleColor:       [quiz.thankYouTitleColor       ?? null],
+      thankYouTextColor:        [quiz.thankYouTextColor        ?? null],
+      thankYouFontFamily:       [quiz.thankYouFontFamily       ?? null],
+      thankYouTitleFontSize:    [quiz.thankYouTitleFontSize    ?? null],
     });
 
     // Inicializa snapshot e mantém atualizado para que computed() reajam ao form
@@ -327,6 +337,16 @@ export class QuizEditComponent implements OnInit {
       thankYouTitle:      v.thankYouEnabled ? (v.thankYouTitle || null) : null,
       thankYouSubtitle:   v.thankYouEnabled ? (v.thankYouSubtitle || null) : null,
       thankYouParagraph:  v.thankYouEnabled ? (v.thankYouParagraph || null) : null,
+      thankYouBgColor:          v.thankYouEnabled ? (v.thankYouBgColor || null) : null,
+      thankYouBgGradient:       v.thankYouEnabled ? (v.thankYouBgGradient || null) : null,
+      thankYouBgImageUrl:       v.thankYouEnabled ? (v.thankYouBgImageUrl || null) : null,
+      thankYouBgImageMobileUrl: v.thankYouEnabled ? (v.thankYouBgImageMobileUrl || null) : null,
+      thankYouBgImageTabletUrl: v.thankYouEnabled ? (v.thankYouBgImageTabletUrl || null) : null,
+      thankYouIconColor:        v.thankYouEnabled ? (v.thankYouIconColor || null) : null,
+      thankYouTitleColor:       v.thankYouEnabled ? (v.thankYouTitleColor || null) : null,
+      thankYouTextColor:        v.thankYouEnabled ? (v.thankYouTextColor || null) : null,
+      thankYouFontFamily:       v.thankYouEnabled ? (v.thankYouFontFamily || null) : null,
+      thankYouTitleFontSize:    v.thankYouEnabled ? (v.thankYouTitleFontSize || null) : null,
     };
 
     if (this.isCreateMode) {

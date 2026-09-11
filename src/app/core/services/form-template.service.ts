@@ -81,6 +81,17 @@ export interface FormTemplate {
   thankYouTitle?: string | null;
   thankYouSubtitle?: string | null;
   thankYouParagraph?: string | null;
+  // Aparência opcional e independente da tela de agradecimento final (null = herda do formulário)
+  thankYouBgColor?: string | null;
+  thankYouBgGradient?: string | null;
+  thankYouBgImageUrl?: string | null;
+  thankYouBgImageMobileUrl?: string | null;
+  thankYouBgImageTabletUrl?: string | null;
+  thankYouIconColor?: string | null;
+  thankYouTitleColor?: string | null;
+  thankYouTextColor?: string | null;
+  thankYouFontFamily?: string | null;
+  thankYouTitleFontSize?: string | null;
   // Quiz integrado — presentes quando existe um QuizConfig ativo
   hasQuiz: boolean;
   quizId?: number | null;
@@ -123,6 +134,17 @@ export interface CreateFormTemplateRequest {
   thankYouTitle?: string | null;
   thankYouSubtitle?: string | null;
   thankYouParagraph?: string | null;
+  // Aparência opcional e independente da tela de agradecimento final (null = herda do formulário)
+  thankYouBgColor?: string | null;
+  thankYouBgGradient?: string | null;
+  thankYouBgImageUrl?: string | null;
+  thankYouBgImageMobileUrl?: string | null;
+  thankYouBgImageTabletUrl?: string | null;
+  thankYouIconColor?: string | null;
+  thankYouTitleColor?: string | null;
+  thankYouTextColor?: string | null;
+  thankYouFontFamily?: string | null;
+  thankYouTitleFontSize?: string | null;
   // Quiz selecionado antes de salvar — vinculado automaticamente pelo backend
   quizId?: number | null;
   // Slug personalizado do link de visualização (ex: "coca-cola")
@@ -142,6 +164,17 @@ export interface UpdateFormTemplateRequest {
   thankYouTitle?: string | null;
   thankYouSubtitle?: string | null;
   thankYouParagraph?: string | null;
+  // Aparência opcional e independente da tela de agradecimento final (null = herda do formulário)
+  thankYouBgColor?: string | null;
+  thankYouBgGradient?: string | null;
+  thankYouBgImageUrl?: string | null;
+  thankYouBgImageMobileUrl?: string | null;
+  thankYouBgImageTabletUrl?: string | null;
+  thankYouIconColor?: string | null;
+  thankYouTitleColor?: string | null;
+  thankYouTextColor?: string | null;
+  thankYouFontFamily?: string | null;
+  thankYouTitleFontSize?: string | null;
   // Toggles do link de visualização do cliente (null = não alterar)
   viewAllowExport?: boolean | null;
   viewShowSubmissions?: boolean | null;
