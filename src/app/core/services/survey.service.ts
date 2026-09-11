@@ -22,6 +22,8 @@ export interface SurveyConfig {
   backgroundColor?: string | null;
   backgroundGradient?: string | null;
   backgroundImageUrl?: string | null;
+  backgroundImageMobileUrl?: string | null;
+  backgroundImageTabletUrl?: string | null;
   primaryColor?: string | null;
   textColor?: string | null;
   cardColor?: string | null;

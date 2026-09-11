@@ -38,14 +38,38 @@ export class SurveyPublicComponent implements OnInit {
   respondentRef       = '';
   sourceTemplateSlug  = '';
 
-  // Aparência dinâmica baseada na config da pesquisa
+  // Aparência dinâmica baseada na config da pesquisa. Imagem de fundo NÃO entra
+  // aqui — vai numa camada fixa separada (spBgImageStyle/.sp-bg-layer) porque
+  // .survey-wrapper cresce com o conteúdo (min-height apenas: 100vh); "cover"
+  // direto nele ampliava a imagem várias vezes em telas mais altas que largas
+  // (celular/tablet), deixando-a gigante/borrada.
   bgStyle = computed(() => {
     const s = this.survey();
     if (!s) return 'linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #162d4a 100%)';
-    if (s.backgroundImageUrl) return `url('${s.backgroundImageUrl}') center/cover no-repeat`;
+    if (s.backgroundImageUrl) return undefined; // tratado por spBgImageStyle()
     if (s.backgroundGradient) return s.backgroundGradient;
     if (s.backgroundColor)    return s.backgroundColor;
     return 'linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #162d4a 100%)';
+  });
+
+  spBgImageStyle = computed(() => {
+    const s = this.survey();
+    if (!s?.backgroundImageUrl) return {};
+    const style: Record<string, string> = {
+      'position': 'fixed',
+      'top': '0', 'left': '0', 'right': '0', 'bottom': '0',
+      'width': '100vw',
+      'height': '100vh',
+      'z-index': '-1',
+      'pointer-events': 'none',
+      'background-size': 'contain',
+      'background-position': 'center',
+      'background-repeat': 'no-repeat',
+      '--sp-bg-web': `url(${s.backgroundImageUrl})`,
+    };
+    if (s.backgroundImageMobileUrl) style['--sp-bg-mobile'] = `url(${s.backgroundImageMobileUrl})`;
+    if (s.backgroundImageTabletUrl) style['--sp-bg-tablet'] = `url(${s.backgroundImageTabletUrl})`;
+    return style;
   });
 
   btnBg   = computed(() => this.survey()?.buttonColor || this.survey()?.primaryColor || '#3b82f6');

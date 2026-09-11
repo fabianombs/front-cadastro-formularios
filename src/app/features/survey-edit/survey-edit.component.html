@@ -278,6 +278,36 @@
               }
             </div>
           </div>
+
+          <div class="field-group">
+            <label>Fundo específico por aparelho <em style="font-weight:400">(opcional — sem isso, a imagem acima é usada em toda tela)</em></label>
+            <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px">
+              <div style="flex:1; min-width:180px">
+                <span style="display:block; font-size:12px; opacity:.75; margin-bottom:6px">Celular (recomendado: 1080×1920px)</span>
+                @if (surveyForm.get('backgroundImageMobileUrl')?.value) {
+                  <span>✓ Imagem carregada</span>
+                  <button type="button" class="btn-clear-sm" (click)="clearField('backgroundImageMobileUrl')">Remover</button>
+                } @else {
+                  <label class="btn-upload">
+                    Selecionar arquivo
+                    <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageMobileUrl', $event)" hidden />
+                  </label>
+                }
+              </div>
+              <div style="flex:1; min-width:180px">
+                <span style="display:block; font-size:12px; opacity:.75; margin-bottom:6px">Tablet (recomendado: 1200×1600px)</span>
+                @if (surveyForm.get('backgroundImageTabletUrl')?.value) {
+                  <span>✓ Imagem carregada</span>
+                  <button type="button" class="btn-clear-sm" (click)="clearField('backgroundImageTabletUrl')">Remover</button>
+                } @else {
+                  <label class="btn-upload">
+                    Selecionar arquivo
+                    <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageTabletUrl', $event)" hidden />
+                  </label>
+                }
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="section-card">

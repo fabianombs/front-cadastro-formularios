@@ -97,6 +97,8 @@ export class SurveyEditComponent implements OnInit {
       backgroundColor:    [s.backgroundColor    ?? null],
       backgroundGradient: [s.backgroundGradient ?? null],
       backgroundImageUrl: [s.backgroundImageUrl ?? null],
+      backgroundImageMobileUrl: [s.backgroundImageMobileUrl ?? null],
+      backgroundImageTabletUrl: [s.backgroundImageTabletUrl ?? null],
       primaryColor:       [s.primaryColor       ?? null],
       textColor:          [s.textColor          ?? null],
       cardColor:          [s.cardColor          ?? null],
@@ -193,6 +195,8 @@ export class SurveyEditComponent implements OnInit {
     this.surveyForm.get('backgroundGradient')?.setValue(value);
     this.surveyForm.get('backgroundColor')?.setValue(null);
     this.surveyForm.get('backgroundImageUrl')?.setValue(null);
+    this.surveyForm.get('backgroundImageMobileUrl')?.setValue(null);
+    this.surveyForm.get('backgroundImageTabletUrl')?.setValue(null);
   }
 
   uploadingLogo  = signal(false);
@@ -362,16 +366,25 @@ export class SurveyEditComponent implements OnInit {
   onDragOverZone(e: DragEvent) { e.preventDefault(); e.stopPropagation(); this.dragOver.set(true); }
   onDragLeaveZone() { this.dragOver.set(false); }
 
-  uploadFile(file: File) {
+  uploadFile(file: File, field: string = 'backgroundImageUrl') {
     this.uploading.set(true);
     this.surveyService.uploadImage(file).subscribe({
       next: (res) => {
-        this.surveyForm.get('backgroundImageUrl')?.setValue(res.url);
-        this.surveyForm.get('backgroundGradient')?.setValue(null);
+        this.surveyForm.get(field)?.setValue(res.url);
+        if (field === 'backgroundImageUrl') {
+          this.surveyForm.get('backgroundGradient')?.setValue(null);
+        }
         this.uploading.set(false);
       },
       error: () => this.uploading.set(false),
     });
+  }
+
+  /** Upload simples (sem drag & drop) para os campos opcionais de fundo por aparelho. */
+  onFileSelectForField(field: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) this.uploadFile(input.files[0], field);
+    input.value = '';
   }
 
   // ── Salvar ────────────────────────────────────────────────────────────────
@@ -393,6 +406,8 @@ export class SurveyEditComponent implements OnInit {
       backgroundColor:    v.backgroundColor    || null,
       backgroundGradient: v.backgroundGradient || null,
       backgroundImageUrl: v.backgroundImageUrl || null,
+      backgroundImageMobileUrl: v.backgroundImageMobileUrl || null,
+      backgroundImageTabletUrl: v.backgroundImageTabletUrl || null,
       primaryColor:       v.primaryColor       || null,
       textColor:          v.textColor          || null,
       cardColor:          v.cardColor          || null,

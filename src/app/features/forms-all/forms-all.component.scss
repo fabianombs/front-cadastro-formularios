@@ -189,6 +189,14 @@
   margin: 0;
 }
 
+.tc-created {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Stats ── */
 .tc-stats {
   display: flex;

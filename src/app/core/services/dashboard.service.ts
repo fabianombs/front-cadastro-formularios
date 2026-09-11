@@ -11,6 +11,7 @@ export interface TemplateStatResponse {
   name: string;
   slug: string;
   clientName?: string;
+  createdAt?: string;
   hasSchedule?: boolean;
   fieldCount: number;
   submissionCount: number;

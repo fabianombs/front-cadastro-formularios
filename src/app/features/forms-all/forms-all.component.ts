@@ -13,6 +13,7 @@ import {
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { LocalDatePipe } from '../../shared/pipes/local-date.pipe';
 
 @Component({
   selector: 'app-forms-all',
@@ -25,6 +26,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
     PageShellComponent,
     PageHeaderComponent,
     ConfirmModalComponent,
+    LocalDatePipe,
   ],
   templateUrl: './forms-all.component.html',
   styleUrls: ['./forms-all.component.scss'],

@@ -36,6 +36,8 @@ export interface QuizConfig {
   backgroundColor?: string | null;
   backgroundGradient?: string | null;
   backgroundImageUrl?: string | null;
+  backgroundImageMobileUrl?: string | null;
+  backgroundImageTabletUrl?: string | null;
   primaryColor?: string | null;
   textColor?: string | null;
   // Cor de fundo dos cards de opção — null usa o padrão glassmorphism
@@ -103,6 +105,8 @@ export interface QuizConfigRequest {
   backgroundColor?: string | null;
   backgroundGradient?: string | null;
   backgroundImageUrl?: string | null;
+  backgroundImageMobileUrl?: string | null;
+  backgroundImageTabletUrl?: string | null;
   primaryColor?: string | null;
   textColor?: string | null;
   cardColor?: string | null;

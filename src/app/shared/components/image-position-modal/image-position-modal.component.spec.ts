@@ -38,14 +38,31 @@ describe('ImagePositionModalComponent', () => {
     expect(component.scalePercent).toBe(150);
   });
 
-  it('cropAspectRatio deve retornar "3 / 1" quando config é null', () => {
-    component.config = null;
-    expect(component.cropAspectRatio).toBe('3 / 1');
+  it('cropBoxWidthPx/cropBoxHeightPx começam em 0 antes de calcular', () => {
+    expect(component.cropBoxWidthPx).toBe(0);
+    expect(component.cropBoxHeightPx).toBe(0);
   });
 
-  it('cropAspectRatio deve usar dimensões do config', () => {
-    component.config = mockConfig;
-    expect(component.cropAspectRatio).toBe('1200 / 400');
+  it('computeCropBoxSize calcula largura/altura respeitando a proporção do canvas (limitado por max-height)', () => {
+    component.config = mockConfig; // 1200 / 400 = proporção 3:1
+    const stageEl = { clientWidth: 600 } as HTMLElement;
+    const cropAreaEl = { clientWidth: 0, clientHeight: 0, parentElement: stageEl } as unknown as HTMLElement;
+    (component as unknown as { cropAreaRef: { nativeElement: HTMLElement } }).cropAreaRef = { nativeElement: cropAreaEl };
+    (component as unknown as { computeCropBoxSize: () => void }).computeCropBoxSize();
+    // largura 600 -> altura 600/3=200, não excede max-height (300), então usa 600x200
+    expect(component.cropBoxWidthPx).toBe(600);
+    expect(component.cropBoxHeightPx).toBe(200);
+  });
+
+  it('computeCropBoxSize limita pela altura máxima e recalcula a largura (imagem retrato)', () => {
+    component.config = { ...mockConfig, canvasWidth: 1080, canvasHeight: 2160 }; // proporção 1:2
+    const stageEl = { clientWidth: 500 } as HTMLElement;
+    const cropAreaEl = { clientWidth: 0, clientHeight: 0, parentElement: stageEl } as unknown as HTMLElement;
+    (component as unknown as { cropAreaRef: { nativeElement: HTMLElement } }).cropAreaRef = { nativeElement: cropAreaEl };
+    (component as unknown as { computeCropBoxSize: () => void }).computeCropBoxSize();
+    // altura 500/0.5=1000 estoura os 300px de max-height -> h=300, w=300*0.5=150
+    expect(component.cropBoxHeightPx).toBe(300);
+    expect(component.cropBoxWidthPx).toBe(150);
   });
 
   it('zoomFillPercent deve calcular percentual entre MIN e MAX_SCALE', () => {

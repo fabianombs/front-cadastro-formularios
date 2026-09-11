@@ -93,6 +93,8 @@ export class QuizEditComponent implements OnInit {
       backgroundColor:    [quiz.backgroundColor    ?? null],
       backgroundGradient: [quiz.backgroundGradient ?? null],
       backgroundImageUrl: [quiz.backgroundImageUrl ?? null],
+      backgroundImageMobileUrl: [quiz.backgroundImageMobileUrl ?? null],
+      backgroundImageTabletUrl: [quiz.backgroundImageTabletUrl ?? null],
       primaryColor:       [quiz.primaryColor       ?? null],
       textColor:          [quiz.textColor          ?? null],
       cardColor:          [quiz.cardColor          ?? null],
@@ -241,16 +243,27 @@ export class QuizEditComponent implements OnInit {
     if (file && file.type.startsWith('image/')) this.uploadFile(file);
   }
 
-  uploadFile(file: File) {
+  uploadFile(file: File, field: string = 'backgroundImageUrl') {
     this.uploading.set(true);
     this.quizService.uploadImage(file).subscribe({
       next: (res) => {
-        this.quizForm.get('backgroundImageUrl')?.setValue(res.url);
-        this.quizForm.get('backgroundGradient')?.setValue(null);
+        this.quizForm.get(field)?.setValue(res.url);
+        // Só a imagem "web" (padrão, usada em qualquer tela) substitui gradiente/cor;
+        // as versões de celular/tablet são um extra opcional em cima dela.
+        if (field === 'backgroundImageUrl') {
+          this.quizForm.get('backgroundGradient')?.setValue(null);
+        }
         this.uploading.set(false);
       },
       error: () => this.uploading.set(false),
     });
+  }
+
+  /** Upload simples (sem drag & drop) para os campos opcionais de fundo por aparelho. */
+  onFileSelectForField(field: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) this.uploadFile(input.files[0], field);
+    input.value = '';
   }
 
   onDropZone(e: DragEvent) {
@@ -294,6 +307,8 @@ export class QuizEditComponent implements OnInit {
       backgroundColor:    v.backgroundColor    || null,
       backgroundGradient: v.backgroundGradient || null,
       backgroundImageUrl: v.backgroundImageUrl || null,
+      backgroundImageMobileUrl: v.backgroundImageMobileUrl || null,
+      backgroundImageTabletUrl: v.backgroundImageTabletUrl || null,
       primaryColor:       v.primaryColor       || null,
       textColor:          v.textColor          || null,
       cardColor:          v.cardColor          || null,

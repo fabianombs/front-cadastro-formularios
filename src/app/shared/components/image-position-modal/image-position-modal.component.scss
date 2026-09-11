@@ -148,9 +148,11 @@
 
 .ipm-crop-area {
   position: relative;
-  width: 100%;
-  // aspect-ratio definido dinamicamente via [style.aspect-ratio] no template
-  max-height: 300px;
+  // width/height calculados e aplicados via [style.width.px]/[style.height.px]
+  // no template (component.ts: computeCropBoxSize()) — nunca via CSS puro.
+  // Ver o comentário grande em cropBoxWidthPx no .ts: width:100%+aspect-ratio+
+  // max-height não é confiável para imagens portrait nesse navegador.
+  flex-shrink: 0;
   overflow: hidden;
   border-radius: 6px;
   background: #070c1a;

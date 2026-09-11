@@ -19,6 +19,8 @@
 <div *ngIf="step() !== 'loading' && step() !== 'error'"
      class="survey-wrapper"
      [style.background]="bgStyle()">
+  <!-- Camada de fundo fixa ao tamanho da tela (ver spBgImageStyle() no .ts) -->
+  <div class="sp-bg-layer" [ngStyle]="spBgImageStyle()"></div>
 
   <!-- Logo posicionável — visibilidade controlada por tela -->
   <div *ngIf="survey()?.companyLogoUrl && (
