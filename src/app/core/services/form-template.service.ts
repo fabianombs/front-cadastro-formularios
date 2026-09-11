@@ -434,6 +434,16 @@ export class FormTemplateService {
     return this.http.delete<void>(`${this.submissionsUrl}/${submissionId}`);
   }
 
+  /** Apaga TODAS as respostas de um template — usado para zerar respostas de teste. Restrito a ADMIN no backend. */
+  deleteAllSubmissions(templateId: number): Observable<void> {
+    return this.http.delete<void>(`${this.submissionsUrl}/template/${templateId}`);
+  }
+
+  /** Apaga só as respostas selecionadas (por id) de um template. Restrito a ADMIN no backend. */
+  deleteSubmissionsByIds(templateId: number, ids: number[]): Observable<void> {
+    return this.http.delete<void>(`${this.submissionsUrl}/template/${templateId}/bulk`, { body: { ids } });
+  }
+
   getAppointmentsByTemplate(
     templateId: number,
     page = 0,
