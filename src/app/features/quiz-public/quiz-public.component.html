@@ -1,5 +1,7 @@
 <!-- Background aplicado via signal — funciona com cor, gradiente ou imagem -->
 <div class="quiz-page" [style.background]="quizBg()">
+  <!-- Camada de fundo fixa ao tamanho da tela (ver qpBgImageStyle() no .ts) -->
+  <div class="qp-bg-layer" [ngStyle]="qpBgImageStyle()"></div>
 
   <!-- ── LOADING ──────────────────────────────────────────────────────────── -->
   @if (step() === 'loading') {
@@ -216,6 +218,18 @@
       <div class="result-card glass-card">
         <!-- Medalha -->
         <div class="r-medal">{{ rankEmoji() }}</div>
+
+        @if (quiz()?.thankYouEnabled) {
+          <div class="r-thankyou">
+            <h2 class="r-thankyou-title" [style.color]="quizText()">{{ thankYouTitle() }}</h2>
+            @if (thankYouSubtitle()) {
+              <p class="r-thankyou-subtitle" [style.color]="quizText() + 'bb'">{{ thankYouSubtitle() }}</p>
+            }
+            @if (thankYouParagraph()) {
+              <p class="r-thankyou-paragraph" [style.color]="quizText() + '99'">{{ thankYouParagraph() }}</p>
+            }
+          </div>
+        }
 
         <h1 class="r-congrats" [style.color]="quizText()">Parabéns!</h1>
         <p class="r-name" [style.color]="quizText() + '99'">{{ session()?.playerName }}</p>

@@ -317,6 +317,15 @@
     border-color: var(--border-strong);
     min-height: unset;
   }
+
+  // Fundo por aparelho (celular/tablet) é retrato (ex.: 1080x1920, 1200x1600) —
+  // a caixa larga padrão (pensada pro fundo Web, bem mais baixo que largo)
+  // deixava a miniatura um traço fininho no meio de um vazio enorme.
+  // Aqui a caixa fica ela mesma no formato retrato, do tamanho da miniatura.
+  &--portrait {
+    max-width: 150px;
+    margin: 0 auto;
+  }
 }
 
 .img-upload-label {
@@ -353,6 +362,89 @@
   font-family: var(--font-body);
 }
 
+/* ── Info tooltip (resolução/tamanho recomendados para imagens) ── */
+.img-info-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--primary-muted);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+  vertical-align: middle;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: var(--primary);
+    color: #fff;
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 220px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-high);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 500;
+    font-style: normal;
+    font-family: var(--font-body);
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--fast), visibility var(--fast);
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: var(--surface-high);
+    border-right: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    transform: translateX(-50%) rotate(45deg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--fast), visibility var(--fast);
+    z-index: 19;
+  }
+}
+
 .img-upload-preview {
   position: relative;
   line-height: 0;
@@ -360,8 +452,24 @@
   img {
     width: 100%;
     max-height: 120px;
-    object-fit: cover;
+    // "contain", não "cover": a moldura da miniatura raramente tem a mesma
+    // proporção da imagem exportada (1200x220 topo, 1200x180 rodapé,
+    // 1200x400 fundo) — "cover" cortava a imagem só para caber na
+    // miniatura, mesmo já não sendo cortada no arquivo salvo. "contain"
+    // garante que a pré-visualização mostre fielmente a imagem inteira.
+    object-fit: contain;
+    background: var(--surface-high);
     display: block;
+  }
+
+  // Fundo por aparelho (celular/tablet): imagem retrato — a caixa acompanha
+  // (ver .img-upload-area--portrait), então aqui a miniatura preenche a
+  // caixa estreita e alta ao invés de esticar 100% de uma largura enorme.
+  &--portrait img {
+    width: auto;
+    max-width: 100%;
+    max-height: 220px;
+    margin: 0 auto;
   }
 
   &:hover .img-clear-btn { opacity: 1; }
@@ -571,7 +679,10 @@
 .ap-preview-img {
   width: 100%;
   max-height: 72px;
-  object-fit: cover;
+  // Mesmo motivo do .img-upload-preview img acima: "contain" para a
+  // pré-visualização nunca cortar o que já não é cortado no arquivo.
+  object-fit: contain;
+  background: var(--surface-high);
   display: block;
   border-radius: 7px;
 }
@@ -1738,9 +1849,10 @@
   cursor: pointer;
   accent-color: #6366f1;
 
-  &--lgpd   { accent-color: #6366f1; }
-  &--quiz   { accent-color: #7c3aed; }
-  &--survey { accent-color: #f59e0b; }
+  &--lgpd     { accent-color: #6366f1; }
+  &--quiz     { accent-color: #7c3aed; }
+  &--survey   { accent-color: #f59e0b; }
+  &--thankyou { accent-color: #14b8a6; }
 }
 
 .feature-toggle-card--survey {
@@ -1748,6 +1860,34 @@
     border-color: rgba(245, 158, 11, 0.4);
     background: rgba(245, 158, 11, 0.05);
   }
+}
+
+.feature-toggle-card--thankyou {
+  &:has(input:checked) {
+    border-color: rgba(20, 184, 166, 0.4);
+    background: rgba(20, 184, 166, 0.05);
+  }
+}
+
+// ── Tela de agradecimento final — bloco de textos (aparece ao habilitar) ────────
+
+.thankyou-config-block {
+  margin-top: 10px;
+  padding: 14px 16px;
+  background: rgba(20, 184, 166, 0.06);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thankyou-config-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #2dd4bf;
+  opacity: 0.85;
 }
 
 // ── Survey inline picker ───────────────────────────────────────────────────────

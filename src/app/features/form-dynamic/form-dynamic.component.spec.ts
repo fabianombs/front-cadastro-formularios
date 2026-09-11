@@ -23,11 +23,13 @@ const mockTemplate: FormTemplate = {
   hasAttendance: false,
   scheduleConfig: null,
   lgpdEnabled: false,
+  thankYouEnabled: false,
   hasQuiz: false,
   viewAllowExport: false,
   viewShowSubmissions: true,
   viewShowAttendance: false,
   viewShowAppointments: false,
+  viewAllowAttendanceCheck: false,
   hasSurvey: false,
 };
 

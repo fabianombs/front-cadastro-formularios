@@ -29,6 +29,14 @@ import {
   ImagePositionConfig,
 } from '../../shared/components/image-position-modal/image-position-modal.component';
 
+/** Campos de imagem da aparência do formulário (fundo web/mobile/tablet + topo/rodapé). */
+type ImageField =
+  | 'backgroundImageUrl'
+  | 'backgroundImageMobileUrl'
+  | 'backgroundImageTabletUrl'
+  | 'headerImageUrl'
+  | 'footerImageUrl';
+
 @Component({
   selector: 'app-create-template',
   standalone: true,
@@ -61,10 +69,22 @@ export class CreateTemplateComponent implements OnInit {
   private pendingImageInput: HTMLInputElement | null = null;
 
   private readonly CANVAS_DIMS: Record<string, { w: number; h: number; label: string }> = {
-    backgroundImageUrl: { w: 1200, h: 400, label: 'Fundo' },
-    headerImageUrl:     { w: 1200, h: 220, label: 'Topo' },
-    footerImageUrl:     { w: 1200, h: 180, label: 'Rodapé' },
+    backgroundImageUrl:       { w: 1200, h: 400,  label: 'Fundo (Web)' },
+
+    // Fundo específico por dispositivo — opcional; sem eles, o "Fundo (Web)" acima
+    // é usado em qualquer tela (comportamento de sempre). Proporções pensadas para
+    // bater com a tela do aparelho e o "cover" cortar o mínimo possível.
+    backgroundImageMobileUrl: { w: 1080, h: 2160, label: 'Fundo (Celular)' },
+    backgroundImageTabletUrl: { w: 1200, h: 1600, label: 'Fundo (Tablet)' },
+    headerImageUrl:           { w: 1200, h: 220,  label: 'Topo' },
+    footerImageUrl:           { w: 1200, h: 180,  label: 'Rodapé' },
   };
+
+  /** Campos de imagem de aparência — usado para tipar os handlers genéricos abaixo. */
+  private readonly IMAGE_FIELD_NAMES = [
+    'backgroundImageUrl', 'backgroundImageMobileUrl', 'backgroundImageTabletUrl',
+    'headerImageUrl', 'footerImageUrl',
+  ] as const;
 
   private messages = inject(MessageService);
 
@@ -146,12 +166,16 @@ export class CreateTemplateComponent implements OnInit {
     this.templateForm.get('appearance.backgroundGradient')?.setValue(value);
     this.templateForm.get('appearance.backgroundColor')?.setValue('');
     this.templateForm.get('appearance.backgroundImageUrl')?.setValue('');
+    this.templateForm.get('appearance.backgroundImageMobileUrl')?.setValue('');
+    this.templateForm.get('appearance.backgroundImageTabletUrl')?.setValue('');
     this.imagePreviews['backgroundImageUrl'] = '';
+    this.imagePreviews['backgroundImageMobileUrl'] = '';
+    this.imagePreviews['backgroundImageTabletUrl'] = '';
   }
 
   /** Abre o modal de posicionamento ao selecionar uma imagem */
   onImageFileChange(
-    field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl',
+    field: ImageField,
     event: Event,
   ) {
     const input = event.target as HTMLInputElement;
@@ -189,7 +213,7 @@ export class CreateTemplateComponent implements OnInit {
 
   /** Usuário confirmou o posicionamento — recebe o blob recortado e faz upload */
   onImagePositionConfirmed(event: { blob: Blob; field: string }): void {
-    const field = event.field as 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl';
+    const field = event.field as ImageField;
     const isPng  = event.blob.type === 'image/png';
     const croppedFile = new File(
       [event.blob],
@@ -212,7 +236,7 @@ export class CreateTemplateComponent implements OnInit {
         this.templateForm.get(`appearance.${field}`)?.setValue(url);
         URL.revokeObjectURL(blobUrl);
         this.uploadingField.set(null);
-        if (field === 'backgroundImageUrl') {
+        if (field === 'backgroundImageUrl' || field === 'backgroundImageMobileUrl' || field === 'backgroundImageTabletUrl') {
           this.templateForm.get('appearance.backgroundGradient')?.setValue('');
           this.templateForm.get('appearance.backgroundColor')?.setValue('');
         }
@@ -239,7 +263,7 @@ export class CreateTemplateComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  clearImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
+  clearImage(field: ImageField) {
     this.deleteSessionImage(field);
     this.templateForm.get(`appearance.${field}`)?.setValue('');
     this.imagePreviews[field] = '';
@@ -250,7 +274,7 @@ export class CreateTemplateComponent implements OnInit {
    * (ou seja, que está em imagePreviews mas ainda não foi salva no template em banco).
    * Imagens já salvas são gerenciadas pelo backend em updateTemplate via tryDeleteOrphanedImage.
    */
-  private deleteSessionImage(field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl') {
+  private deleteSessionImage(field: ImageField) {
     const sessionUrl = this.imagePreviews[field];
     const savedUrl = this.template?.appearance?.[field];
     // Ignora blob URLs (preview local antes do upload terminar) — só deleta URLs reais do servidor
@@ -508,6 +532,10 @@ export class CreateTemplateComponent implements OnInit {
       hasSurvey: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
+      thankYouEnabled: [false],
+      thankYouTitle: [''],
+      thankYouSubtitle: [''],
+      thankYouParagraph: [''],
       // Slug e toggles do link de visualização do cliente
       viewSlug: [''],
       viewAllowExport: [false],
@@ -526,6 +554,8 @@ export class CreateTemplateComponent implements OnInit {
         backgroundColor: [''],
         backgroundGradient: [''],
         backgroundImageUrl: [''],
+        backgroundImageMobileUrl: [''],
+        backgroundImageTabletUrl: [''],
         headerImageUrl: [''],
         footerImageUrl: [''],
         primaryColor: [''],
@@ -578,6 +608,10 @@ export class CreateTemplateComponent implements OnInit {
 
   get lgpdEnabled(): boolean {
     return this.templateForm.get('lgpdEnabled')?.value === true;
+  }
+
+  get thankYouEnabled(): boolean {
+    return this.templateForm.get('thankYouEnabled')?.value === true;
   }
 
   // ── Quiz picker methods ───────────────────────────────────────────────────
@@ -920,7 +954,7 @@ export class CreateTemplateComponent implements OnInit {
 
     const formValue = this.templateForm.value;
     const rawAppearance = formValue.appearance ?? {};
-    const IMAGE_FIELDS = new Set(['backgroundImageUrl', 'headerImageUrl', 'footerImageUrl']);
+    const IMAGE_FIELDS: Set<string> = new Set(this.IMAGE_FIELD_NAMES);
     const appearance: Record<string, string> = {};
     Object.keys(rawAppearance).forEach((k) => {
       if (rawAppearance[k] || IMAGE_FIELDS.has(k)) appearance[k] = rawAppearance[k] ?? '';
@@ -950,6 +984,10 @@ export class CreateTemplateComponent implements OnInit {
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
       lgpdEnabled: formValue.lgpdEnabled ?? false,
       lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+      thankYouEnabled: formValue.thankYouEnabled ?? false,
+      thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
+      thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
+      thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
       // Vincula o quiz selecionado antes de salvar (se houver)
       quizId: this.pendingQuizId() ?? null,
       // Slug do link de visualização do cliente definido na criação
@@ -973,6 +1011,10 @@ export class CreateTemplateComponent implements OnInit {
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
         lgpdEnabled: formValue.lgpdEnabled ?? false,
         lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+        thankYouEnabled: formValue.thankYouEnabled ?? false,
+        thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
+        thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
+        thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
         // Salva as configurações do link de visualização do cliente
         viewAllowExport: formValue.viewAllowExport ?? false,
         viewShowSubmissions: formValue.viewShowSubmissions ?? true,
@@ -1105,6 +1147,10 @@ export class CreateTemplateComponent implements OnInit {
       hasSchedule: template.hasSchedule,
       lgpdEnabled: template.lgpdEnabled ?? false,
       lgpdText: template.lgpdText ?? '',
+      thankYouEnabled: template.thankYouEnabled ?? false,
+      thankYouTitle: template.thankYouTitle ?? '',
+      thankYouSubtitle: template.thankYouSubtitle ?? '',
+      thankYouParagraph: template.thankYouParagraph ?? '',
       viewAllowExport: template.viewAllowExport ?? false,
       viewShowSubmissions: template.viewShowSubmissions ?? true,
       viewShowAttendance: template.viewShowAttendance ?? true,
@@ -1338,7 +1384,11 @@ export class CreateTemplateComponent implements OnInit {
     if (controlName === 'backgroundColor' && hex) {
       this.templateForm.get('appearance.backgroundGradient')?.setValue('', { emitEvent: false });
       this.templateForm.get('appearance.backgroundImageUrl')?.setValue('', { emitEvent: false });
+      this.templateForm.get('appearance.backgroundImageMobileUrl')?.setValue('', { emitEvent: false });
+      this.templateForm.get('appearance.backgroundImageTabletUrl')?.setValue('', { emitEvent: false });
       this.imagePreviews['backgroundImageUrl'] = '';
+      this.imagePreviews['backgroundImageMobileUrl'] = '';
+      this.imagePreviews['backgroundImageTabletUrl'] = '';
     }
     this.cdr.detectChanges();
   }
@@ -1385,6 +1435,10 @@ export class CreateTemplateComponent implements OnInit {
       appearance: null,
       lgpdEnabled: this.template.lgpdEnabled,
       lgpdText: this.template.lgpdText ?? null,
+      thankYouEnabled: this.template.thankYouEnabled,
+      thankYouTitle: this.template.thankYouTitle ?? null,
+      thankYouSubtitle: this.template.thankYouSubtitle ?? null,
+      thankYouParagraph: this.template.thankYouParagraph ?? null,
       viewSlug: slug,
     };
 

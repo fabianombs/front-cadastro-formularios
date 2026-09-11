@@ -10,6 +10,10 @@ export interface TemplateAppearance {
   backgroundColor?: string;
   backgroundGradient?: string;
   backgroundImageUrl?: string;
+  /** Imagem de fundo específica para celular (opcional; sem ela, usa backgroundImageUrl) */
+  backgroundImageMobileUrl?: string;
+  /** Imagem de fundo específica para tablet (opcional; sem ela, usa backgroundImageUrl) */
+  backgroundImageTabletUrl?: string;
   headerImageUrl?: string;
   footerImageUrl?: string;
   primaryColor?: string;
@@ -72,6 +76,11 @@ export interface FormTemplate {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Tela de agradecimento final (opcional) — mostrada ao concluir o formulário
+  thankYouEnabled: boolean;
+  thankYouTitle?: string | null;
+  thankYouSubtitle?: string | null;
+  thankYouParagraph?: string | null;
   // Quiz integrado — presentes quando existe um QuizConfig ativo
   hasQuiz: boolean;
   quizId?: number | null;
@@ -109,6 +118,11 @@ export interface CreateFormTemplateRequest {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Tela de agradecimento final (opcional) — mostrada ao concluir o formulário
+  thankYouEnabled: boolean;
+  thankYouTitle?: string | null;
+  thankYouSubtitle?: string | null;
+  thankYouParagraph?: string | null;
   // Quiz selecionado antes de salvar — vinculado automaticamente pelo backend
   quizId?: number | null;
   // Slug personalizado do link de visualização (ex: "coca-cola")
@@ -123,6 +137,11 @@ export interface UpdateFormTemplateRequest {
   appearance?: Partial<TemplateAppearance> | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  // Tela de agradecimento final (opcional) — mostrada ao concluir o formulário
+  thankYouEnabled: boolean;
+  thankYouTitle?: string | null;
+  thankYouSubtitle?: string | null;
+  thankYouParagraph?: string | null;
   // Toggles do link de visualização do cliente (null = não alterar)
   viewAllowExport?: boolean | null;
   viewShowSubmissions?: boolean | null;

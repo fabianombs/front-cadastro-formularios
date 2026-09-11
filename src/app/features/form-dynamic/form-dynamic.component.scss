@@ -1,3 +1,33 @@
+.fd-bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  // Fixar esta camada exatamente ao tamanho da tela garante que "cover"
+  // seja calculado sempre em relação ao viewport, nunca à altura total
+  // (rolável) do formulário — isso corrige o zoom gigante da imagem de
+  // fundo em formulários longos no celular/tablet.
+
+  // Padrão: imagem "web" (--fd-bg-web, sempre definida — ver backgroundImageStyle() no .ts).
+  background-image: var(--fd-bg-web);
+
+  // Celular: usa --fd-bg-mobile se o cliente enviou uma versão específica;
+  // senão cai de volta pra --fd-bg-web (fallback nativo do var()).
+  @media (max-width: 767px) {
+    background-image: var(--fd-bg-mobile, var(--fd-bg-web));
+  }
+
+  // Tablet: mesma lógica com --fd-bg-tablet.
+  @media (min-width: 768px) and (max-width: 1024px) {
+    background-image: var(--fd-bg-tablet, var(--fd-bg-web));
+  }
+}
+
 .fd-page {
   min-height: 100vh;
   padding: 40px 16px 48px;
@@ -41,7 +71,12 @@
 .fd-footer-img {
   width: 100%;
   max-height: 180px;
-  object-fit: cover;
+  // "contain": a faixa de topo/rodapé raramente tem a mesma proporção da
+  // imagem exportada pelo editor (1200x220 / 1200x180), e a largura muda
+  // por causa do responsivo — "cover" cortava a imagem (ex.: texto do
+  // banner do cliente sumindo) em boa parte dos tamanhos de tela. O
+  // pedido do cliente é a imagem nunca ser cortada, então aqui também.
+  object-fit: contain;
   border-radius: var(--radius-md);
   display: block;
 }
@@ -626,4 +661,59 @@
   transition: color 0.15s;
 
   &:hover { color: #8b9dc3; }
+}
+
+// ── Tela de agradecimento final ─────────────────────────────────────────────
+
+.fd-thankyou-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 32px;
+  gap: 4px;
+  animation: fd-thankyou-in 0.4s ease-out;
+}
+
+@keyframes fd-thankyou-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fd-thankyou-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  margin-bottom: 18px;
+}
+
+.fd-thankyou-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text, #e2e8f0);
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.fd-thankyou-subtitle {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+  margin: 0 0 14px;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.fd-thankyou-paragraph {
+  font-size: 13.5px;
+  color: var(--text-muted, #7a94b8);
+  margin: 0;
+  max-width: 480px;
+  line-height: 1.65;
+  white-space: pre-line;
 }

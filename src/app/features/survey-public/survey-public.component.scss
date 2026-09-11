@@ -1,12 +1,31 @@
 // Estilo glassmorphism consistente com quiz-public e attendance-checkin
 
+// Camada de fundo fixa ao tamanho da tela — ver comentário em spBgImageStyle() no .ts.
+.sp-bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: var(--sp-bg-web);
+
+  @media (max-width: 767px) {
+    background-image: var(--sp-bg-mobile, var(--sp-bg-web));
+  }
+  @media (min-width: 768px) and (max-width: 1024px) {
+    background-image: var(--sp-bg-tablet, var(--sp-bg-web));
+  }
+}
+
 .survey-wrapper {
   min-height: 100vh;
   width: 100%;
   position: relative;           // base para posicionamento absoluto do logo e card
   background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #162d4a 100%);
-  background-size: cover;
-  background-position: center;
   overflow: hidden;
 }
 
@@ -212,6 +231,14 @@
   font-size: 0.95rem;
   opacity: 0.7;
   margin-bottom: 1.5rem;
+}
+
+.thankyou-paragraph {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
 }
 
 .selected-score-badge {

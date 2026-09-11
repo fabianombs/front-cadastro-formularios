@@ -311,6 +311,41 @@
                 <input type="text" formControlName="backgroundImageUrl"
                        placeholder="https://..." class="input input--sm" />
               </div>
+
+              <!-- Fundo específico por aparelho (opcional) -->
+              <p class="hint" style="margin-top:16px;display:block">
+                Fundo específico por aparelho <em>(opcional — sem isso, a imagem acima é usada em toda tela)</em>
+              </p>
+              <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px">
+                <div style="flex:1; min-width:180px">
+                  <label class="url-alt__label" style="display:block; margin-bottom:6px">Celular (recomendado: 1080×1920px)</label>
+                  @if (quizForm.get('backgroundImageMobileUrl')?.value) {
+                    <div class="drop-zone__preview" style="height:80px"
+                         [style.background-image]="'url(' + quizForm.get('backgroundImageMobileUrl')?.value + ')'">
+                      <button type="button" class="btn-remove-img" (click)="clearField('backgroundImageMobileUrl')">✕ Remover</button>
+                    </div>
+                  } @else {
+                    <label class="btn-file-select">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageMobileUrl', $event)" hidden />
+                    </label>
+                  }
+                </div>
+                <div style="flex:1; min-width:180px">
+                  <label class="url-alt__label" style="display:block; margin-bottom:6px">Tablet (recomendado: 1200×1600px)</label>
+                  @if (quizForm.get('backgroundImageTabletUrl')?.value) {
+                    <div class="drop-zone__preview" style="height:80px"
+                         [style.background-image]="'url(' + quizForm.get('backgroundImageTabletUrl')?.value + ')'">
+                      <button type="button" class="btn-remove-img" (click)="clearField('backgroundImageTabletUrl')">✕ Remover</button>
+                    </div>
+                  } @else {
+                    <label class="btn-file-select">
+                      Selecionar arquivo
+                      <input type="file" accept="image/*" (change)="onFileSelectForField('backgroundImageTabletUrl', $event)" hidden />
+                    </label>
+                  }
+                </div>
+              </div>
             </section>
 
             <!-- Tela "Tudo pronto!" — texto editável exibido quando vem de um formulário -->
@@ -331,6 +366,42 @@
                        placeholder="Você está pronto para o quiz? (padrão)"
                        class="input" maxlength="255" />
               </div>
+            </section>
+
+            <!-- Tela de agradecimento final — texto opcional mostrado acima do resultado -->
+            <section class="edit-section">
+              <label class="toggle-row">
+                <input type="checkbox" formControlName="thankYouEnabled" />
+                <div>
+                  <h2 class="section-title" style="margin: 0;">🏁 Tela de agradecimento final</h2>
+                  <p class="section-hint" style="margin: 2px 0 0;">
+                    Mostra um texto personalizado acima do resultado/pontuação, ao final do quiz.
+                  </p>
+                </div>
+              </label>
+
+              @if (quizForm.get('thankYouEnabled')?.value) {
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Título</label>
+                  <input type="text" formControlName="thankYouTitle"
+                         placeholder="Ex: Obrigado por jogar!"
+                         class="input" maxlength="120" />
+                </div>
+
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Subtítulo</label>
+                  <input type="text" formControlName="thankYouSubtitle"
+                         placeholder="Ex: Confira sua pontuação abaixo."
+                         class="input" maxlength="160" />
+                </div>
+
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Parágrafo</label>
+                  <textarea formControlName="thankYouParagraph" rows="3"
+                            placeholder="Texto adicional, opcional..."
+                            class="input"></textarea>
+                </div>
+              }
             </section>
 
           </div><!-- /appearance-controls -->

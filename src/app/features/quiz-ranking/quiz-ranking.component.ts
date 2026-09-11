@@ -26,13 +26,37 @@ export class QuizRankingComponent implements OnInit, OnDestroy {
 
   // ── Aparência — mesmos sinais da tela pública ─────────────────────────────
 
+  // Cor/gradiente aplicado inline (mais confiável que CSS vars). Imagem de fundo
+  // vai numa camada fixa separada (rkBgImageStyle/.rk-bg-layer) — ranking pode
+  // listar muitos participantes e ficar mais alto que a tela, o que fazia
+  // "cover" ampliar a imagem várias vezes (zoom gigante/borrado no celular/tablet).
   quizBg = computed(() => {
     const q = this.quizConfig();
     if (!q) return '#0d1117';
-    if (q.backgroundImageUrl) return `url('${q.backgroundImageUrl}') center/cover no-repeat`;
+    if (q.backgroundImageUrl) return undefined; // tratado por rkBgImageStyle()
     if (q.backgroundGradient) return q.backgroundGradient;
     if (q.backgroundColor)    return q.backgroundColor;
     return '#0d1117';
+  });
+
+  rkBgImageStyle = computed(() => {
+    const q = this.quizConfig();
+    if (!q?.backgroundImageUrl) return {};
+    const style: Record<string, string> = {
+      'position': 'fixed',
+      'top': '0', 'left': '0', 'right': '0', 'bottom': '0',
+      'width': '100vw',
+      'height': '100vh',
+      'z-index': '-1',
+      'pointer-events': 'none',
+      'background-size': 'contain',
+      'background-position': 'center',
+      'background-repeat': 'no-repeat',
+      '--rk-bg-web': `url(${q.backgroundImageUrl})`,
+    };
+    if (q.backgroundImageMobileUrl) style['--rk-bg-mobile'] = `url(${q.backgroundImageMobileUrl})`;
+    if (q.backgroundImageTabletUrl) style['--rk-bg-tablet'] = `url(${q.backgroundImageTabletUrl})`;
+    return style;
   });
 
   quizPrimary     = computed(() => this.quizConfig()?.primaryColor    || '#5b8dee');

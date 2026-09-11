@@ -232,18 +232,50 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   // ── Aparência — signals computados diretamente do quiz ───────────────────
 
-  // Background aplicado inline no .quiz-page (mais confiável que CSS vars)
+  // Cor/gradiente aplicado inline no .quiz-page (mais confiável que CSS vars).
+  // Imagem de fundo NÃO entra aqui — vai numa camada fixa separada (qpBgImageStyle,
+  // ver .qp-bg-layer no scss). Motivo: .quiz-page cresce com o conteúdo (min-height
+  // apenas: 100vh), e em telas com conteúdo mais alto que a tela (ex.: ranking com
+  // muitos participantes) "cover" era calculado em cima dessa altura rolável inteira,
+  // ampliando a imagem várias vezes e deixando-a gigante/borrada no celular/tablet.
   quizBg = computed(() => {
     const q = this.quiz();
     if (!q) return '#0d1117';
-    if (q.backgroundImageUrl) return `url('${q.backgroundImageUrl}') center/cover no-repeat`;
+    if (q.backgroundImageUrl) return undefined; // tratado por qpBgImageStyle()
     if (q.backgroundGradient) return q.backgroundGradient;
     if (q.backgroundColor)    return q.backgroundColor;
     return '#0d1117';
   });
 
+  // Camada de fundo fixa ao tamanho da tela — troca de imagem por dispositivo
+  // via @media query no SCSS (.qp-bg-layer), sem depender de JS/resize.
+  qpBgImageStyle = computed(() => {
+    const q = this.quiz();
+    if (!q?.backgroundImageUrl) return {};
+    const style: Record<string, string> = {
+      'position': 'fixed',
+      'top': '0', 'left': '0', 'right': '0', 'bottom': '0',
+      'width': '100vw',
+      'height': '100vh',
+      'z-index': '-1',
+      'pointer-events': 'none',
+      'background-size': 'contain',
+      'background-position': 'center',
+      'background-repeat': 'no-repeat',
+      '--qp-bg-web': `url(${q.backgroundImageUrl})`,
+    };
+    if (q.backgroundImageMobileUrl) style['--qp-bg-mobile'] = `url(${q.backgroundImageMobileUrl})`;
+    if (q.backgroundImageTabletUrl) style['--qp-bg-tablet'] = `url(${q.backgroundImageTabletUrl})`;
+    return style;
+  });
+
   quizPrimary   = computed(() => this.quiz()?.primaryColor || '#5b8dee');
   quizText      = computed(() => this.quiz()?.textColor    || '#e2e8f0');
+
+  // Tela de agradecimento final (opcional) — texto customizado acima do resultado
+  thankYouTitle     = computed(() => this.quiz()?.thankYouTitle?.trim()     || 'Muito obrigado por jogar!');
+  thankYouSubtitle  = computed(() => this.quiz()?.thankYouSubtitle?.trim()  || '');
+  thankYouParagraph = computed(() => this.quiz()?.thankYouParagraph?.trim() || '');
   // Cor de fundo dos cards de opção; sem valor usa o padrão glassmorphism via CSS
   quizCardColor = computed(() => this.quiz()?.cardColor    || null);
   // Cor de fundo dos cards de cadastro/ready — controle independente

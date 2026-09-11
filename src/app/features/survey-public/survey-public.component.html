@@ -19,6 +19,8 @@
 <div *ngIf="step() !== 'loading' && step() !== 'error'"
      class="survey-wrapper"
      [style.background]="bgStyle()">
+  <!-- Camada de fundo fixa ao tamanho da tela (ver spBgImageStyle() no .ts) -->
+  <div class="sp-bg-layer" [ngStyle]="spBgImageStyle()"></div>
 
   <!-- Logo posicionável — visibilidade controlada por tela -->
   <div *ngIf="survey()?.companyLogoUrl && (
@@ -93,6 +95,7 @@
       <div class="check-icon" [style.background]="btnBg()">✓</div>
       <h2 class="thankyou-title" [style.color]="textClr()">{{ survey()?.thankYouMsg }}</h2>
       <p *ngIf="thankyouSubtitle()" class="thankyou-subtitle" [style.color]="textClr()">{{ thankyouSubtitle() }}</p>
+      <p *ngIf="thankYouParagraph()" class="thankyou-paragraph" [style.color]="textClr()">{{ thankYouParagraph() }}</p>
       <div *ngIf="getSelectedOption() as opt"
            class="selected-score-badge"
            [style.background]="opt.color">

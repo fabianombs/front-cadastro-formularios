@@ -7,6 +7,27 @@
   --qtext: #e2e8f0;
 }
 
+// Camada de fundo fixa ao tamanho da tela — ver comentário em rkBgImageStyle() no .ts.
+.rk-bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: var(--rk-bg-web);
+
+  @media (max-width: 767px) {
+    background-image: var(--rk-bg-mobile, var(--rk-bg-web));
+  }
+  @media (min-width: 768px) and (max-width: 1024px) {
+    background-image: var(--rk-bg-tablet, var(--rk-bg-web));
+  }
+}
+
 // ── Página ────────────────────────────────────────────────────────────────────
 .ranking-page {
   min-height: 100vh;
@@ -16,9 +37,6 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
 
   &::before {
     content: '';

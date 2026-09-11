@@ -22,6 +22,8 @@ export interface SurveyConfig {
   backgroundColor?: string | null;
   backgroundGradient?: string | null;
   backgroundImageUrl?: string | null;
+  backgroundImageMobileUrl?: string | null;
+  backgroundImageTabletUrl?: string | null;
   primaryColor?: string | null;
   textColor?: string | null;
   cardColor?: string | null;
@@ -53,6 +55,7 @@ export interface SurveyConfig {
   // Subtítulos e botões editáveis
   welcomeSubtitle?: string;
   thankyouSubtitle?: string;
+  thankYouParagraph?: string | null;
   welcomeBtnText?: string;
   ratingBtnText?: string;
 }

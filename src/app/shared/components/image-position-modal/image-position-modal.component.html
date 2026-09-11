@@ -31,7 +31,7 @@
         <line x1="12" y1="8" x2="12" y2="12"/>
         <line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      Arraste para reposicionar · Scroll para zoom
+      Arraste para reposicionar · Scroll para zoom · a imagem nunca é cortada
     </div>
 
     <!-- ── Stage / Crop area ──────────────────────────── -->
@@ -39,7 +39,8 @@
       <div
         #cropArea
         class="ipm-crop-area"
-        [style.aspect-ratio]="cropAspectRatio"
+        [style.width.px]="cropBoxWidthPx"
+        [style.height.px]="cropBoxHeightPx"
         [style.background]="cropAreaBg"
         [class.ipm-crop-area--dragging]="isDragging"
         [class.ipm-crop-area--ready]="imageReady"

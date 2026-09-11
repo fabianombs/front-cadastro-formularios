@@ -153,6 +153,40 @@ export class FormDynamicComponent implements OnInit {
     document.head.appendChild(link);
   }
 
+  // Camada de fundo fixa (ver comentário em pageStyle()) — desacopla o
+  // "cover" da altura do conteúdo do formulário, evitando o zoom gigante
+  // em formulários longos no celular/tablet.
+  backgroundImageStyle = computed(() => {
+    const a = this.template()?.appearance;
+    if (!a?.backgroundImageUrl) return {};
+    // --fd-bg-web é sempre a imagem "padrão" (usada em qualquer tela).
+    // --fd-bg-mobile/--fd-bg-tablet só existem quando o cliente enviou uma
+    // versão específica para aquele aparelho — a troca entre elas é feita
+    // via @media query no SCSS (.fd-bg-layer), então funciona em tempo real
+    // ao redimensionar/rotacionar, sem depender de JS.
+    // background-size/position/repeat vão inline (maior especificidade que
+    // qualquer CSS externo) — só a troca de IMAGEM por aparelho fica a cargo
+    // da @media query no SCSS via --fd-bg-*.
+    // Tudo abaixo vai inline (maior especificidade que qualquer CSS externo,
+    // à prova de qualquer conflito de cascata/cache) — só a TROCA de imagem
+    // por aparelho fica a cargo da @media query no SCSS via --fd-bg-*.
+    const style: Record<string, string> = {
+      'position': 'fixed',
+      'top': '0', 'left': '0', 'right': '0', 'bottom': '0',
+      'width': '100vw',
+      'height': '100vh',
+      'z-index': '-1',
+      'pointer-events': 'none',
+      'background-size': 'contain',
+      'background-position': 'center',
+      'background-repeat': 'no-repeat',
+      '--fd-bg-web': `url(${a.backgroundImageUrl})`,
+    };
+    if (a.backgroundImageMobileUrl) style['--fd-bg-mobile'] = `url(${a.backgroundImageMobileUrl})`;
+    if (a.backgroundImageTabletUrl) style['--fd-bg-tablet'] = `url(${a.backgroundImageTabletUrl})`;
+    return style;
+  });
+
   pageStyle = computed(() => {
     const a = this.template()?.appearance;
     if (!a) return {};
@@ -160,9 +194,17 @@ export class FormDynamicComponent implements OnInit {
     if (a.backgroundGradient) {
       style['background'] = a.backgroundGradient;
     } else if (a.backgroundImageUrl) {
-      style['backgroundImage'] = `url(${a.backgroundImageUrl})`;
-      style['backgroundSize'] = 'cover';
-      style['backgroundPosition'] = 'center';
+      // A imagem de fundo é renderizada em uma camada FIXA separada
+      // (.fd-bg-layer, ver backgroundImageStyle() abaixo) e não aqui.
+      // Motivo: .fd-page cresce com o conteúdo (min-height apenas), e em
+      // formulários longos — comum no celular, onde os campos empilham e
+      // a página fica muito mais alta que larga — "cover" era calculado
+      // em relação a essa altura rolável inteira, ampliando a imagem
+      // várias vezes para "cobrir" tudo e deixando-a gigante/borrada,
+      // mostrando só um pedacinho ampliado dela. Usando uma camada
+      // position:fixed do tamanho exato da tela (100vw x 100vh), o
+      // "cover" passa a ser calculado sempre em relação ao viewport,
+      // igual em qualquer aparelho e independente do tamanho do formulário.
     } else if (a.backgroundColor) {
       style['backgroundColor'] = a.backgroundColor;
     }
@@ -257,6 +299,30 @@ export class FormDynamicComponent implements OnInit {
     if (a?.formTextColor) style['color'] = a.formTextColor;
     return style;
   });
+
+  // ── Tela de agradecimento final (opcional) ─────────────────────────────────
+  // Só aparece quando o template habilitou a opção E não há quiz/pesquisa
+  // encadeados na sequência (esses fluxos já têm sua própria tela final, e a
+  // regra de exibição deles não deve mudar — ver comentário no HTML).
+  showThankYouScreen = computed(() => {
+    const t = this.template();
+    if (!this.submitted() || !t?.thankYouEnabled) return false;
+    if (t.hasQuiz) return false;
+    if (t.hasSurvey && t.surveySlug) return false;
+    return true;
+  });
+
+  thankYouTitle = computed(() =>
+    this.template()?.thankYouTitle?.trim() || 'Obrigado por participar!'
+  );
+
+  thankYouSubtitle = computed(() =>
+    this.template()?.thankYouSubtitle?.trim() || 'Recebemos suas informações com sucesso.'
+  );
+
+  thankYouParagraph = computed(() =>
+    this.template()?.thankYouParagraph?.trim() || ''
+  );
 
   submitBtnStyle = computed(() => {
     const a = this.template()?.appearance;

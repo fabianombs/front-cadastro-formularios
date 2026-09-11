@@ -8,6 +8,29 @@
   --qtext: #e2e8f0;
 }
 
+// Camada de fundo fixa ao tamanho da tela — desacopla "cover" da altura do
+// conteúdo (que pode passar de 100vh, ex.: ranking com muitos participantes),
+// e troca a imagem por dispositivo via @media (ver qpBgImageStyle() no .ts).
+.qp-bg-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: var(--qp-bg-web);
+
+  @media (max-width: 767px) {
+    background-image: var(--qp-bg-mobile, var(--qp-bg-web));
+  }
+  @media (min-width: 768px) and (max-width: 1024px) {
+    background-image: var(--qp-bg-tablet, var(--qp-bg-web));
+  }
+}
+
 // ── Página raiz ───────────────────────────────────────────────────────────────
 .quiz-page {
   min-height: 100vh;
@@ -16,9 +39,6 @@
   justify-content: center;
   padding: 24px 16px;
   position: relative;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
 
   // Overlay leve — só para contraste mínimo, sem sufocar gradientes ou imagens
   &::before {
@@ -595,6 +615,33 @@
   60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
   80%  { transform: scale(0.95) rotate(-2deg); }
   100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.r-thankyou {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.r-thankyou-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.r-thankyou-subtitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.r-thankyou-paragraph {
+  font-size: 12.5px;
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
 .r-congrats {
