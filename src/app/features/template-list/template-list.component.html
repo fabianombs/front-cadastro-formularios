@@ -303,6 +303,48 @@
               ⬇ Exportar Excel
             </button>
           }
+
+          <!-- Marcar/desmarcar todas as respostas visíveis (respeita os filtros aplicados) -->
+          @if (auth.isAdmin() && filteredSubmissions().length > 0) {
+            <button
+              class="btn-outline"
+              style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+              (click)="toggleSelectAllVisibleSubmissions()"
+            >
+              {{ allVisibleSubmissionsSelected ? '☑ Desmarcar todas' : '☐ Selecionar todas visíveis' }}
+            </button>
+          }
+
+          <!-- Excluir só as respostas marcadas — aparece quando há alguma seleção -->
+          @if (auth.isAdmin() && selectedSubmissionIds().size > 0) {
+            <button
+              class="btn-outline"
+              style="font-size: 12px; padding: 8px 14px; white-space: nowrap; color: #f87171; border-color: rgba(248,113,113,0.4)"
+              [disabled]="bulkDeleting()"
+              (click)="doDeleteSelectedSubmissions()"
+            >
+              🗑 Excluir selecionadas ({{ selectedSubmissionIds().size }})
+            </button>
+            <button
+              class="btn-outline"
+              style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+              (click)="clearSubmissionSelection()"
+            >
+              Limpar seleção
+            </button>
+          }
+
+          <!-- Zerar respostas de teste antes de entregar o template ao cliente — só admin vê -->
+          @if (auth.isAdmin() && submissions().length > 0) {
+            <button
+              class="btn-outline"
+              style="font-size: 12px; padding: 8px 14px; white-space: nowrap; color: #f87171; border-color: rgba(248,113,113,0.4)"
+              title="Apaga todas as respostas deste template — use para limpar dados de teste"
+              (click)="doDeleteAllSubmissions()"
+            >
+              🗑 Limpar respostas
+            </button>
+          }
         </div>
 
         @if (filtersOpen() && filterableFields().length > 0) {
@@ -414,6 +456,16 @@
               rowKey="id"
             >
               <ng-template #rowTemplate let-sub let-columns="columns">
+                @if (auth.isAdmin()) {
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="isSubmissionSelected(sub.id)"
+                      (click)="$event.stopPropagation()"
+                      (change)="toggleSubmissionSelected(sub.id)"
+                    />
+                  </td>
+                }
                 <td class="text-muted">#{{ sub.id }}</td>
                 @for (col of columns.slice(1, columns.length - 2); track col.key) {
                   <td>{{ getValue(sub, col.key) }}</td>
@@ -956,16 +1008,29 @@
 
   <app-confirm-modal
     [open]="confirmModalOpen()"
-    [title]="confirmAction() === 'delete' ? 'Excluir resposta' : 'Cancelar agendamento'"
+    [title]="
+      confirmAction() === 'delete' ? 'Excluir resposta' :
+      confirmAction() === 'deleteAllSubmissions' ? 'Apagar TODAS as respostas' :
+      confirmAction() === 'deleteSelectedSubmissions' ? 'Excluir respostas selecionadas' :
+      'Cancelar agendamento'
+    "
     [message]="
       confirmAction() === 'delete'
         ? 'Tem certeza que deseja excluir a resposta ' +
           confirmTargetName() +
           '? Esta ação não pode ser desfeita.'
-        : 'Tem certeza que deseja cancelar o agendamento ' + confirmTargetName() + '?'
+        : confirmAction() === 'deleteAllSubmissions'
+          ? 'Isso vai apagar permanentemente ' + confirmTargetName() + ' deste template — inclusive as de clientes reais, se houver. Use apenas para limpar respostas de teste antes de entregar o template. Esta ação não pode ser desfeita.'
+          : confirmAction() === 'deleteSelectedSubmissions'
+            ? 'Tem certeza que deseja apagar permanentemente as ' + confirmTargetName() + '? Esta ação não pode ser desfeita.'
+            : 'Tem certeza que deseja cancelar o agendamento ' + confirmTargetName() + '?'
     "
-    [confirmLabel]="confirmAction() === 'delete' ? 'Excluir' : 'Cancelar'"
-    [confirmLabel]="confirmAction() === 'delete' ? 'Excluir' : 'Cancelar'"
+    [confirmLabel]="
+      confirmAction() === 'delete' ? 'Excluir' :
+      confirmAction() === 'deleteAllSubmissions' ? 'Apagar todas' :
+      confirmAction() === 'deleteSelectedSubmissions' ? 'Excluir selecionadas' :
+      'Cancelar'
+    "
     (confirmed)="onConfirm()"
     (cancelled)="onCancel()"
   />
