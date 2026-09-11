@@ -1890,6 +1890,13 @@
   opacity: 0.85;
 }
 
+.thankyou-appearance-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
 // ── Survey inline picker ───────────────────────────────────────────────────────
 
 .survey-inline-picker {

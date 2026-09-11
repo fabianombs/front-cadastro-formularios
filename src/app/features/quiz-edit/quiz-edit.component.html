@@ -401,6 +401,91 @@
                             placeholder="Texto adicional, opcional..."
                             class="input"></textarea>
                 </div>
+
+                <p class="hint" style="margin-top:16px;display:block">
+                  Aparência desta tela — deixe em branco para usar as mesmas cores/fonte do quiz.
+                </p>
+
+                <div class="color-grid" style="margin-top:8px">
+                  <div class="color-field">
+                    <label>Cor de fundo</label>
+                    <div class="color-row">
+                      <input type="color" formControlName="thankYouBgColor" class="picker" />
+                      <input type="text" formControlName="thankYouBgColor" placeholder="usa a do quiz" class="input input--color-text" />
+                      <button type="button" class="btn-clear" title="Limpar" (click)="clearField('thankYouBgColor')">✕</button>
+                    </div>
+                  </div>
+                  <div class="color-field">
+                    <label>Cor do título</label>
+                    <div class="color-row">
+                      <input type="color" formControlName="thankYouTitleColor" class="picker" />
+                      <input type="text" formControlName="thankYouTitleColor" placeholder="usa a do quiz" class="input input--color-text" />
+                      <button type="button" class="btn-clear" title="Limpar" (click)="clearField('thankYouTitleColor')">✕</button>
+                    </div>
+                  </div>
+                  <div class="color-field">
+                    <label>Cor do texto</label>
+                    <div class="color-row">
+                      <input type="color" formControlName="thankYouTextColor" class="picker" />
+                      <input type="text" formControlName="thankYouTextColor" placeholder="usa a do quiz" class="input input--color-text" />
+                      <button type="button" class="btn-clear" title="Limpar" (click)="clearField('thankYouTextColor')">✕</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Fonte (nome da família, ex: Poppins) e tamanho do título (ex: 22px)</label>
+                  <div style="display:flex; gap:10px">
+                    <input type="text" formControlName="thankYouFontFamily" placeholder="usa a do quiz" class="input" />
+                    <input type="text" formControlName="thankYouTitleFontSize" placeholder="ex: 22px" class="input" style="max-width:120px" />
+                  </div>
+                </div>
+
+                <p class="hint" style="margin-top:16px;display:block">Imagem de fundo (opcional — sobrepõe cor)</p>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px">
+                  <div style="flex:1; min-width:180px">
+                    <label class="url-alt__label" style="display:block; margin-bottom:6px">Web</label>
+                    @if (quizForm.get('thankYouBgImageUrl')?.value) {
+                      <div class="drop-zone__preview" style="height:80px"
+                           [style.background-image]="'url(' + quizForm.get('thankYouBgImageUrl')?.value + ')'">
+                        <button type="button" class="btn-remove-img" (click)="clearField('thankYouBgImageUrl')">✕ Remover</button>
+                      </div>
+                    } @else {
+                      <label class="btn-file-select">
+                        Selecionar arquivo
+                        <input type="file" accept="image/*" (change)="onFileSelectForField('thankYouBgImageUrl', $event)" hidden />
+                      </label>
+                    }
+                  </div>
+                  <div style="flex:1; min-width:180px">
+                    <label class="url-alt__label" style="display:block; margin-bottom:6px">Celular</label>
+                    @if (quizForm.get('thankYouBgImageMobileUrl')?.value) {
+                      <div class="drop-zone__preview" style="height:80px"
+                           [style.background-image]="'url(' + quizForm.get('thankYouBgImageMobileUrl')?.value + ')'">
+                        <button type="button" class="btn-remove-img" (click)="clearField('thankYouBgImageMobileUrl')">✕ Remover</button>
+                      </div>
+                    } @else {
+                      <label class="btn-file-select">
+                        Selecionar arquivo
+                        <input type="file" accept="image/*" (change)="onFileSelectForField('thankYouBgImageMobileUrl', $event)" hidden />
+                      </label>
+                    }
+                  </div>
+                  <div style="flex:1; min-width:180px">
+                    <label class="url-alt__label" style="display:block; margin-bottom:6px">Tablet</label>
+                    @if (quizForm.get('thankYouBgImageTabletUrl')?.value) {
+                      <div class="drop-zone__preview" style="height:80px"
+                           [style.background-image]="'url(' + quizForm.get('thankYouBgImageTabletUrl')?.value + ')'">
+                        <button type="button" class="btn-remove-img" (click)="clearField('thankYouBgImageTabletUrl')">✕ Remover</button>
+                      </div>
+                    } @else {
+                      <label class="btn-file-select">
+                        Selecionar arquivo
+                        <input type="file" accept="image/*" (change)="onFileSelectForField('thankYouBgImageTabletUrl', $event)" hidden />
+                      </label>
+                    }
+                  </div>
+                </div>
               }
             </section>
 

@@ -220,13 +220,13 @@
         <div class="r-medal">{{ rankEmoji() }}</div>
 
         @if (quiz()?.thankYouEnabled) {
-          <div class="r-thankyou">
-            <h2 class="r-thankyou-title" [style.color]="quizText()">{{ thankYouTitle() }}</h2>
+          <div class="r-thankyou" [ngStyle]="thankYouBoxStyle()">
+            <h2 class="r-thankyou-title" [ngStyle]="thankYouTitleStyle()">{{ thankYouTitle() }}</h2>
             @if (thankYouSubtitle()) {
-              <p class="r-thankyou-subtitle" [style.color]="quizText() + 'bb'">{{ thankYouSubtitle() }}</p>
+              <p class="r-thankyou-subtitle" [ngStyle]="thankYouTextStyle()">{{ thankYouSubtitle() }}</p>
             }
             @if (thankYouParagraph()) {
-              <p class="r-thankyou-paragraph" [style.color]="quizText() + '99'">{{ thankYouParagraph() }}</p>
+              <p class="r-thankyou-paragraph" [ngStyle]="thankYouTextStyle()">{{ thankYouParagraph() }}</p>
             }
           </div>
         }

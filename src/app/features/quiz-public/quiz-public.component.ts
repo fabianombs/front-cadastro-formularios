@@ -276,6 +276,43 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   thankYouTitle     = computed(() => this.quiz()?.thankYouTitle?.trim()     || 'Muito obrigado por jogar!');
   thankYouSubtitle  = computed(() => this.quiz()?.thankYouSubtitle?.trim()  || '');
   thankYouParagraph = computed(() => this.quiz()?.thankYouParagraph?.trim() || '');
+
+  // Aparência independente e opcional da tela de agradecimento — sem preenchimento,
+  // usa as mesmas cores/fonte do quiz (comportamento atual preservado).
+  thankYouBoxStyle = computed(() => {
+    const q = this.quiz();
+    const style: Record<string, string> = {};
+    if (q?.thankYouBgImageUrl) {
+      style['background-image'] = `url(${q.thankYouBgImageUrl})`;
+      style['background-size'] = 'cover';
+      style['background-position'] = 'center';
+      style['background-repeat'] = 'no-repeat';
+    } else if (q?.thankYouBgGradient) {
+      style['background'] = q.thankYouBgGradient;
+    } else if (q?.thankYouBgColor) {
+      style['background'] = q.thankYouBgColor;
+    }
+    if (Object.keys(style).length) {
+      style['border-radius'] = '14px';
+      style['padding'] = '18px';
+    }
+    return style;
+  });
+
+  thankYouTitleStyle = computed(() => {
+    const q = this.quiz();
+    const style: Record<string, string> = { color: q?.thankYouTitleColor || this.quizText() };
+    if (q?.thankYouFontFamily) style['font-family'] = `'${q.thankYouFontFamily}', sans-serif`;
+    if (q?.thankYouTitleFontSize) style['font-size'] = q.thankYouTitleFontSize;
+    return style;
+  });
+
+  thankYouTextStyle = computed(() => {
+    const q = this.quiz();
+    const style: Record<string, string> = { color: q?.thankYouTextColor || this.quizText() };
+    if (q?.thankYouFontFamily) style['font-family'] = `'${q.thankYouFontFamily}', sans-serif`;
+    return style;
+  });
   // Cor de fundo dos cards de opção; sem valor usa o padrão glassmorphism via CSS
   quizCardColor = computed(() => this.quiz()?.cardColor    || null);
   // Cor de fundo dos cards de cadastro/ready — controle independente
