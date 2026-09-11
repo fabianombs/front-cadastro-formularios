@@ -35,6 +35,7 @@ describe('FormTemplateService', () => {
     scheduleConfig: null,
     appearance: null,
     lgpdEnabled: false,
+    thankYouEnabled: false,
     hasQuiz: false,
     viewAllowExport: false,
     viewShowSubmissions: true,
@@ -90,6 +91,7 @@ describe('FormTemplateService', () => {
       clientId: 1,
       fields: [{ label: 'Nome', type: 'text', required: true, colSpan: 2 }],
       lgpdEnabled: false,
+      thankYouEnabled: false,
     };
 
     service.createTemplate(1, payload).subscribe((t) => expect(t.id).toBe(1));
@@ -104,6 +106,7 @@ describe('FormTemplateService', () => {
       name: 'Template Editado',
       fields: [{ label: 'Nome', type: 'text', required: true, colSpan: 2 }],
       lgpdEnabled: false,
+      thankYouEnabled: false,
     };
 
     service.updateTemplate(1, payload).subscribe();

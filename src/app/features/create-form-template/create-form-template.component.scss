@@ -1849,9 +1849,10 @@
   cursor: pointer;
   accent-color: #6366f1;
 
-  &--lgpd   { accent-color: #6366f1; }
-  &--quiz   { accent-color: #7c3aed; }
-  &--survey { accent-color: #f59e0b; }
+  &--lgpd     { accent-color: #6366f1; }
+  &--quiz     { accent-color: #7c3aed; }
+  &--survey   { accent-color: #f59e0b; }
+  &--thankyou { accent-color: #14b8a6; }
 }
 
 .feature-toggle-card--survey {
@@ -1859,6 +1860,34 @@
     border-color: rgba(245, 158, 11, 0.4);
     background: rgba(245, 158, 11, 0.05);
   }
+}
+
+.feature-toggle-card--thankyou {
+  &:has(input:checked) {
+    border-color: rgba(20, 184, 166, 0.4);
+    background: rgba(20, 184, 166, 0.05);
+  }
+}
+
+// ── Tela de agradecimento final — bloco de textos (aparece ao habilitar) ────────
+
+.thankyou-config-block {
+  margin-top: 10px;
+  padding: 14px 16px;
+  background: rgba(20, 184, 166, 0.06);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thankyou-config-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #2dd4bf;
+  opacity: 0.85;
 }
 
 // ── Survey inline picker ───────────────────────────────────────────────────────

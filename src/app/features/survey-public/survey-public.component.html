@@ -95,6 +95,7 @@
       <div class="check-icon" [style.background]="btnBg()">✓</div>
       <h2 class="thankyou-title" [style.color]="textClr()">{{ survey()?.thankYouMsg }}</h2>
       <p *ngIf="thankyouSubtitle()" class="thankyou-subtitle" [style.color]="textClr()">{{ thankyouSubtitle() }}</p>
+      <p *ngIf="thankYouParagraph()" class="thankyou-paragraph" [style.color]="textClr()">{{ thankYouParagraph() }}</p>
       <div *ngIf="getSelectedOption() as opt"
            class="selected-score-badge"
            [style.background]="opt.color">

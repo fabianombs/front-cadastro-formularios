@@ -368,6 +368,42 @@
               </div>
             </section>
 
+            <!-- Tela de agradecimento final — texto opcional mostrado acima do resultado -->
+            <section class="edit-section">
+              <label class="toggle-row">
+                <input type="checkbox" formControlName="thankYouEnabled" />
+                <div>
+                  <h2 class="section-title" style="margin: 0;">🏁 Tela de agradecimento final</h2>
+                  <p class="section-hint" style="margin: 2px 0 0;">
+                    Mostra um texto personalizado acima do resultado/pontuação, ao final do quiz.
+                  </p>
+                </div>
+              </label>
+
+              @if (quizForm.get('thankYouEnabled')?.value) {
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Título</label>
+                  <input type="text" formControlName="thankYouTitle"
+                         placeholder="Ex: Obrigado por jogar!"
+                         class="input" maxlength="120" />
+                </div>
+
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Subtítulo</label>
+                  <input type="text" formControlName="thankYouSubtitle"
+                         placeholder="Ex: Confira sua pontuação abaixo."
+                         class="input" maxlength="160" />
+                </div>
+
+                <div class="form-field" style="margin-top: 0.75rem;">
+                  <label class="field-label">Parágrafo</label>
+                  <textarea formControlName="thankYouParagraph" rows="3"
+                            placeholder="Texto adicional, opcional..."
+                            class="input"></textarea>
+                </div>
+              }
+            </section>
+
           </div><!-- /appearance-controls -->
       }<!-- /appearance tab -->
 

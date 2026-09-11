@@ -300,6 +300,30 @@ export class FormDynamicComponent implements OnInit {
     return style;
   });
 
+  // ── Tela de agradecimento final (opcional) ─────────────────────────────────
+  // Só aparece quando o template habilitou a opção E não há quiz/pesquisa
+  // encadeados na sequência (esses fluxos já têm sua própria tela final, e a
+  // regra de exibição deles não deve mudar — ver comentário no HTML).
+  showThankYouScreen = computed(() => {
+    const t = this.template();
+    if (!this.submitted() || !t?.thankYouEnabled) return false;
+    if (t.hasQuiz) return false;
+    if (t.hasSurvey && t.surveySlug) return false;
+    return true;
+  });
+
+  thankYouTitle = computed(() =>
+    this.template()?.thankYouTitle?.trim() || 'Obrigado por participar!'
+  );
+
+  thankYouSubtitle = computed(() =>
+    this.template()?.thankYouSubtitle?.trim() || 'Recebemos suas informações com sucesso.'
+  );
+
+  thankYouParagraph = computed(() =>
+    this.template()?.thankYouParagraph?.trim() || ''
+  );
+
   submitBtnStyle = computed(() => {
     const a = this.template()?.appearance;
     const color = this.resolvedAccentColor();
