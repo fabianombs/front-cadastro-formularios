@@ -134,9 +134,13 @@ export class TemplateListComponent implements OnInit {
   cancellingId = signal<number | null>(null);
   deletingId = signal<number | null>(null);
 
+  // Seleção de respostas para exclusão em lote (só usada por admin)
+  selectedSubmissionIds = signal<Set<number>>(new Set());
+  bulkDeleting = signal(false);
+
   // ── Modal de confirmação (GENÉRICO) ──
   confirmModalOpen = signal(false);
-  confirmAction = signal<'delete' | 'cancel' | null>(null);
+  confirmAction = signal<'delete' | 'cancel' | 'deleteAllSubmissions' | 'deleteSelectedSubmissions' | null>(null);
   confirmTargetId = signal<number | null>(null);
   confirmTargetName = signal('');
   confirmLoading = signal(false);
@@ -583,6 +587,7 @@ export class TemplateListComponent implements OnInit {
   ]);
 
   subColumns = computed<DataTableColumn[]>(() => [
+    ...(this.auth.isAdmin() ? [{ key: 'select', label: '', width: '36px' } as DataTableColumn] : []),
     { key: 'id', label: 'ID', sortable: true, width: '60px' },
     ...this.columns().map((col) => ({
       key: col,
@@ -1014,6 +1019,59 @@ export class TemplateListComponent implements OnInit {
     this.exporter.exportSubmissions(this.filteredSubmissions(), t.name, fieldOrder);
   }
 
+  // Zerar respostas de teste antes de entregar o template ao cliente — só ADMIN vê o botão
+  // (e o backend também exige ADMIN, então não depende só de esconder na tela).
+  doDeleteAllSubmissions(): void {
+    const t = this.template();
+    if (!t) return;
+    this.confirmAction.set('deleteAllSubmissions');
+    this.confirmTargetId.set(t.id);
+    this.confirmTargetName.set(`${this.submissions().length} resposta(s)`);
+    this.confirmModalOpen.set(true);
+  }
+
+  // ── Seleção de respostas (exclusão em lote) ─────────────────────
+  isSubmissionSelected(id: number): boolean {
+    return this.selectedSubmissionIds().has(id);
+  }
+
+  toggleSubmissionSelected(id: number): void {
+    this.selectedSubmissionIds.update(set => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  get allVisibleSubmissionsSelected(): boolean {
+    const visible = this.filteredSubmissions();
+    if (visible.length === 0) return false;
+    const selected = this.selectedSubmissionIds();
+    return visible.every(s => selected.has(s.id));
+  }
+
+  toggleSelectAllVisibleSubmissions(): void {
+    if (this.allVisibleSubmissionsSelected) {
+      this.selectedSubmissionIds.set(new Set());
+    } else {
+      this.selectedSubmissionIds.set(new Set(this.filteredSubmissions().map(s => s.id)));
+    }
+  }
+
+  clearSubmissionSelection(): void {
+    this.selectedSubmissionIds.set(new Set());
+  }
+
+  doDeleteSelectedSubmissions(): void {
+    const t = this.template();
+    const count = this.selectedSubmissionIds().size;
+    if (!t || count === 0) return;
+    this.confirmAction.set('deleteSelectedSubmissions');
+    this.confirmTargetId.set(t.id);
+    this.confirmTargetName.set(`${count} resposta(s) selecionada(s)`);
+    this.confirmModalOpen.set(true);
+  }
+
   exportAppointmentsXlsx() {
     const t = this.template();
     if (!t) return;
@@ -1077,6 +1135,43 @@ export class TemplateListComponent implements OnInit {
         },
         error: () => {
           this.messages.error('Erro ao excluir resposta.');
+          this.resetModal();
+        }
+      });
+    }
+
+    if (action === 'deleteAllSubmissions') {
+      this.service.deleteAllSubmissions(id).subscribe({
+        next: () => {
+          this.submissions.set([]);
+          this.buildColumns([]);
+          this.clearSubmissionSelection();
+          this.messages.success('Todas as respostas foram apagadas.');
+          this.resetModal();
+        },
+        error: () => {
+          this.messages.error('Erro ao apagar as respostas.');
+          this.resetModal();
+        }
+      });
+    }
+
+    if (action === 'deleteSelectedSubmissions') {
+      const ids = Array.from(this.selectedSubmissionIds());
+      this.bulkDeleting.set(true);
+      this.service.deleteSubmissionsByIds(id, ids).subscribe({
+        next: () => {
+          const idSet = new Set(ids);
+          this.submissions.update(list => list.filter(s => !idSet.has(s.id)));
+          this.buildColumns(this.submissions());
+          this.clearSubmissionSelection();
+          this.bulkDeleting.set(false);
+          this.messages.success(`${ids.length} resposta(s) apagada(s).`);
+          this.resetModal();
+        },
+        error: () => {
+          this.bulkDeleting.set(false);
+          this.messages.error('Erro ao apagar as respostas selecionadas.');
           this.resetModal();
         }
       });
