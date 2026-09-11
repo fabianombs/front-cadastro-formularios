@@ -7,6 +7,7 @@ import {
   CreateFormTemplateRequest,
   UpdateFormTemplateRequest,
   AttendanceRecord,
+  TemplateAppearance,
 } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
 import { ClientService, Client } from '../../core/services/client.service';
@@ -35,7 +36,10 @@ type ImageField =
   | 'backgroundImageMobileUrl'
   | 'backgroundImageTabletUrl'
   | 'headerImageUrl'
-  | 'footerImageUrl';
+  | 'footerImageUrl'
+  | 'thankYouBgImageUrl'
+  | 'thankYouBgImageMobileUrl'
+  | 'thankYouBgImageTabletUrl';
 
 @Component({
   selector: 'app-create-template',
@@ -78,12 +82,18 @@ export class CreateTemplateComponent implements OnInit {
     backgroundImageTabletUrl: { w: 1200, h: 1600, label: 'Fundo (Tablet)' },
     headerImageUrl:           { w: 1200, h: 220,  label: 'Topo' },
     footerImageUrl:           { w: 1200, h: 180,  label: 'Rodapé' },
+
+    // Fundo da tela de agradecimento final — independente do fundo do formulário
+    thankYouBgImageUrl:       { w: 1200, h: 400,  label: 'Fundo agradecimento (Web)' },
+    thankYouBgImageMobileUrl: { w: 1080, h: 2160, label: 'Fundo agradecimento (Celular)' },
+    thankYouBgImageTabletUrl: { w: 1200, h: 1600, label: 'Fundo agradecimento (Tablet)' },
   };
 
   /** Campos de imagem de aparência — usado para tipar os handlers genéricos abaixo. */
   private readonly IMAGE_FIELD_NAMES = [
     'backgroundImageUrl', 'backgroundImageMobileUrl', 'backgroundImageTabletUrl',
     'headerImageUrl', 'footerImageUrl',
+    'thankYouBgImageUrl', 'thankYouBgImageMobileUrl', 'thankYouBgImageTabletUrl',
   ] as const;
 
   private messages = inject(MessageService);
@@ -119,6 +129,55 @@ export class CreateTemplateComponent implements OnInit {
       ctrl?.setValue(opt.value);
     }
     this.cdr.detectChanges();
+  }
+
+  /** Fonte da tela de agradecimento final — independente da fonte do formulário */
+  setThankYouFont(opt: { value: string; weights: string }): void {
+    const ctrl = this.templateForm.get('thankYouFontFamily');
+    if (ctrl?.value === opt.value) {
+      ctrl.setValue('');
+    } else {
+      if (opt.value) this.loadGoogleFont(opt.value, opt.weights);
+      ctrl?.setValue(opt.value);
+    }
+    this.cdr.detectChanges();
+  }
+
+  /** Tamanho do título da tela de agradecimento final — independente do formulário */
+  setThankYouTitleFontSize(px: string): void {
+    const ctrl = this.templateForm.get('thankYouTitleFontSize');
+    ctrl?.setValue(ctrl.value === px ? '' : px);
+  }
+
+  /** Cor sólida de fundo da tela de agradecimento — remove gradiente/imagem para não sobrepor */
+  onThankYouColorLiveChange(controlName: string, event: Event): void {
+    const hex = (event.target as HTMLInputElement).value;
+    this.templateForm.get(controlName)?.setValue(hex, { emitEvent: false });
+    if (controlName === 'thankYouBgColor' && hex) {
+      this.templateForm.get('thankYouBgGradient')?.setValue('', { emitEvent: false });
+      this.templateForm.get('thankYouBgImageUrl')?.setValue('', { emitEvent: false });
+      this.templateForm.get('thankYouBgImageMobileUrl')?.setValue('', { emitEvent: false });
+      this.templateForm.get('thankYouBgImageTabletUrl')?.setValue('', { emitEvent: false });
+      this.imagePreviews['thankYouBgImageUrl'] = '';
+      this.imagePreviews['thankYouBgImageMobileUrl'] = '';
+      this.imagePreviews['thankYouBgImageTabletUrl'] = '';
+    }
+  }
+
+  applyThankYouGradientPreset(value: string): void {
+    this.templateForm.get('thankYouBgGradient')?.setValue(value);
+    this.templateForm.get('thankYouBgColor')?.setValue('');
+    this.templateForm.get('thankYouBgImageUrl')?.setValue('');
+    this.templateForm.get('thankYouBgImageMobileUrl')?.setValue('');
+    this.templateForm.get('thankYouBgImageTabletUrl')?.setValue('');
+    this.imagePreviews['thankYouBgImageUrl'] = '';
+    this.imagePreviews['thankYouBgImageMobileUrl'] = '';
+    this.imagePreviews['thankYouBgImageTabletUrl'] = '';
+  }
+
+  get thankYouHasBgSelected(): boolean {
+    const v = this.templateForm.value as any;
+    return !!(v.thankYouBgColor || v.thankYouBgGradient || v.thankYouBgImageUrl);
   }
 
   readonly titleFontSizes = [
@@ -211,6 +270,12 @@ export class CreateTemplateComponent implements OnInit {
     return bg || 'transparent';
   }
 
+  /** Campos de imagem/aparência da tela de agradecimento são controles diretos do form;
+   *  os demais vivem sob o grupo "appearance". */
+  private appearanceControlPath(field: string): string {
+    return field.startsWith('thankYou') ? field : `appearance.${field}`;
+  }
+
   /** Usuário confirmou o posicionamento — recebe o blob recortado e faz upload */
   onImagePositionConfirmed(event: { blob: Blob; field: string }): void {
     const field = event.field as ImageField;
@@ -233,12 +298,16 @@ export class CreateTemplateComponent implements OnInit {
     this.templateService.uploadImage(croppedFile).subscribe({
       next: ({ url }) => {
         this.imagePreviews[field] = url;
-        this.templateForm.get(`appearance.${field}`)?.setValue(url);
+        this.templateForm.get(this.appearanceControlPath(field))?.setValue(url);
         URL.revokeObjectURL(blobUrl);
         this.uploadingField.set(null);
         if (field === 'backgroundImageUrl' || field === 'backgroundImageMobileUrl' || field === 'backgroundImageTabletUrl') {
           this.templateForm.get('appearance.backgroundGradient')?.setValue('');
           this.templateForm.get('appearance.backgroundColor')?.setValue('');
+        }
+        if (field === 'thankYouBgImageUrl' || field === 'thankYouBgImageMobileUrl' || field === 'thankYouBgImageTabletUrl') {
+          this.templateForm.get('thankYouBgGradient')?.setValue('');
+          this.templateForm.get('thankYouBgColor')?.setValue('');
         }
         this.cdr.detectChanges();
       },
@@ -265,7 +334,7 @@ export class CreateTemplateComponent implements OnInit {
 
   clearImage(field: ImageField) {
     this.deleteSessionImage(field);
-    this.templateForm.get(`appearance.${field}`)?.setValue('');
+    this.templateForm.get(this.appearanceControlPath(field))?.setValue('');
     this.imagePreviews[field] = '';
   }
 
@@ -276,7 +345,9 @@ export class CreateTemplateComponent implements OnInit {
    */
   private deleteSessionImage(field: ImageField) {
     const sessionUrl = this.imagePreviews[field];
-    const savedUrl = this.template?.appearance?.[field];
+    const savedUrl = field.startsWith('thankYou')
+      ? (this.template as any)?.[field]
+      : this.template?.appearance?.[field as keyof TemplateAppearance];
     // Ignora blob URLs (preview local antes do upload terminar) — só deleta URLs reais do servidor
     if (sessionUrl && !sessionUrl.startsWith('blob:') && sessionUrl !== savedUrl) {
       this.templateService.deleteImage(sessionUrl).subscribe({ error: () => {} });
@@ -536,6 +607,16 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTitle: [''],
       thankYouSubtitle: [''],
       thankYouParagraph: [''],
+      thankYouBgColor: [''],
+      thankYouBgGradient: [''],
+      thankYouBgImageUrl: [''],
+      thankYouBgImageMobileUrl: [''],
+      thankYouBgImageTabletUrl: [''],
+      thankYouIconColor: [''],
+      thankYouTitleColor: [''],
+      thankYouTextColor: [''],
+      thankYouFontFamily: [''],
+      thankYouTitleFontSize: [''],
       // Slug e toggles do link de visualização do cliente
       viewSlug: [''],
       viewAllowExport: [false],
@@ -988,6 +1069,16 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
       thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
       thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
+      thankYouBgColor: formValue.thankYouEnabled ? (formValue.thankYouBgColor || null) : null,
+      thankYouBgGradient: formValue.thankYouEnabled ? (formValue.thankYouBgGradient || null) : null,
+      thankYouBgImageUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageUrl || null) : null,
+      thankYouBgImageMobileUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageMobileUrl || null) : null,
+      thankYouBgImageTabletUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageTabletUrl || null) : null,
+      thankYouIconColor: formValue.thankYouEnabled ? (formValue.thankYouIconColor || null) : null,
+      thankYouTitleColor: formValue.thankYouEnabled ? (formValue.thankYouTitleColor || null) : null,
+      thankYouTextColor: formValue.thankYouEnabled ? (formValue.thankYouTextColor || null) : null,
+      thankYouFontFamily: formValue.thankYouEnabled ? (formValue.thankYouFontFamily || null) : null,
+      thankYouTitleFontSize: formValue.thankYouEnabled ? (formValue.thankYouTitleFontSize || null) : null,
       // Vincula o quiz selecionado antes de salvar (se houver)
       quizId: this.pendingQuizId() ?? null,
       // Slug do link de visualização do cliente definido na criação
@@ -1015,6 +1106,16 @@ export class CreateTemplateComponent implements OnInit {
         thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
         thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
         thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
+        thankYouBgColor: formValue.thankYouEnabled ? (formValue.thankYouBgColor || null) : null,
+        thankYouBgGradient: formValue.thankYouEnabled ? (formValue.thankYouBgGradient || null) : null,
+        thankYouBgImageUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageUrl || null) : null,
+        thankYouBgImageMobileUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageMobileUrl || null) : null,
+        thankYouBgImageTabletUrl: formValue.thankYouEnabled ? (formValue.thankYouBgImageTabletUrl || null) : null,
+        thankYouIconColor: formValue.thankYouEnabled ? (formValue.thankYouIconColor || null) : null,
+        thankYouTitleColor: formValue.thankYouEnabled ? (formValue.thankYouTitleColor || null) : null,
+        thankYouTextColor: formValue.thankYouEnabled ? (formValue.thankYouTextColor || null) : null,
+        thankYouFontFamily: formValue.thankYouEnabled ? (formValue.thankYouFontFamily || null) : null,
+        thankYouTitleFontSize: formValue.thankYouEnabled ? (formValue.thankYouTitleFontSize || null) : null,
         // Salva as configurações do link de visualização do cliente
         viewAllowExport: formValue.viewAllowExport ?? false,
         viewShowSubmissions: formValue.viewShowSubmissions ?? true,
@@ -1151,6 +1252,16 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTitle: template.thankYouTitle ?? '',
       thankYouSubtitle: template.thankYouSubtitle ?? '',
       thankYouParagraph: template.thankYouParagraph ?? '',
+      thankYouBgColor: template.thankYouBgColor ?? '',
+      thankYouBgGradient: template.thankYouBgGradient ?? '',
+      thankYouBgImageUrl: template.thankYouBgImageUrl ?? '',
+      thankYouBgImageMobileUrl: template.thankYouBgImageMobileUrl ?? '',
+      thankYouBgImageTabletUrl: template.thankYouBgImageTabletUrl ?? '',
+      thankYouIconColor: template.thankYouIconColor ?? '',
+      thankYouTitleColor: template.thankYouTitleColor ?? '',
+      thankYouTextColor: template.thankYouTextColor ?? '',
+      thankYouFontFamily: template.thankYouFontFamily ?? '',
+      thankYouTitleFontSize: template.thankYouTitleFontSize ?? '',
       viewAllowExport: template.viewAllowExport ?? false,
       viewShowSubmissions: template.viewShowSubmissions ?? true,
       viewShowAttendance: template.viewShowAttendance ?? true,
@@ -1186,6 +1297,13 @@ export class CreateTemplateComponent implements OnInit {
         if (opt?.weights) this.loadGoogleFont(opt.value, opt.weights);
       }
     }
+    if (template.thankYouFontFamily) {
+      const opt = this.fontOptions.find(o => o.value === template.thankYouFontFamily);
+      if (opt?.weights) this.loadGoogleFont(opt.value, opt.weights);
+    }
+    this.imagePreviews['thankYouBgImageUrl'] = template.thankYouBgImageUrl ?? '';
+    this.imagePreviews['thankYouBgImageMobileUrl'] = template.thankYouBgImageMobileUrl ?? '';
+    this.imagePreviews['thankYouBgImageTabletUrl'] = template.thankYouBgImageTabletUrl ?? '';
 
     this.fields.clear();
     template.fields.forEach((f) => {
@@ -1439,6 +1557,16 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTitle: this.template.thankYouTitle ?? null,
       thankYouSubtitle: this.template.thankYouSubtitle ?? null,
       thankYouParagraph: this.template.thankYouParagraph ?? null,
+      thankYouBgColor: this.template.thankYouBgColor ?? null,
+      thankYouBgGradient: this.template.thankYouBgGradient ?? null,
+      thankYouBgImageUrl: this.template.thankYouBgImageUrl ?? null,
+      thankYouBgImageMobileUrl: this.template.thankYouBgImageMobileUrl ?? null,
+      thankYouBgImageTabletUrl: this.template.thankYouBgImageTabletUrl ?? null,
+      thankYouIconColor: this.template.thankYouIconColor ?? null,
+      thankYouTitleColor: this.template.thankYouTitleColor ?? null,
+      thankYouTextColor: this.template.thankYouTextColor ?? null,
+      thankYouFontFamily: this.template.thankYouFontFamily ?? null,
+      thankYouTitleFontSize: this.template.thankYouTitleFontSize ?? null,
       viewSlug: slug,
     };
 

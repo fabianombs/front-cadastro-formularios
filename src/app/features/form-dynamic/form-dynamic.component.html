@@ -37,20 +37,20 @@
       <!-- Tela de agradecimento final (habilitada no template) — some assim que
            o usuário envia o formulário, no lugar do card que voltaria vazio -->
       @if (showThankYouScreen()) {
-        <div class="card fd-thankyou-card" [ngStyle]="formCardStyle()">
-          <div class="fd-thankyou-icon">
+        <div class="card fd-thankyou-card" [ngStyle]="thankYouCardStyle()">
+          <div class="fd-thankyou-icon" [ngStyle]="thankYouIconStyle()">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <h2 class="fd-thankyou-title" [ngStyle]="titleStyle()">{{ thankYouTitle() }}</h2>
+          <h2 class="fd-thankyou-title" [ngStyle]="thankYouTitleStyle()">{{ thankYouTitle() }}</h2>
           @if (thankYouSubtitle()) {
-            <p class="fd-thankyou-subtitle">{{ thankYouSubtitle() }}</p>
+            <p class="fd-thankyou-subtitle" [ngStyle]="thankYouTextStyle()">{{ thankYouSubtitle() }}</p>
           }
           @if (thankYouParagraph()) {
-            <p class="fd-thankyou-paragraph">{{ thankYouParagraph() }}</p>
+            <p class="fd-thankyou-paragraph" [ngStyle]="thankYouTextStyle()">{{ thankYouParagraph() }}</p>
           }
         </div>
       } @else {

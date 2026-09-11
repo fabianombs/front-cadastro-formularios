@@ -15,7 +15,8 @@ import {
 import { CommonModule } from '@angular/common';
 
 export interface ImagePositionConfig {
-  field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl' | 'backgroundImageMobileUrl' | 'backgroundImageTabletUrl';
+  field: 'headerImageUrl' | 'footerImageUrl' | 'backgroundImageUrl' | 'backgroundImageMobileUrl' | 'backgroundImageTabletUrl'
+    | 'thankYouBgImageUrl' | 'thankYouBgImageMobileUrl' | 'thankYouBgImageTabletUrl';
   dataUrl: string;
   canvasWidth: number;
   canvasHeight: number;

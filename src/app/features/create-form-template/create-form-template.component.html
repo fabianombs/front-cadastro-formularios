@@ -748,8 +748,138 @@
               ></textarea>
             </div>
             <p class="thankyou-config-hint">
-              A tela usa as mesmas cores e imagens de fundo já configuradas em "Aparência" acima.
+              Deixe as opções de aparência abaixo em branco para usar as mesmas cores e imagens já
+              configuradas em "Aparência" acima — preencha só o que quiser diferente nesta tela.
             </p>
+
+            <div class="thankyou-appearance-grid">
+              <div class="ap-color-field">
+                <label class="ap-label">Cor de fundo</label>
+                <input type="color" class="ap-color-input" [value]="templateForm.get('thankYouBgColor')?.value || '#0f172a'"
+                  (input)="onThankYouColorLiveChange('thankYouBgColor', $event)" />
+              </div>
+              <div class="ap-color-field">
+                <label class="ap-label">Cor do ícone</label>
+                <input type="color" class="ap-color-input" [value]="templateForm.get('thankYouIconColor')?.value || '#14b8a6'"
+                  (input)="onThankYouColorLiveChange('thankYouIconColor', $event)" />
+              </div>
+              <div class="ap-color-field">
+                <label class="ap-label">Cor do título</label>
+                <input type="color" class="ap-color-input" [value]="templateForm.get('thankYouTitleColor')?.value || '#ffffff'"
+                  (input)="onThankYouColorLiveChange('thankYouTitleColor', $event)" />
+              </div>
+              <div class="ap-color-field">
+                <label class="ap-label">Cor do texto</label>
+                <input type="color" class="ap-color-input" [value]="templateForm.get('thankYouTextColor')?.value || '#cbd5e1'"
+                  (input)="onThankYouColorLiveChange('thankYouTextColor', $event)" />
+              </div>
+            </div>
+
+            <p class="ap-section-label" style="margin-top:14px">Gradientes prontos (opcional)</p>
+            <div class="ap-presets-grid">
+              @for (g of gradientPresets; track g.value) {
+              <button type="button" class="ap-preset-tile" [style.background]="g.value"
+                [class.ap-preset-tile--active]="templateForm.get('thankYouBgGradient')?.value === g.value"
+                (click)="applyThankYouGradientPreset(g.value)">
+                <span class="ap-preset-name">{{ g.label }}</span>
+              </button>
+              }
+            </div>
+
+            <p class="ap-section-label" style="margin-top:14px">Imagem de fundo (opcional — sobrepõe cor/gradiente)</p>
+            <div class="ap-images-row">
+              <div class="ap-color-field">
+                <label class="ap-label">Web</label>
+                <div class="img-upload-area"
+                  [class.img-upload-area--has-image]="imagePreviews['thankYouBgImageUrl'] || templateForm.get('thankYouBgImageUrl')?.value">
+                  @if (imagePreviews['thankYouBgImageUrl'] || templateForm.get('thankYouBgImageUrl')?.value) {
+                  <div class="img-upload-preview">
+                    <img [src]="imagePreviews['thankYouBgImageUrl'] || templateForm.get('thankYouBgImageUrl')?.value" alt="Preview" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('thankYouBgImageUrl')" title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'thankYouBgImageUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <span>Clique para enviar</span>
+                    <span class="img-upload-hint">JPG, PNG · máx. 5 MB</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('thankYouBgImageUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+              <div class="ap-color-field">
+                <label class="ap-label">Celular</label>
+                <div class="img-upload-area img-upload-area--portrait"
+                  [class.img-upload-area--has-image]="imagePreviews['thankYouBgImageMobileUrl'] || templateForm.get('thankYouBgImageMobileUrl')?.value">
+                  @if (imagePreviews['thankYouBgImageMobileUrl'] || templateForm.get('thankYouBgImageMobileUrl')?.value) {
+                  <div class="img-upload-preview img-upload-preview--portrait">
+                    <img [src]="imagePreviews['thankYouBgImageMobileUrl'] || templateForm.get('thankYouBgImageMobileUrl')?.value" alt="Preview celular" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('thankYouBgImageMobileUrl')" title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'thankYouBgImageMobileUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <span>Enviar celular</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('thankYouBgImageMobileUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+              <div class="ap-color-field">
+                <label class="ap-label">Tablet</label>
+                <div class="img-upload-area img-upload-area--portrait"
+                  [class.img-upload-area--has-image]="imagePreviews['thankYouBgImageTabletUrl'] || templateForm.get('thankYouBgImageTabletUrl')?.value">
+                  @if (imagePreviews['thankYouBgImageTabletUrl'] || templateForm.get('thankYouBgImageTabletUrl')?.value) {
+                  <div class="img-upload-preview img-upload-preview--portrait">
+                    <img [src]="imagePreviews['thankYouBgImageTabletUrl'] || templateForm.get('thankYouBgImageTabletUrl')?.value" alt="Preview tablet" />
+                    <button type="button" class="img-clear-btn" (click)="clearImage('thankYouBgImageTabletUrl')" title="Remover imagem">×</button>
+                  </div>
+                  } @else {
+                  <label class="img-upload-label">
+                    @if (uploadingField() === 'thankYouBgImageTabletUrl') {
+                    <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                    <span>Enviando...</span>
+                    } @else {
+                    <span>Enviar tablet</span>
+                    }
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" style="display:none"
+                      (change)="onImageFileChange('thankYouBgImageTabletUrl', $event)" [disabled]="uploadingField() !== null" />
+                  </label>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <p class="ap-section-label" style="margin-top:14px">Fonte do título</p>
+            <div class="ap-font-pills">
+              @for (opt of fontOptions; track opt.value) {
+              <button type="button" class="ap-font-pill"
+                [class.active]="templateForm.get('thankYouFontFamily')?.value === opt.value"
+                [style.font-family]="opt.value ? opt.value + ', sans-serif' : 'inherit'"
+                (click)="setThankYouFont(opt)">{{ opt.label }}</button>
+              }
+            </div>
+            <div class="ap-font-size-picker">
+              @for (size of titleFontSizes; track size.px) {
+              <button type="button" class="ap-font-size-btn"
+                [class.active]="templateForm.get('thankYouTitleFontSize')?.value === size.px"
+                [style.font-size]="size.uiSize"
+                (click)="setThankYouTitleFontSize(size.px)" [title]="size.px">{{ size.label }}</button>
+              }
+              @if (templateForm.get('thankYouTitleFontSize')?.value) {
+              <span class="ap-font-size-value">{{ templateForm.get('thankYouTitleFontSize')?.value }}</span>
+              }
+            </div>
           </div>
           }
 
