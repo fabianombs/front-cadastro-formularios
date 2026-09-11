@@ -532,6 +532,10 @@ export class CreateTemplateComponent implements OnInit {
       hasSurvey: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
+      thankYouEnabled: [false],
+      thankYouTitle: [''],
+      thankYouSubtitle: [''],
+      thankYouParagraph: [''],
       // Slug e toggles do link de visualização do cliente
       viewSlug: [''],
       viewAllowExport: [false],
@@ -604,6 +608,10 @@ export class CreateTemplateComponent implements OnInit {
 
   get lgpdEnabled(): boolean {
     return this.templateForm.get('lgpdEnabled')?.value === true;
+  }
+
+  get thankYouEnabled(): boolean {
+    return this.templateForm.get('thankYouEnabled')?.value === true;
   }
 
   // ── Quiz picker methods ───────────────────────────────────────────────────
@@ -976,6 +984,10 @@ export class CreateTemplateComponent implements OnInit {
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
       lgpdEnabled: formValue.lgpdEnabled ?? false,
       lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+      thankYouEnabled: formValue.thankYouEnabled ?? false,
+      thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
+      thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
+      thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
       // Vincula o quiz selecionado antes de salvar (se houver)
       quizId: this.pendingQuizId() ?? null,
       // Slug do link de visualização do cliente definido na criação
@@ -999,6 +1011,10 @@ export class CreateTemplateComponent implements OnInit {
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
         lgpdEnabled: formValue.lgpdEnabled ?? false,
         lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+        thankYouEnabled: formValue.thankYouEnabled ?? false,
+        thankYouTitle: formValue.thankYouEnabled ? (formValue.thankYouTitle ?? null) : null,
+        thankYouSubtitle: formValue.thankYouEnabled ? (formValue.thankYouSubtitle ?? null) : null,
+        thankYouParagraph: formValue.thankYouEnabled ? (formValue.thankYouParagraph ?? null) : null,
         // Salva as configurações do link de visualização do cliente
         viewAllowExport: formValue.viewAllowExport ?? false,
         viewShowSubmissions: formValue.viewShowSubmissions ?? true,
@@ -1131,6 +1147,10 @@ export class CreateTemplateComponent implements OnInit {
       hasSchedule: template.hasSchedule,
       lgpdEnabled: template.lgpdEnabled ?? false,
       lgpdText: template.lgpdText ?? '',
+      thankYouEnabled: template.thankYouEnabled ?? false,
+      thankYouTitle: template.thankYouTitle ?? '',
+      thankYouSubtitle: template.thankYouSubtitle ?? '',
+      thankYouParagraph: template.thankYouParagraph ?? '',
       viewAllowExport: template.viewAllowExport ?? false,
       viewShowSubmissions: template.viewShowSubmissions ?? true,
       viewShowAttendance: template.viewShowAttendance ?? true,
@@ -1415,6 +1435,10 @@ export class CreateTemplateComponent implements OnInit {
       appearance: null,
       lgpdEnabled: this.template.lgpdEnabled,
       lgpdText: this.template.lgpdText ?? null,
+      thankYouEnabled: this.template.thankYouEnabled,
+      thankYouTitle: this.template.thankYouTitle ?? null,
+      thankYouSubtitle: this.template.thankYouSubtitle ?? null,
+      thankYouParagraph: this.template.thankYouParagraph ?? null,
       viewSlug: slug,
     };
 

@@ -108,6 +108,10 @@ export class QuizEditComponent implements OnInit {
       // Campos de texto da tela "Tudo pronto!"
       readyTitle:         [quiz.readyTitle         ?? null],
       readyMessage:       [quiz.readyMessage       ?? null],
+      thankYouEnabled:    [quiz.thankYouEnabled    ?? false],
+      thankYouTitle:      [quiz.thankYouTitle      ?? null],
+      thankYouSubtitle:   [quiz.thankYouSubtitle   ?? null],
+      thankYouParagraph:  [quiz.thankYouParagraph  ?? null],
     });
 
     // Inicializa snapshot e mantém atualizado para que computed() reajam ao form
@@ -319,6 +323,10 @@ export class QuizEditComponent implements OnInit {
       buttonTextColor:    v.buttonTextColor    || null,
       readyTitle:         v.readyTitle         || null,
       readyMessage:       v.readyMessage       || null,
+      thankYouEnabled:    v.thankYouEnabled    ?? false,
+      thankYouTitle:      v.thankYouEnabled ? (v.thankYouTitle || null) : null,
+      thankYouSubtitle:   v.thankYouEnabled ? (v.thankYouSubtitle || null) : null,
+      thankYouParagraph:  v.thankYouEnabled ? (v.thankYouParagraph || null) : null,
     };
 
     if (this.isCreateMode) {

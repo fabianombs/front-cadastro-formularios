@@ -106,6 +106,7 @@ export class SurveyPublicComponent implements OnInit {
 
   welcomeSubtitle  = computed(() => this.survey()?.welcomeSubtitle  ?? 'Sua opinião é muito importante para nós!');
   thankyouSubtitle = computed(() => this.survey()?.thankyouSubtitle ?? 'Avaliação registrada com sucesso.');
+  thankYouParagraph = computed(() => this.survey()?.thankYouParagraph ?? '');
   welcomeBtnText   = computed(() => this.survey()?.welcomeBtnText   ?? 'Começar');
   ratingBtnText    = computed(() => this.survey()?.ratingBtnText    ?? 'Enviar avaliação');
 

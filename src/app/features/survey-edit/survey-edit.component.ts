@@ -130,6 +130,7 @@ export class SurveyEditComponent implements OnInit {
       // Subtítulos e botões
       welcomeSubtitle:  [s.welcomeSubtitle  ?? 'Sua opinião é muito importante para nós!'],
       thankyouSubtitle: [s.thankyouSubtitle ?? 'Avaliação registrada com sucesso.'],
+      thankYouParagraph: [s.thankYouParagraph ?? ''],
       welcomeBtnText:   [s.welcomeBtnText   ?? 'Começar'],
       ratingBtnText:    [s.ratingBtnText    ?? 'Enviar avaliação'],
     });
@@ -435,6 +436,7 @@ export class SurveyEditComponent implements OnInit {
       score1Label: v.score1Label || 'Muito Insatisfeito',
       welcomeSubtitle:  v.welcomeSubtitle  || null,
       thankyouSubtitle: v.thankyouSubtitle || null,
+      thankYouParagraph: v.thankYouParagraph || null,
       welcomeBtnText:   v.welcomeBtnText   || 'Começar',
       ratingBtnText:    v.ratingBtnText    || 'Enviar avaliação',
     };

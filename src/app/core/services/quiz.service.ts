@@ -55,6 +55,11 @@ export interface QuizConfig {
   // Texto editável da tela "Tudo pronto!" — null usa os valores padrão
   readyTitle?: string | null;
   readyMessage?: string | null;
+  // Tela de agradecimento final (opcional) — mostrada acima do resultado/pontuação
+  thankYouEnabled?: boolean;
+  thankYouTitle?: string | null;
+  thankYouSubtitle?: string | null;
+  thankYouParagraph?: string | null;
 }
 
 export interface QuizSession {
@@ -120,6 +125,11 @@ export interface QuizConfigRequest {
   // Texto editável da tela "Tudo pronto!" — null usa padrão do frontend
   readyTitle?: string | null;
   readyMessage?: string | null;
+  // Tela de agradecimento final (opcional) — mostrada acima do resultado/pontuação
+  thankYouEnabled?: boolean;
+  thankYouTitle?: string | null;
+  thankYouSubtitle?: string | null;
+  thankYouParagraph?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

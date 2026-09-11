@@ -271,6 +271,11 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   quizPrimary   = computed(() => this.quiz()?.primaryColor || '#5b8dee');
   quizText      = computed(() => this.quiz()?.textColor    || '#e2e8f0');
+
+  // Tela de agradecimento final (opcional) — texto customizado acima do resultado
+  thankYouTitle     = computed(() => this.quiz()?.thankYouTitle?.trim()     || 'Muito obrigado por jogar!');
+  thankYouSubtitle  = computed(() => this.quiz()?.thankYouSubtitle?.trim()  || '');
+  thankYouParagraph = computed(() => this.quiz()?.thankYouParagraph?.trim() || '');
   // Cor de fundo dos cards de opção; sem valor usa o padrão glassmorphism via CSS
   quizCardColor = computed(() => this.quiz()?.cardColor    || null);
   // Cor de fundo dos cards de cadastro/ready — controle independente

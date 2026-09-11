@@ -55,6 +55,7 @@ export interface SurveyConfig {
   // Subtítulos e botões editáveis
   welcomeSubtitle?: string;
   thankyouSubtitle?: string;
+  thankYouParagraph?: string | null;
   welcomeBtnText?: string;
   ratingBtnText?: string;
 }

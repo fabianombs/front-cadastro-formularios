@@ -612,6 +612,17 @@
               </label>
             </div>
 
+            <!-- Tela de agradecimento final -->
+            <div class="feature-toggle-card feature-toggle-card--thankyou">
+              <label class="feature-toggle-label">
+                <input type="checkbox" formControlName="thankYouEnabled" class="feature-toggle-check feature-toggle-check--thankyou" />
+                <div class="feature-toggle-content">
+                  <span class="feature-toggle-title">Tela de agradecimento final</span>
+                  <span class="feature-toggle-desc">Título, subtítulo e texto personalizados ao concluir o envio</span>
+                </div>
+              </label>
+            </div>
+
           </div>
 
           <!-- Picker de survey — aparece inline quando o toggle está ativado -->
@@ -704,6 +715,41 @@
               rows="6"
               placeholder="Informe aqui o texto da política de privacidade / LGPD que será exibido para o usuário antes de enviar o formulário..."
             ></textarea>
+          </div>
+          }
+
+          <!-- Textos da tela de agradecimento final (aparece ao habilitar) -->
+          @if (thankYouEnabled) {
+          <div class="thankyou-config-block">
+            <div class="field" style="margin-top: 8px; margin-bottom: 0">
+              <label>Título</label>
+              <input
+                type="text"
+                formControlName="thankYouTitle"
+                maxlength="120"
+                placeholder="Ex: Obrigado por participar!"
+              />
+            </div>
+            <div class="field" style="margin-top: 8px; margin-bottom: 0">
+              <label>Subtítulo</label>
+              <input
+                type="text"
+                formControlName="thankYouSubtitle"
+                maxlength="160"
+                placeholder="Ex: Recebemos suas informações com sucesso."
+              />
+            </div>
+            <div class="field" style="margin-top: 8px; margin-bottom: 0">
+              <label>Parágrafo</label>
+              <textarea
+                formControlName="thankYouParagraph"
+                rows="4"
+                placeholder="Escreva aqui o texto completo que aparecerá ao usuário após o envio — pode contar mais sobre os próximos passos, agradecer novamente, etc."
+              ></textarea>
+            </div>
+            <p class="thankyou-config-hint">
+              A tela usa as mesmas cores e imagens de fundo já configuradas em "Aparência" acima.
+            </p>
           </div>
           }
 
