@@ -691,8 +691,10 @@ export class TemplateListComponent implements OnInit {
     return fields;
   });
 
-  filteredSubmissions = computed<FormSubmission[]>(() => {
-    let data = [...this.submissions()];
+  /** Extraído de filteredSubmissions() para poder ser aplicado também sobre o
+   *  dataset COMPLETO (todas as páginas) na exportação — ver exportSubmissionsXlsx(). */
+  private applySubmissionFiltersAndSort(input: FormSubmission[]): FormSubmission[] {
+    let data = [...input];
     const search = this.globalSearch().toLowerCase().trim();
     const filters = this.fieldFilters();
 
@@ -741,7 +743,11 @@ export class TemplateListComponent implements OnInit {
     }
 
     return data;
-  });
+  }
+
+  filteredSubmissions = computed<FormSubmission[]>(() =>
+    this.applySubmissionFiltersAndSort(this.submissions())
+  );
 
   // ── Active filter chips ──────────────────────────────────────
   activeFiltersList = computed(() => {
@@ -1012,11 +1018,36 @@ export class TemplateListComponent implements OnInit {
   }
 
   // ── Exports ──────────────────────────────────────────────────
+  // Antes exportava só this.filteredSubmissions() (que reflete apenas a página
+  // carregada na tela) — então "Exportar Excel" trazia só a página atual. Agora
+  // busca TODAS as respostas do template (1 request, size = total) e aplica os
+  // mesmos filtros/busca/ordenação ativos na tela antes de gerar o Excel.
+  exportingSubmissions = signal(false);
+
   exportSubmissionsXlsx() {
     const t = this.template();
     if (!t) return;
     const fieldOrder = (t.fields ?? []).map(f => f.label);
-    this.exporter.exportSubmissions(this.filteredSubmissions(), t.name, fieldOrder);
+    const total = this.subTotalElements();
+
+    if (total <= this.submissions().length) {
+      // já tem tudo carregado (poucas respostas) — exporta direto, sem round-trip extra
+      this.exporter.exportSubmissions(this.filteredSubmissions(), t.name, fieldOrder);
+      return;
+    }
+
+    this.exportingSubmissions.set(true);
+    this.service.getSubmissionsByTemplate(t.id, 0, Math.max(total, 1)).subscribe({
+      next: (page) => {
+        const all = this.applySubmissionFiltersAndSort(page.content);
+        this.exporter.exportSubmissions(all, t.name, fieldOrder);
+        this.exportingSubmissions.set(false);
+      },
+      error: () => {
+        this.messages.error('Erro ao buscar todas as respostas para exportar. Tente novamente.');
+        this.exportingSubmissions.set(false);
+      },
+    });
   }
 
   // Zerar respostas de teste antes de entregar o template ao cliente — só ADMIN vê o botão

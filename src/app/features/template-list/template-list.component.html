@@ -298,9 +298,10 @@
             <button
               class="btn-outline"
               style="font-size: 12px; padding: 8px 14px; white-space: nowrap"
+              [disabled]="exportingSubmissions()"
               (click)="exportSubmissionsXlsx()"
             >
-              ⬇ Exportar Excel
+              {{ exportingSubmissions() ? 'Gerando...' : '⬇ Exportar Excel' }}
             </button>
           }
 
