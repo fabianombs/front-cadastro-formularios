@@ -611,6 +611,9 @@
             <table class="data-table attendance-table" [style.--att-font]="attendanceFontPx() + 'px'">
               <thead>
                 <tr>
+                  @if (template()?.attendanceShowNumber !== false) {
+                  <th style="width:50px">#</th>
+                  }
                   @for (col of attendanceDataColumns(); track col.key) {
                     <th>{{ col.label }}</th>
                   }
@@ -632,9 +635,12 @@
                 </tr>
               </thead>
               <tbody>
-                @for (r of pagedAttendance(); track r.id) {
+                @for (r of pagedAttendance(); track r.id; let i = $index) {
                   <!-- LINHA DO CONVIDADO -->
                   <tr [class.row--present]="r.attended">
+                    @if (template()?.attendanceShowNumber !== false) {
+                    <td style="text-align:center;color:#64748b">{{ attPage() * pageSize() + i + 1 }}</td>
+                    }
                     @for (col of attendanceDataColumns(); track col.key) {
                       <td>
                         @if (templateFieldLabels().has(col.key)) {

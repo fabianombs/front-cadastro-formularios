@@ -1449,7 +1449,7 @@ export class CreateTemplateComponent implements OnInit {
     });
   }
 
-  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck' | 'viewAllowAddGuest' | 'attendanceShowCompanions' | 'attendanceShowPresence' | 'attendanceShowNotes' | 'attendanceShowMarkedAt', value: boolean) {
+  patchViewConfig(field: 'viewAllowExport' | 'viewShowSubmissions' | 'viewShowAttendance' | 'viewShowAppointments' | 'viewAllowAttendanceCheck' | 'viewAllowAddGuest' | 'attendanceShowCompanions' | 'attendanceShowPresence' | 'attendanceShowNotes' | 'attendanceShowMarkedAt' | 'attendanceShowNumber', value: boolean) {
     if (!this.template) return;
     this.templateService.updateViewConfig(this.template.id, { [field]: value }).subscribe({
       next: (res) => { this.template = res; this.cdr.detectChanges(); },
