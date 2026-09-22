@@ -114,6 +114,7 @@ export interface FormTemplate {
   attendanceShowPresence?: boolean;
   attendanceShowNotes?: boolean;
   attendanceShowMarkedAt?: boolean;
+  attendanceShowNumber?: boolean;
   // Pesquisa de satisfação vinculada
   hasSurvey: boolean;
   surveyId?: number | null;
@@ -329,6 +330,7 @@ export class FormTemplateService {
     attendanceShowPresence?: boolean;
     attendanceShowNotes?: boolean;
     attendanceShowMarkedAt?: boolean;
+    attendanceShowNumber?: boolean;
   }): Observable<FormTemplate> {
     return this.http.patch<FormTemplate>(`${this.apiUrl}/${templateId}/view-config`, config);
   }
