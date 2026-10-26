@@ -396,6 +396,8 @@ export class FormDynamicComponent implements OnInit {
       next: () => {
         this.messages.success('Formulário enviado com sucesso!');
         this.form.reset();
+        this.submitted.set(true);
+        this.cdr.detectChanges();
       },
       error: () => this.messages.error('Erro ao enviar formulário'),
     });

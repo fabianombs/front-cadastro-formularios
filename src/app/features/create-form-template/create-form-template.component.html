@@ -396,6 +396,23 @@
           </div>
           }
 
+          <!-- Toggles: logos na tela de agradecimento -->
+          <div class="field" style="margin-top: 4px">
+            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+              <input type="checkbox" formControlName="showHeaderLogoOnThankYou"
+                style="width: 16px; height: 16px; cursor: pointer; accent-color: #6366f1" />
+              <span>Exibir logo do cabeçalho na tela de agradecimento</span>
+            </label>
+          </div>
+
+          <div class="field" style="margin-top: 4px">
+            <label class="checkbox-label" style="gap: 10px; font-size: 14px; cursor: pointer">
+              <input type="checkbox" formControlName="showFooterLogoOnThankYou"
+                style="width: 16px; height: 16px; cursor: pointer; accent-color: #6366f1" />
+              <span>Exibir logo do rodapé na tela de agradecimento</span>
+            </label>
+          </div>
+
           <!-- Upload da planilha (aparece ao habilitar) -->
           @if (hasAttendance) {
           <div style="
@@ -600,19 +617,19 @@
                       <option value="cnpj">CNPJ</option>
                     </select>
                   </div>
-                  <!-- <div class="field" style="margin-bottom: 0">
-                          <label>Cor do campo</label>
-                          <div style="display: flex; align-items: center; gap: 8px">
-                            <input
-                              type="color"
-                              formControlName="fieldColor"
-                              style="width: 36px; height: 36px; padding: 2px; border-radius: 6px; cursor: pointer; border: 1px solid #1c2e4a; background: #0a1020"
-                            />
-                            <span style="font-size: 11px; color: #5d789f; font-family: 'JetBrains Mono', monospace">
-                              {{ f.get('fieldColor')?.value || 'padrão' }}
-                            </span>
-                          </div>
-                        </div> -->
+                  <div class="field" style="margin-bottom: 0">
+                    <label>Cor do campo</label>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <input
+                        type="color"
+                        formControlName="fieldColor"
+                        style="width: 36px; height: 36px; padding: 2px; border-radius: 6px; cursor: pointer; border: 1px solid #1c2e4a; background: #0a1020"
+                      />
+                      <span style="font-size: 11px; color: #5d789f; font-family: 'JetBrains Mono', monospace">
+                        {{ f.get('fieldColor')?.value || 'padrão' }}
+                      </span>
+                    </div>
+                  </div>
                   <div class="field" style="margin-bottom: 0">
                     <label>&nbsp;</label>
                     <label class="checkbox-label">

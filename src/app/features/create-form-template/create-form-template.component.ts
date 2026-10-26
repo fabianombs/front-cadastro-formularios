@@ -473,6 +473,8 @@ export class CreateTemplateComponent implements OnInit {
       hasAttendance: [false],
       lgpdEnabled: [false],
       lgpdText: [''],
+      showHeaderLogoOnThankYou: [true],
+      showFooterLogoOnThankYou: [true],
       scheduleConfig: this.fb.group({
         startTime: ['08:00'],
         endTime: ['17:00'],
@@ -520,6 +522,14 @@ export class CreateTemplateComponent implements OnInit {
 
   get lgpdEnabled(): boolean {
     return this.templateForm.get('lgpdEnabled')?.value === true;
+  }
+
+  get showHeaderLogoOnThankYou(): boolean {
+    return this.templateForm.get('showHeaderLogoOnThankYou')?.value !== false;
+  }
+
+  get showFooterLogoOnThankYou(): boolean {
+    return this.templateForm.get('showFooterLogoOnThankYou')?.value !== false;
   }
 
   get scheduleConfig(): FormGroup {
@@ -732,6 +742,8 @@ export class CreateTemplateComponent implements OnInit {
       appearance: Object.keys(appearance).length > 0 ? appearance : null,
       lgpdEnabled: formValue.lgpdEnabled ?? false,
       lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+      showHeaderLogoOnThankYou: formValue.showHeaderLogoOnThankYou ?? true,
+      showFooterLogoOnThankYou: formValue.showFooterLogoOnThankYou ?? true,
     };
 
     // ── MODO EDIÇÃO ─────────────────────────────────────────────
@@ -749,6 +761,8 @@ export class CreateTemplateComponent implements OnInit {
         appearance: Object.keys(appearance).length > 0 ? appearance : null,
         lgpdEnabled: formValue.lgpdEnabled ?? false,
         lgpdText: formValue.lgpdEnabled ? (formValue.lgpdText ?? null) : null,
+        showHeaderLogoOnThankYou: formValue.showHeaderLogoOnThankYou ?? true,
+        showFooterLogoOnThankYou: formValue.showFooterLogoOnThankYou ?? true,
       };
 
       this.templateService.updateTemplate(this.template.id, updatePayload).subscribe({
@@ -822,6 +836,8 @@ export class CreateTemplateComponent implements OnInit {
       hasSchedule: template.hasSchedule,
       lgpdEnabled: template.lgpdEnabled ?? false,
       lgpdText: template.lgpdText ?? '',
+      showHeaderLogoOnThankYou: template.showHeaderLogoOnThankYou ?? true,
+      showFooterLogoOnThankYou: template.showFooterLogoOnThankYou ?? true,
     });
 
     if (template.hasSchedule && template.scheduleConfig) {

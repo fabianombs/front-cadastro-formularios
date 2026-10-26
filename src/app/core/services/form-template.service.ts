@@ -71,6 +71,8 @@ export interface FormTemplate {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  showHeaderLogoOnThankYou: boolean;
+  showFooterLogoOnThankYou: boolean;
 }
 
 export interface CreateFormTemplateRequest {
@@ -81,6 +83,8 @@ export interface CreateFormTemplateRequest {
   appearance?: TemplateAppearance | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  showHeaderLogoOnThankYou: boolean;
+  showFooterLogoOnThankYou: boolean;
 }
 
 export interface UpdateFormTemplateRequest {
@@ -89,6 +93,8 @@ export interface UpdateFormTemplateRequest {
   appearance?: Partial<TemplateAppearance> | null;
   lgpdEnabled: boolean;
   lgpdText?: string | null;
+  showHeaderLogoOnThankYou: boolean;
+  showFooterLogoOnThankYou: boolean;
 }
 
 export interface FormSubmission {

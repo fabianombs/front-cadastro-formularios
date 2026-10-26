@@ -8,7 +8,8 @@
   @if (template()) {
     <div class="fd-container">
 
-      <!-- Header image -->
+@if (!submitted()) {
+            <!-- Header image -->
       @if (template()?.appearance?.headerImageUrl) {
         <img
           [src]="template()!.appearance!.headerImageUrl"
@@ -183,6 +184,30 @@
           class="fd-footer-img"
           alt="Rodapé"
         />
+      }
+      } @else {
+      <!-- Tela de agradecimento -->
+      @if (template()?.showHeaderLogoOnThankYou !== false && template()?.appearance?.headerImageUrl) {
+        <img
+          [src]="template()!.appearance!.headerImageUrl"
+          class="fd-header-img"
+          alt="Cabeçalho"
+        />
+      }
+
+      <div class="card fd-success" [ngStyle]="formCardStyle()">
+        <span class="fd-success-icon">✓</span>
+        <h2 class="fd-success-title" [ngStyle]="titleStyle()">Seus dados foram enviados com sucesso!</h2>
+        <p class="fd-success-sub">Agradecemos pelo seu cadastro.</p>
+      </div>
+
+      @if (template()?.showFooterLogoOnThankYou !== false && template()?.appearance?.footerImageUrl) {
+        <img
+          [src]="template()!.appearance!.footerImageUrl"
+          class="fd-footer-img"
+          alt="Rodapé"
+        />
+      }
       }
 
     </div>
