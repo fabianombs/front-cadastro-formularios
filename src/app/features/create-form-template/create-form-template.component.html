@@ -752,6 +752,18 @@
                 placeholder="Escreva aqui o texto completo que aparecerá ao usuário após o envio — pode contar mais sobre os próximos passos, agradecer novamente, etc."
               ></textarea>
             </div>
+            <div class="field" style="margin-top: 12px; margin-bottom: 0">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="showHeaderLogoOnThankYou" />
+                <span>Exibir logo do cabeçalho na tela de agradecimento</span>
+              </label>
+            </div>
+            <div class="field" style="margin-top: 4px; margin-bottom: 0">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="showFooterLogoOnThankYou" />
+                <span>Exibir logo do rodapé na tela de agradecimento</span>
+              </label>
+            </div>
             <p class="thankyou-config-hint">
               Deixe as opções de aparência abaixo em branco para usar as mesmas cores e imagens já
               configuradas em "Aparência" acima — preencha só o que quiser diferente nesta tela.
@@ -1095,7 +1107,7 @@
                       <option value="cnpj">CNPJ</option>
                     </select>
                   </div>
-                  <!-- <div class="field" style="margin-bottom: 0">
+                  <div class="field" style="margin-bottom: 0">
                           <label>Cor do campo</label>
                           <div style="display: flex; align-items: center; gap: 8px">
                             <input
@@ -1107,7 +1119,7 @@
                               {{ f.get('fieldColor')?.value || 'padrão' }}
                             </span>
                           </div>
-                        </div> -->
+                        </div>
                   <div class="field" style="margin-bottom: 0">
                     <label>&nbsp;</label>
                     <label class="checkbox-label">

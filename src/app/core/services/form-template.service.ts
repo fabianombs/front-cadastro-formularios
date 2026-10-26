@@ -92,6 +92,9 @@ export interface FormTemplate {
   thankYouTextColor?: string | null;
   thankYouFontFamily?: string | null;
   thankYouTitleFontSize?: string | null;
+  // Exibir logo do topo/rodape na tela de agradecimento (padrao: true)
+  showHeaderLogoOnThankYou?: boolean;
+  showFooterLogoOnThankYou?: boolean;
   // Quiz integrado — presentes quando existe um QuizConfig ativo
   hasQuiz: boolean;
   quizId?: number | null;
@@ -146,6 +149,9 @@ export interface CreateFormTemplateRequest {
   thankYouTextColor?: string | null;
   thankYouFontFamily?: string | null;
   thankYouTitleFontSize?: string | null;
+  // Exibir logo do topo/rodape na tela de agradecimento (padrao: true)
+  showHeaderLogoOnThankYou?: boolean;
+  showFooterLogoOnThankYou?: boolean;
   // Quiz selecionado antes de salvar — vinculado automaticamente pelo backend
   quizId?: number | null;
   // Slug personalizado do link de visualização (ex: "coca-cola")
@@ -176,6 +182,9 @@ export interface UpdateFormTemplateRequest {
   thankYouTextColor?: string | null;
   thankYouFontFamily?: string | null;
   thankYouTitleFontSize?: string | null;
+  // Exibir logo do topo/rodape na tela de agradecimento (padrao: true)
+  showHeaderLogoOnThankYou?: boolean;
+  showFooterLogoOnThankYou?: boolean;
   // Toggles do link de visualização do cliente (null = não alterar)
   viewAllowExport?: boolean | null;
   viewShowSubmissions?: boolean | null;

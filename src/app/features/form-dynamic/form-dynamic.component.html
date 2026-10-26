@@ -13,7 +13,7 @@
     <div class="fd-container">
 
       <!-- Header image -->
-      @if (template()?.appearance?.headerImageUrl) {
+      @if (template()?.appearance?.headerImageUrl && (!showThankYouScreen() || template()?.showHeaderLogoOnThankYou !== false)) {
         <img
           [src]="template()!.appearance!.headerImageUrl"
           class="fd-header-img"
@@ -202,7 +202,7 @@
       }
 
       <!-- Footer image -->
-      @if (template()?.appearance?.footerImageUrl) {
+      @if (template()?.appearance?.footerImageUrl && (!showThankYouScreen() || template()?.showFooterLogoOnThankYou !== false)) {
         <img
           [src]="template()!.appearance!.footerImageUrl"
           class="fd-footer-img"

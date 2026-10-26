@@ -617,6 +617,8 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTextColor: [''],
       thankYouFontFamily: [''],
       thankYouTitleFontSize: [''],
+      showHeaderLogoOnThankYou: [true],
+      showFooterLogoOnThankYou: [true],
       // Slug e toggles do link de visualização do cliente
       viewSlug: [''],
       viewAllowExport: [false],
@@ -1079,6 +1081,8 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTextColor: formValue.thankYouEnabled ? (formValue.thankYouTextColor || null) : null,
       thankYouFontFamily: formValue.thankYouEnabled ? (formValue.thankYouFontFamily || null) : null,
       thankYouTitleFontSize: formValue.thankYouEnabled ? (formValue.thankYouTitleFontSize || null) : null,
+      showHeaderLogoOnThankYou: formValue.showHeaderLogoOnThankYou ?? true,
+      showFooterLogoOnThankYou: formValue.showFooterLogoOnThankYou ?? true,
       // Vincula o quiz selecionado antes de salvar (se houver)
       quizId: this.pendingQuizId() ?? null,
       // Slug do link de visualização do cliente definido na criação
@@ -1116,6 +1120,8 @@ export class CreateTemplateComponent implements OnInit {
         thankYouTextColor: formValue.thankYouEnabled ? (formValue.thankYouTextColor || null) : null,
         thankYouFontFamily: formValue.thankYouEnabled ? (formValue.thankYouFontFamily || null) : null,
         thankYouTitleFontSize: formValue.thankYouEnabled ? (formValue.thankYouTitleFontSize || null) : null,
+        showHeaderLogoOnThankYou: formValue.showHeaderLogoOnThankYou ?? true,
+        showFooterLogoOnThankYou: formValue.showFooterLogoOnThankYou ?? true,
         // Salva as configurações do link de visualização do cliente
         viewAllowExport: formValue.viewAllowExport ?? false,
         viewShowSubmissions: formValue.viewShowSubmissions ?? true,
@@ -1262,6 +1268,8 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTextColor: template.thankYouTextColor ?? '',
       thankYouFontFamily: template.thankYouFontFamily ?? '',
       thankYouTitleFontSize: template.thankYouTitleFontSize ?? '',
+      showHeaderLogoOnThankYou: template.showHeaderLogoOnThankYou ?? true,
+      showFooterLogoOnThankYou: template.showFooterLogoOnThankYou ?? true,
       viewAllowExport: template.viewAllowExport ?? false,
       viewShowSubmissions: template.viewShowSubmissions ?? true,
       viewShowAttendance: template.viewShowAttendance ?? true,
@@ -1567,6 +1575,8 @@ export class CreateTemplateComponent implements OnInit {
       thankYouTextColor: this.template.thankYouTextColor ?? null,
       thankYouFontFamily: this.template.thankYouFontFamily ?? null,
       thankYouTitleFontSize: this.template.thankYouTitleFontSize ?? null,
+      showHeaderLogoOnThankYou: this.template.showHeaderLogoOnThankYou ?? true,
+      showFooterLogoOnThankYou: this.template.showFooterLogoOnThankYou ?? true,
       viewSlug: slug,
     };
 
