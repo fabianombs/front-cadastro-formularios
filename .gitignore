@@ -49,3 +49,9 @@ infra/terraform/.terraform.lock.hcl
 infra/terraform/terraform.tfvars
 infra/terraform/terraform.tfstate
 infra/terraform/terraform.tfstate.backup
+
+# Ambiente local em Docker (nao versionar)
+Dockerfile
+.dockerignore
+nginx.conf
+src/environments/environment.docker.ts
