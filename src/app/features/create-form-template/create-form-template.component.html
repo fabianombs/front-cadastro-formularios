@@ -752,6 +752,18 @@
                 placeholder="Escreva aqui o texto completo que aparecerá ao usuário após o envio — pode contar mais sobre os próximos passos, agradecer novamente, etc."
               ></textarea>
             </div>
+            <div class="field" style="margin-top: 12px; margin-bottom: 0">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" formControlName="showHeaderLogoOnThankYou" />
+                Exibir logo do cabeçalho na tela de agradecimento
+              </label>
+            </div>
+            <div class="field" style="margin-top: 8px; margin-bottom: 0">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" formControlName="showFooterLogoOnThankYou" />
+                Exibir logo do rodapé na tela de agradecimento
+              </label>
+            </div>
             <p class="thankyou-config-hint">
               Deixe as opções de aparência abaixo em branco para usar as mesmas cores e imagens já
               configuradas em "Aparência" acima — preencha só o que quiser diferente nesta tela.
