@@ -753,15 +753,15 @@
               ></textarea>
             </div>
             <div class="field" style="margin-top: 12px; margin-bottom: 0">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <label class="checkbox-label">
                 <input type="checkbox" formControlName="showHeaderLogoOnThankYou" />
-                Exibir logo do cabeçalho na tela de agradecimento
+                <span>Exibir logo do cabeçalho na tela de agradecimento</span>
               </label>
             </div>
-            <div class="field" style="margin-top: 8px; margin-bottom: 0">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <div class="field" style="margin-top: 4px; margin-bottom: 0">
+              <label class="checkbox-label">
                 <input type="checkbox" formControlName="showFooterLogoOnThankYou" />
-                Exibir logo do rodapé na tela de agradecimento
+                <span>Exibir logo do rodapé na tela de agradecimento</span>
               </label>
             </div>
             <p class="thankyou-config-hint">
@@ -1107,7 +1107,7 @@
                       <option value="cnpj">CNPJ</option>
                     </select>
                   </div>
-                  <!-- <div class="field" style="margin-bottom: 0">
+                  <div class="field" style="margin-bottom: 0">
                           <label>Cor do campo</label>
                           <div style="display: flex; align-items: center; gap: 8px">
                             <input
@@ -1119,7 +1119,7 @@
                               {{ f.get('fieldColor')?.value || 'padrão' }}
                             </span>
                           </div>
-                        </div> -->
+                        </div>
                   <div class="field" style="margin-bottom: 0">
                     <label>&nbsp;</label>
                     <label class="checkbox-label">
