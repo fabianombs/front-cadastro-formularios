@@ -22,41 +22,9 @@ import {
   BookAppointmentRequest,
 } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
-import { CepService, EnderecoCep, ResultadoCep } from '../../core/services/cep.service';
+import { CepService, ResultadoCep } from '../../core/services/cep.service';
 import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
-
-/**
- * Campos que a busca de CEP preenche, reconhecidos pelo rótulo (sem acento,
- * minúsculo). Vale para o "bloco de endereço" do editor e para qualquer
- * formulário que tenha campos com esses nomes depois de um campo CEP.
- *
- * Comparação EXATA de propósito: com "começa com", um campo "Endereço de
- * e-mail" depois do CEP seria sobrescrito com o nome da rua.
- */
-const ALVOS_CEP: { campo: keyof EnderecoCep; rotulos: string[] }[] = [
-  { campo: 'logradouro', rotulos: ['rua', 'logradouro', 'endereco', 'rua avenida', 'avenida'] },
-  { campo: 'bairro', rotulos: ['bairro'] },
-  { campo: 'cidade', rotulos: ['cidade', 'municipio'] },
-  { campo: 'uf', rotulos: ['estado', 'uf'] },
-];
-
-/** Rótulos do campo que recebe o foco depois do preenchimento. */
-const ROTULOS_NUMERO = ['numero', 'n', 'no', 'nº'];
-
-function normalizarRotulo(label: string | null | undefined): string {
-  return (label ?? '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9º ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function rotuloCorresponde(label: string, rotulos: string[]): boolean {
-  const n = normalizarRotulo(label);
-  return rotulos.includes(n);
-}
+import { ALVOS_CEP, ROTULOS_NUMERO, rotuloCorresponde } from '../../shared/utils/endereco-cep';
 
 @Component({
   selector: 'app-form-dynamic',
