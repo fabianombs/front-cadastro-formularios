@@ -1101,7 +1101,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px">
                   <div class="field" style="margin-bottom: 0">
                     <label>Tipo</label>
-                    <select formControlName="type">
+                    <select formControlName="type" (change)="onFieldTypeChange(fi, $any($event.target).value)">
                       <option value="text">Texto</option>
                       <option value="email">Email</option>
                       <option value="number">Número</option>
