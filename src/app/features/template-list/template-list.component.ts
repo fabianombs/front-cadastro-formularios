@@ -996,12 +996,13 @@ export class TemplateListComponent implements OnInit {
 
   // Máscara a aplicar na coluna editável, derivada do tipo do campo do template.
   // Colunas importadas da planilha não têm tipo, logo não recebem máscara.
-  fieldMask(colKey: string): 'phone' | 'cpf' | 'cnpj' | 'date' | 'number' | null {
+  fieldMask(colKey: string): 'phone' | 'cpf' | 'cnpj' | 'date' | 'cep' | 'number' | null {
     const type = this.templateFieldMap().get(colKey)?.type;
     switch (type) {
       case 'cpf':
       case 'cnpj':
       case 'date':
+      case 'cep':
       case 'number':
         return type;
       case 'phone':

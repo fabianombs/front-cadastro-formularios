@@ -9,6 +9,7 @@ import { NgControl } from '@angular/forms';
  * - `cpf`    → 333.444.555-66
  * - `cnpj`   → 33.444.555/0001-66
  * - `date`   → 31/12/2026
+ * - `cep`    → 01001-000
  * - `number` → somente dígitos (remove letras/símbolos)
  */
 @Directive({
@@ -16,7 +17,7 @@ import { NgControl } from '@angular/forms';
   standalone: true,
 })
 export class MaskDirective implements OnChanges {
-  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | 'date' | 'number' | null | undefined;
+  @Input('appMask') maskType: 'phone' | 'cpf' | 'cnpj' | 'date' | 'cep' | 'number' | null | undefined;
 
   constructor(
     private el: ElementRef<HTMLInputElement>,
@@ -60,6 +61,9 @@ export class MaskDirective implements OnChanges {
         break;
       case 'date':
         formatted = this.applyDateMask(digits);
+        break;
+      case 'cep':
+        formatted = this.applyCepMask(digits);
         break;
       // número: mantém apenas dígitos
       case 'number':
@@ -118,5 +122,12 @@ export class MaskDirective implements OnChanges {
     if (d.length <= 2) return d;
     if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
     return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+  }
+
+  /** XXXXX-XXX */
+  private applyCepMask(digits: string): string {
+    const d = digits.slice(0, 8);
+    if (d.length <= 5) return d;
+    return `${d.slice(0, 5)}-${d.slice(5)}`;
   }
 }

@@ -1052,9 +1052,15 @@
       <div class="form-section card">
         <div class="section-header" style="display: flex; justify-content: space-between; align-items: center">
           <h2 class="section-title">Campos do formulário</h2>
-          <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px" (click)="addField()">
-            + Adicionar campo
-          </button>
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px" (click)="addAddressBlock()"
+              title="Adiciona CEP, Rua, Número, Complemento, Bairro, Cidade e Estado. Ao digitar o CEP, o endereço é preenchido sozinho.">
+              + Bloco de endereço (CEP)
+            </button>
+            <button type="button" class="btn-outline" style="font-size: 12px; padding: 5px 12px" (click)="addField()">
+              + Adicionar campo
+            </button>
+          </div>
         </div>
         <div class="section-body">
           @if (fields.length === 0) {
@@ -1105,6 +1111,7 @@
                       <option value="phone-intl">Telefone internacional</option>
                       <option value="cpf">CPF</option>
                       <option value="cnpj">CNPJ</option>
+                      <option value="cep">CEP (preenche endereço)</option>
                     </select>
                   </div>
                   <div class="field" style="margin-bottom: 0">
