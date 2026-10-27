@@ -9,6 +9,7 @@ import { of, throwError } from 'rxjs';
 import { FormDynamicComponent } from './form-dynamic.component';
 import { FormTemplateService, FormTemplate, SlotInfo } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
+import { CepService } from '../../core/services/cep.service';
 
 const mockTemplate: FormTemplate = {
   id: 1,
@@ -60,6 +61,14 @@ function createSuite(slug: string | null = 'formulario-teste', template = mockTe
     warning: vi.fn(),
     info: vi.fn(),
   };
+  const cepMock = {
+    buscar: vi.fn().mockReturnValue(
+      of({
+        status: 'encontrado',
+        endereco: { cep: '01001-000', logradouro: 'Praça da Sé', bairro: 'Sé', cidade: 'São Paulo', uf: 'SP' },
+      }),
+    ),
+  };
 
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -76,13 +85,116 @@ function createSuite(slug: string | null = 'formulario-teste', template = mockTe
       },
       { provide: FormTemplateService, useValue: templateServiceMock },
       { provide: MessageService, useValue: messageMock },
+      { provide: CepService, useValue: cepMock },
     ],
   });
 
   const fixture = TestBed.createComponent(FormDynamicComponent);
   const component = fixture.componentInstance;
-  return { fixture, component, templateServiceMock, messageMock };
+  return { fixture, component, templateServiceMock, messageMock, cepMock };
 }
+
+const mockTemplateComEndereco: FormTemplate = {
+  ...mockTemplate,
+  fields: [
+    { id: 1, label: 'Nome', type: 'text', required: true },
+    { id: 2, label: 'CEP', type: 'cep', required: true },
+    { id: 3, label: 'Rua', type: 'text', required: true },
+    { id: 4, label: 'Número', type: 'text', required: true },
+    { id: 5, label: 'Complemento', type: 'text', required: false },
+    { id: 6, label: 'Bairro', type: 'text', required: true },
+    { id: 7, label: 'Cidade', type: 'text', required: true },
+    { id: 8, label: 'Estado', type: 'text', required: true },
+    { id: 9, label: 'Endereço de e-mail', type: 'email', required: false },
+  ],
+};
+
+describe('FormDynamicComponent — CEP preenche endereço', () => {
+  it('deve preencher rua, bairro, cidade e estado ao completar o CEP', () => {
+    const { component, cepMock } = createSuite('formulario-teste', mockTemplateComEndereco);
+    component.ngOnInit();
+
+    component.form.get('field_1')!.setValue('01001000');
+
+    expect(cepMock.buscar).toHaveBeenCalledWith('01001000');
+    expect(component.form.get('field_2')!.value).toBe('Praça da Sé');
+    expect(component.form.get('field_5')!.value).toBe('Sé');
+    expect(component.form.get('field_6')!.value).toBe('São Paulo');
+    expect(component.form.get('field_7')!.value).toBe('SP');
+  });
+
+  it('não deve tocar em campos fora do endereço (Nome, Número, Complemento, e-mail)', () => {
+    const { component } = createSuite('formulario-teste', mockTemplateComEndereco);
+    component.ngOnInit();
+    component.form.get('field_0')!.setValue('Maria');
+    component.form.get('field_8')!.setValue('maria@x.com');
+
+    component.form.get('field_1')!.setValue('01001-000');
+
+    expect(component.form.get('field_0')!.value).toBe('Maria');
+    expect(component.form.get('field_3')!.value).toBe('');
+    expect(component.form.get('field_4')!.value).toBe('');
+    expect(component.form.get('field_8')!.value).toBe('maria@x.com');
+  });
+
+  it('não deve buscar enquanto o CEP estiver incompleto', () => {
+    const { component, cepMock } = createSuite('formulario-teste', mockTemplateComEndereco);
+    component.ngOnInit();
+    component.form.get('field_1')!.setValue('0100');
+    expect(cepMock.buscar).not.toHaveBeenCalled();
+  });
+
+  it('deve avisar quando o CEP não existe, sem preencher nada', () => {
+    const { component, cepMock, messageMock } = createSuite('formulario-teste', mockTemplateComEndereco);
+    cepMock.buscar.mockReturnValue(of({ status: 'nao-encontrado' }));
+    component.ngOnInit();
+
+    component.form.get('field_1')!.setValue('99999999');
+
+    expect(messageMock.warning).toHaveBeenCalled();
+    expect(component.form.get('field_2')!.value).toBe('');
+  });
+
+  it('deve ficar em silêncio quando o serviço de CEP falha', () => {
+    const { component, cepMock, messageMock } = createSuite('formulario-teste', mockTemplateComEndereco);
+    cepMock.buscar.mockReturnValue(of({ status: 'erro' }));
+    component.ngOnInit();
+
+    component.form.get('field_1')!.setValue('01001000');
+
+    expect(messageMock.warning).not.toHaveBeenCalled();
+    expect(component.form.get('field_2')!.value).toBe('');
+  });
+
+  it('deve rejeitar CEP com formato inválido', () => {
+    const { component } = createSuite('formulario-teste', mockTemplateComEndereco);
+    component.ngOnInit();
+    const cep = component.form.get('field_1')!;
+    cep.setValue('123');
+    expect(cep.hasError('pattern')).toBe(true);
+    cep.setValue('01001-000');
+    expect(cep.valid).toBe(true);
+  });
+
+  it('com dois blocos, cada CEP preenche só o seu bloco', () => {
+    const doisEnderecos: FormTemplate = {
+      ...mockTemplate,
+      fields: [
+        { id: 1, label: 'CEP', type: 'cep', required: false },
+        { id: 2, label: 'Rua', type: 'text', required: false },
+        { id: 3, label: 'CEP', type: 'cep', required: false },
+        { id: 4, label: 'Rua', type: 'text', required: false },
+      ],
+    };
+    const { component } = createSuite('formulario-teste', doisEnderecos);
+    component.ngOnInit();
+
+    component.form.get('field_2')!.setValue('01001000');
+
+    expect(component.form.get('field_1')!.value).toBe('');
+    expect(component.form.get('field_3')!.value).toBe('Praça da Sé');
+  });
+});
 
 describe('FormDynamicComponent', () => {
   it('deve ser criado', () => {

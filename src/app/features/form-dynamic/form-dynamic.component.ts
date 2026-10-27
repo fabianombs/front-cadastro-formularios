@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -20,7 +22,41 @@ import {
   BookAppointmentRequest,
 } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
+import { CepService, EnderecoCep, ResultadoCep } from '../../core/services/cep.service';
 import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
+
+/**
+ * Campos que a busca de CEP preenche, reconhecidos pelo rótulo (sem acento,
+ * minúsculo). Vale para o "bloco de endereço" do editor e para qualquer
+ * formulário que tenha campos com esses nomes depois de um campo CEP.
+ *
+ * Comparação EXATA de propósito: com "começa com", um campo "Endereço de
+ * e-mail" depois do CEP seria sobrescrito com o nome da rua.
+ */
+const ALVOS_CEP: { campo: keyof EnderecoCep; rotulos: string[] }[] = [
+  { campo: 'logradouro', rotulos: ['rua', 'logradouro', 'endereco', 'rua avenida', 'avenida'] },
+  { campo: 'bairro', rotulos: ['bairro'] },
+  { campo: 'cidade', rotulos: ['cidade', 'municipio'] },
+  { campo: 'uf', rotulos: ['estado', 'uf'] },
+];
+
+/** Rótulos do campo que recebe o foco depois do preenchimento. */
+const ROTULOS_NUMERO = ['numero', 'n', 'no', 'nº'];
+
+function normalizarRotulo(label: string | null | undefined): string {
+  return (label ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9º ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function rotuloCorresponde(label: string, rotulos: string[]): boolean {
+  const n = normalizarRotulo(label);
+  return rotulos.includes(n);
+}
 
 @Component({
   selector: 'app-form-dynamic',
@@ -89,6 +125,8 @@ export class FormDynamicComponent implements OnInit {
   }
 
   private messages = inject(MessageService);
+  private cepService = inject(CepService);
+  private destroyRef = inject(DestroyRef);
 
   private router = inject(Router);
 
@@ -401,6 +439,7 @@ export class FormDynamicComponent implements OnInit {
       if (f.type === 'cpf') validators.push(cpfValidator());
       if (f.type === 'cnpj') validators.push(cnpjValidator());
       if (f.type === 'date') validators.push(dateValidator());
+      if (f.type === 'cep') validators.push(Validators.pattern(/^\d{5}-?\d{3}$/));
 
       return this.fb.group({
         label: [f.label],
@@ -419,7 +458,64 @@ export class FormDynamicComponent implements OnInit {
     fgArray.forEach((fg, i) => {
       const control = fg.get('value') as FormControl;
       this.form.addControl(`field_${i}`, control);
+      if (fg.get('originalType')?.value === 'cep') this.ligarBuscaCep(i, control);
     });
+
+    this.cdr.detectChanges();
+  }
+
+  // =====================
+  // CEP -> ENDEREÇO
+  // =====================
+
+  /** Ao completar 8 dígitos no campo CEP, busca o endereço e preenche os campos seguintes. */
+  private ligarBuscaCep(indiceCep: number, control: FormControl): void {
+    control.valueChanges
+      .pipe(
+        map((v) => CepService.somenteDigitos(v)),
+        distinctUntilChanged(),
+        filter((digitos) => digitos.length === 8),
+        // switchMap: se a pessoa corrigir o CEP antes da resposta, vale o último
+        switchMap((digitos) => this.cepService.buscar(digitos)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((resultado) => this.aplicarCep(indiceCep, resultado));
+  }
+
+  private aplicarCep(indiceCep: number, resultado: ResultadoCep): void {
+    if (resultado.status === 'nao-encontrado') {
+      this.messages.warning('CEP não encontrado. Confira o número ou preencha o endereço manualmente.');
+      return;
+    }
+    // Falha de rede/serviço: silêncio. O endereço continua podendo ser digitado.
+    if (resultado.status === 'erro') return;
+
+    const campos = this.formFields();
+    // O bloco de endereço vai do campo CEP até o próximo CEP (ou o fim do formulário).
+    // Assim um formulário com dois endereços preenche cada bloco com o seu CEP.
+    let fim = campos.length;
+    for (let j = indiceCep + 1; j < campos.length; j++) {
+      if (campos[j].get('originalType')?.value === 'cep') {
+        fim = j;
+        break;
+      }
+    }
+
+    for (const alvo of ALVOS_CEP) {
+      for (let j = indiceCep + 1; j < fim; j++) {
+        if (rotuloCorresponde(campos[j].get('label')?.value, alvo.rotulos)) {
+          this.form.get(`field_${j}`)?.setValue(resultado.endereco[alvo.campo]);
+          break;
+        }
+      }
+    }
+
+    for (let j = indiceCep + 1; j < fim; j++) {
+      if (rotuloCorresponde(campos[j].get('label')?.value, ROTULOS_NUMERO)) {
+        document.getElementById(`field-${j}`)?.focus();
+        break;
+      }
+    }
 
     this.cdr.detectChanges();
   }
