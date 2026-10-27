@@ -22,6 +22,7 @@ import { map } from 'rxjs/operators';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AbstractControl } from '@angular/forms';
 import { FormFieldComponent } from '../../shared/components/form-field/form-field.component';
+import { CAMPOS_ENDERECO_APOS_CEP, ehCampoDeEndereco } from '../../shared/utils/endereco-cep';
 import { EquipmentImportComponent } from '../equipment-import/equipment-import.component';
 import { EquipmentSelectComponent } from '../../shared/components/equipment-select/equipment-select.component';
 import { EquipmentService, ImportEquipmentRequest, EquipmentCatalog } from '../../core/services/equipment.service';
@@ -955,27 +956,50 @@ export class CreateTemplateComponent implements OnInit {
    * aqui precisam bater com os reconhecidos pelo FormDynamicComponent.
    */
   addAddressBlock() {
-    const bloco: { label: string; type: string; required: boolean; colSpan: number }[] = [
-      { label: 'CEP', type: 'cep', required: true, colSpan: 1 },
-      { label: 'Rua', type: 'text', required: true, colSpan: 2 },
-      { label: 'Número', type: 'text', required: true, colSpan: 1 },
-      { label: 'Complemento', type: 'text', required: false, colSpan: 1 },
-      { label: 'Bairro', type: 'text', required: true, colSpan: 1 },
-      { label: 'Cidade', type: 'text', required: true, colSpan: 1 },
-      { label: 'Estado', type: 'text', required: true, colSpan: 1 },
-    ];
-    for (const campo of bloco) {
-      this.fields.push(
-        this.fb.group({
-          label: [campo.label, Validators.required],
-          type: [campo.type, Validators.required],
-          required: [campo.required],
-          fieldColor: [''],
-          colSpan: [campo.colSpan],
-          options: this.fb.array([]),
-        }),
-      );
+    this.fields.push(this.criarCampo({ label: 'CEP', type: 'cep', required: true, colSpan: 1 }));
+    for (const campo of CAMPOS_ENDERECO_APOS_CEP) {
+      this.fields.push(this.criarCampo({ ...campo, type: 'text' }));
     }
+  }
+
+  /**
+   * Ao trocar o tipo de um campo para CEP pela lista, completa o bloco de
+   * endereço logo abaixo dele — o mesmo resultado do botão "+ Bloco de
+   * endereço". Sem isso, um CEP sozinho não tem onde mostrar o endereço.
+   *
+   * Não adiciona nada se já houver campo de endereço entre este CEP e o
+   * próximo: quem montou o formulário à mão não ganha campos duplicados.
+   */
+  onFieldTypeChange(index: number, novoTipo: string) {
+    // O valor vem do evento: no (change) do <select> não há garantia de que o
+    // formControlName já tenha gravado o tipo novo no FormGroup.
+    if (novoTipo !== 'cep') return;
+    const campo = this.fields.at(index);
+
+    if (!campo.get('label')?.value) campo.get('label')?.setValue('CEP');
+
+    for (let j = index + 1; j < this.fields.length; j++) {
+      const outro = this.fields.at(j);
+      if (outro.get('type')?.value === 'cep') break;
+      if (ehCampoDeEndereco(outro.get('label')?.value)) return;
+    }
+
+    CAMPOS_ENDERECO_APOS_CEP.forEach((c, k) => {
+      this.fields.insert(index + 1 + k, this.criarCampo({ ...c, type: 'text' }));
+    });
+    this.messages.info('Campos de endereço adicionados abaixo do CEP. Eles serão preenchidos automaticamente.');
+    this.cdr.detectChanges();
+  }
+
+  private criarCampo(c: { label: string; type: string; required: boolean; colSpan: number }): FormGroup {
+    return this.fb.group({
+      label: [c.label, Validators.required],
+      type: [c.type, Validators.required],
+      required: [c.required],
+      fieldColor: [''],
+      colSpan: [c.colSpan],
+      options: this.fb.array([]),
+    });
   }
 
   getFieldOptions(index: number): FormArray {
