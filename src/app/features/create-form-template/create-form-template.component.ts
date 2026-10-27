@@ -949,6 +949,35 @@ export class CreateTemplateComponent implements OnInit {
     );
   }
 
+  /**
+   * Adiciona os campos de endereço de uma vez. No formulário público, o campo
+   * CEP preenche Rua, Bairro, Cidade e Estado pelo rótulo — por isso os nomes
+   * aqui precisam bater com os reconhecidos pelo FormDynamicComponent.
+   */
+  addAddressBlock() {
+    const bloco: { label: string; type: string; required: boolean; colSpan: number }[] = [
+      { label: 'CEP', type: 'cep', required: true, colSpan: 1 },
+      { label: 'Rua', type: 'text', required: true, colSpan: 2 },
+      { label: 'Número', type: 'text', required: true, colSpan: 1 },
+      { label: 'Complemento', type: 'text', required: false, colSpan: 1 },
+      { label: 'Bairro', type: 'text', required: true, colSpan: 1 },
+      { label: 'Cidade', type: 'text', required: true, colSpan: 1 },
+      { label: 'Estado', type: 'text', required: true, colSpan: 1 },
+    ];
+    for (const campo of bloco) {
+      this.fields.push(
+        this.fb.group({
+          label: [campo.label, Validators.required],
+          type: [campo.type, Validators.required],
+          required: [campo.required],
+          fieldColor: [''],
+          colSpan: [campo.colSpan],
+          options: this.fb.array([]),
+        }),
+      );
+    }
+  }
+
   getFieldOptions(index: number): FormArray {
     const field = this.fields.at(index);
     if (!field) return this.fb.array([]);
