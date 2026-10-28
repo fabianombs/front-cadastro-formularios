@@ -11,6 +11,7 @@ import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../
 import { FormTemplateService } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ClientService } from '../../core/services/client.service';
 
 const mockTemplate = (overrides: Partial<TemplateStatResponse> = {}): TemplateStatResponse => ({
   id: 1, name: 'Form A', slug: 'form-a', clientName: 'Cliente X',
@@ -38,6 +39,10 @@ function createSuite() {
   };
   const templateMock = {
     deleteTemplate: vi.fn().mockReturnValue(of({})),
+    duplicateTemplate: vi.fn().mockReturnValue(of({ id: 9, slug: 'form-a-copia' })),
+  };
+  const clientMock = {
+    findAll: vi.fn().mockReturnValue(of({ content: [{ id: 3, name: 'Cliente X' }, { id: 4, name: 'Cliente Y' }] })),
   };
   const messageMock = {
     success: vi.fn(),
@@ -45,10 +50,14 @@ function createSuite() {
     info: vi.fn(),
     warning: vi.fn(),
   };
+  // isAdmin/isFuncionario leem o signal role, como no AuthService real,
+  // para que os computed do componente reajam à troca de papel no teste
+  const role = signal('ROLE_ADMIN');
   const authMock = {
     user: signal(null),
-    role: signal('ROLE_ADMIN'),
-    isAdmin: vi.fn().mockReturnValue(true),
+    role,
+    isAdmin: vi.fn(() => role() === 'ROLE_ADMIN'),
+    isFuncionario: vi.fn(() => role() === 'ROLE_FUNCIONARIO'),
   };
 
   TestBed.resetTestingModule();
@@ -61,13 +70,14 @@ function createSuite() {
       { provide: FormTemplateService, useValue: templateMock },
       { provide: MessageService, useValue: messageMock },
       { provide: AuthService, useValue: authMock },
+      { provide: ClientService, useValue: clientMock },
     ],
   });
 
   const fixture = TestBed.createComponent(FormsAllComponent);
   const component = fixture.componentInstance;
   fixture.detectChanges();
-  return { fixture, component, dashMock, templateMock, messageMock, authMock };
+  return { fixture, component, dashMock, templateMock, messageMock, authMock, clientMock };
 }
 
 describe('FormsAllComponent', () => {
@@ -222,5 +232,89 @@ describe('FormsAllComponent', () => {
     expect(component.deleteModalOpen()).toBe(false);
     expect(component.deleteTargetId()).toBeNull();
     expect(component.deleteTargetName()).toBe('');
+  });
+
+  // ─── duplicar ─────────────────────────────────────────────────────────────
+
+  const ev = () => ({ stopPropagation: vi.fn(), preventDefault: vi.fn() }) as unknown as Event;
+
+  it('openDuplicate deve abrir modal com cliente do original e nome "(cópia)" e carregar clientes', () => {
+    const { component, clientMock } = createSuite();
+    component.openDuplicate(mockTemplate({ id: 7, name: 'Cadastro', clientId: 3 }), ev());
+    expect(component.duplicateModalOpen()).toBe(true);
+    expect(component.duplicateSourceId()).toBe(7);
+    expect(component.duplicateClientId()).toBe(3);
+    expect(component.duplicateName()).toBe('Cadastro (cópia)');
+    expect(clientMock.findAll).toHaveBeenCalledTimes(1);
+    expect(component.clients()).toHaveLength(2);
+  });
+
+  it('openDuplicate não deve recarregar clientes já carregados', () => {
+    const { component, clientMock } = createSuite();
+    component.openDuplicate(mockTemplate(), ev());
+    component.onDuplicateCancelled();
+    component.openDuplicate(mockTemplate(), ev());
+    expect(clientMock.findAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('onDuplicateConfirmed deve enviar cliente escolhido e nome, avisar sucesso, fechar e recarregar', () => {
+    const { component, templateMock, messageMock, dashMock } = createSuite();
+    component.openDuplicate(mockTemplate({ id: 7, clientId: 3 }), ev());
+    component.duplicateClientId.set(4);
+    component.duplicateName.set('  Cadastro Novo  ');
+    const callsBefore = dashMock.getSummary.mock.calls.length;
+    component.onDuplicateConfirmed();
+    expect(templateMock.duplicateTemplate).toHaveBeenCalledWith(7, { clientId: 4, name: 'Cadastro Novo' });
+    expect(messageMock.success).toHaveBeenCalled();
+    expect(component.duplicateModalOpen()).toBe(false);
+    expect(dashMock.getSummary.mock.calls.length).toBeGreaterThan(callsBefore);
+  });
+
+  it('onDuplicateConfirmed sem cliente não deve chamar o serviço', () => {
+    const { component, templateMock, messageMock } = createSuite();
+    component.openDuplicate(mockTemplate({ clientId: null }), ev());
+    component.onDuplicateConfirmed();
+    expect(templateMock.duplicateTemplate).not.toHaveBeenCalled();
+    expect(messageMock.warning).toHaveBeenCalled();
+    expect(component.duplicateModalOpen()).toBe(true);
+  });
+
+  it('onDuplicateConfirmed sem nome não deve chamar o serviço', () => {
+    const { component, templateMock, messageMock } = createSuite();
+    component.openDuplicate(mockTemplate({ clientId: 3 }), ev());
+    component.duplicateName.set('   ');
+    component.onDuplicateConfirmed();
+    expect(templateMock.duplicateTemplate).not.toHaveBeenCalled();
+    expect(messageMock.warning).toHaveBeenCalled();
+  });
+
+  it('onDuplicateConfirmed deve mostrar a mensagem do servidor quando falha e manter modal aberto', () => {
+    const { component, templateMock, messageMock } = createSuite();
+    templateMock.duplicateTemplate.mockReturnValue(
+      throwError(() => ({ error: { message: 'Cliente não encontrado' } })),
+    );
+    component.openDuplicate(mockTemplate({ clientId: 3 }), ev());
+    component.onDuplicateConfirmed();
+    expect(messageMock.error).toHaveBeenCalledWith('Cliente não encontrado');
+    expect(component.duplicating()).toBe(false);
+    expect(component.duplicateModalOpen()).toBe(true);
+  });
+
+  const duplicateButtons = (el: HTMLElement) =>
+    (Array.from(el.querySelectorAll('button')) as HTMLElement[]).filter((b) => b.textContent?.trim() === 'Duplicar');
+
+  it('botão Duplicar aparece para ADMIN e FUNCIONARIO', () => {
+    const { fixture, authMock } = createSuite();
+    expect(duplicateButtons(fixture.nativeElement)).toHaveLength(1);
+    authMock.role.set('ROLE_FUNCIONARIO');
+    fixture.detectChanges();
+    expect(duplicateButtons(fixture.nativeElement)).toHaveLength(1);
+  });
+
+  it('botão Duplicar não aparece para CLIENT', () => {
+    const { fixture, authMock } = createSuite();
+    authMock.role.set('ROLE_CLIENT');
+    fixture.detectChanges();
+    expect(duplicateButtons(fixture.nativeElement)).toHaveLength(0);
   });
 });

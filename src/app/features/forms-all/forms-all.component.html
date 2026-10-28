@@ -118,6 +118,9 @@
         @if (isAdmin()) {
           <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
         }
+        @if (canDuplicate()) {
+          <button type="button" class="tc-btn-outline" (click)="openDuplicate(t, $event)">Duplicar</button>
+        }
       </div>
 
       <div class="tc-summary">
@@ -143,6 +146,9 @@
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-primary">Ver presença</a>
         @if (isAdmin()) {
           <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
+        }
+        @if (canDuplicate()) {
+          <button type="button" class="tc-btn-outline" (click)="openDuplicate(t, $event)">Duplicar</button>
         }
       </div>
 
@@ -170,6 +176,9 @@
         <a [routerLink]="['/forms', t.slug, 'list']" class="tc-btn-outline">Ver respostas</a>
         @if (isAdmin()) {
           <a [routerLink]="['/form-builder', t.slug]" class="tc-btn-outline">Editar</a>
+        }
+        @if (canDuplicate()) {
+          <button type="button" class="tc-btn-outline" (click)="openDuplicate(t, $event)">Duplicar</button>
         }
       </div>
 
@@ -209,3 +218,56 @@
   (confirmed)="onDeleteConfirmed()"
   (cancelled)="onDeleteCancelled()"
 />
+
+<!-- Modal de duplicar formulário -->
+@if (duplicateModalOpen()) {
+  <div class="dup-backdrop" (click)="onDuplicateBackdropClick($event)">
+    <div class="dup-dialog" role="dialog" aria-modal="true" aria-labelledby="dup-title">
+      <div class="dup-header">
+        <h2 class="dup-title" id="dup-title">Duplicar formulário</h2>
+        <button class="dup-close-btn" (click)="onDuplicateCancelled()" [disabled]="duplicating()" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="dup-body">
+        <p class="dup-message">
+          Será criada uma cópia de <strong>{{ duplicateSourceName() }}</strong> com os mesmos campos,
+          aparência e configurações, e um link novo. As respostas não são copiadas.
+        </p>
+
+        <div class="field">
+          <label for="dup-client">Cliente <span class="required">*</span></label>
+          <select
+            id="dup-client"
+            [ngModel]="duplicateClientId()"
+            (ngModelChange)="duplicateClientId.set($event)"
+            [disabled]="clientsLoading() || duplicating()"
+          >
+            <option [ngValue]="null" disabled>{{ clientsLoading() ? 'Carregando clientes...' : 'Selecione o cliente' }}</option>
+            @for (c of clients(); track c.id) {
+              <option [ngValue]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom: 0">
+          <label for="dup-name">Nome da cópia <span class="required">*</span></label>
+          <input
+            id="dup-name"
+            type="text"
+            [ngModel]="duplicateName()"
+            (ngModelChange)="duplicateName.set($event)"
+            [disabled]="duplicating()"
+          />
+        </div>
+        <p class="dup-hint">Depois, se o cliente for ver os resultados, defina o link de visualização dele na edição.</p>
+      </div>
+
+      <div class="dup-footer">
+        <button class="btn-outline" (click)="onDuplicateCancelled()" [disabled]="duplicating()">Cancelar</button>
+        <button class="btn-primary" (click)="onDuplicateConfirmed()" [disabled]="duplicating() || clientsLoading()">
+          {{ duplicating() ? 'Duplicando...' : 'Duplicar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

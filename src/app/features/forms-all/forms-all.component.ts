@@ -3,6 +3,7 @@ import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../
 import { FormTemplateService } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ClientService, Client } from '../../core/services/client.service';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,8 +37,11 @@ export class FormsAllComponent implements OnInit {
   private templateService = inject(FormTemplateService);
   private messages = inject(MessageService);
   private auth = inject(AuthService);
+  private clientService = inject(ClientService);
 
   isAdmin = computed(() => this.auth.isAdmin());
+  // Duplicar segue a mesma permissão de criar formulário no back (ADMIN/FUNCIONARIO)
+  canDuplicate = computed(() => this.auth.isAdmin() || this.auth.isFuncionario());
 
   templates = signal<TemplateStatResponse[]>([]);
   loading = signal(true);
@@ -66,6 +70,16 @@ export class FormsAllComponent implements OnInit {
   deleteTargetId = signal<number | null>(null);
   deleteTargetName = signal('');
   deleting = signal(false);
+
+  // ── Modal de duplicar ──
+  duplicateModalOpen = signal(false);
+  duplicateSourceId = signal<number | null>(null);
+  duplicateSourceName = signal('');
+  duplicateClientId = signal<number | null>(null);
+  duplicateName = signal('');
+  duplicating = signal(false);
+  clients = signal<Client[]>([]);
+  clientsLoading = signal(false);
 
   globalScheduleCount = computed(() => this.summary()?.appointmentTemplateCount ?? 0);
   globalAttendanceCount = computed(() => this.summary()?.attendanceTemplateCount ?? 0);
@@ -159,5 +173,75 @@ export class FormsAllComponent implements OnInit {
     this.deleteModalOpen.set(false);
     this.deleteTargetId.set(null);
     this.deleteTargetName.set('');
+  }
+
+  openDuplicate(template: TemplateStatResponse, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.duplicateSourceId.set(template.id);
+    this.duplicateSourceName.set(template.name);
+    this.duplicateClientId.set(template.clientId ?? null);
+    this.duplicateName.set(`${template.name} (cópia)`);
+    this.duplicateModalOpen.set(true);
+    if (this.clients().length === 0) this.loadClients();
+  }
+
+  private loadClients(): void {
+    this.clientsLoading.set(true);
+    // Mesmo limite usado no editor de formulários para listar clientes
+    this.clientService.findAll(0, 100).subscribe({
+      next: (res) => {
+        this.clients.set(res.content);
+        this.clientsLoading.set(false);
+      },
+      error: () => {
+        this.messages.error('Erro ao carregar clientes');
+        this.clientsLoading.set(false);
+      },
+    });
+  }
+
+  onDuplicateConfirmed(): void {
+    const id = this.duplicateSourceId();
+    const clientId = this.duplicateClientId();
+    const name = this.duplicateName().trim();
+    if (id === null) return;
+    if (clientId === null) {
+      this.messages.warning('Escolha o cliente da cópia');
+      return;
+    }
+    if (!name) {
+      this.messages.warning('Informe o nome da cópia');
+      return;
+    }
+
+    this.duplicating.set(true);
+    this.templateService.duplicateTemplate(id, { clientId, name }).subscribe({
+      next: (copy) => {
+        this.messages.success(`Formulário duplicado! Novo link: /forms/${copy.slug}`);
+        this.duplicating.set(false);
+        this.onDuplicateCancelled();
+        this.loadTemplates();
+      },
+      error: (err) => {
+        this.messages.error(err?.error?.message || 'Erro ao duplicar formulário');
+        this.duplicating.set(false);
+      },
+    });
+  }
+
+  onDuplicateCancelled(): void {
+    if (this.duplicating()) return;
+    this.duplicateModalOpen.set(false);
+    this.duplicateSourceId.set(null);
+    this.duplicateSourceName.set('');
+    this.duplicateClientId.set(null);
+    this.duplicateName.set('');
+  }
+
+  onDuplicateBackdropClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('dup-backdrop')) {
+      this.onDuplicateCancelled();
+    }
   }
 }
