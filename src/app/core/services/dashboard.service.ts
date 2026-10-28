@@ -26,6 +26,8 @@ export interface TemplateStatResponse {
   hasQuiz?: boolean;
   quizLink?: string | null;
   rankingLink?: string | null;
+  /** Cliente dono do template — pré-seleciona o cliente ao duplicar */
+  clientId?: number | null;
 }
 
 /**

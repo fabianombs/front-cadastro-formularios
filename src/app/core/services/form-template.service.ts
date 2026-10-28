@@ -348,6 +348,11 @@ export class FormTemplateService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  /** Cria uma cópia do formulário (campos, aparência e configurações) para o cliente informado, com link novo. */
+  duplicateTemplate(id: number, payload: { clientId: number; name: string }): Observable<FormTemplate> {
+    return this.http.post<FormTemplate>(`${this.apiUrl}/${id}/duplicate`, payload);
+  }
+
   getAllTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {
     return this.http.get<PageResponse<FormTemplate>>(`${this.apiUrl}?page=${page}&size=${size}`);
   }
