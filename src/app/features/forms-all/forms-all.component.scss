@@ -242,7 +242,14 @@
 /* ── Actions ── */
 .tc-actions {
   display: flex;
+  flex-wrap: wrap; // com 5 botões (Story 1.4) o que não cabe desce para a linha de baixo
   gap: 8px;
+
+  > .tc-btn-primary,
+  > .tc-btn-outline {
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
 }
 
 .tc-btn-primary {
