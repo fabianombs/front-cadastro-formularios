@@ -6,6 +6,14 @@ import { PageResponse } from '../models/page-response.model';
 import { environment } from '../../../environments/environment';
 import { normalizeQuizLink } from './quiz.service';
 
+/** Prévia de "mover cadastros" (Story 1.4). */
+export interface MoveSubmissionsPreview {
+  sourceCount: number;
+  targetCount: number;
+  /** Perguntas respondidas na origem que não existem no destino. */
+  missingLabels: string[];
+}
+
 export interface TemplateAppearance {
   backgroundColor?: string;
   backgroundGradient?: string;
@@ -351,6 +359,18 @@ export class FormTemplateService {
   /** Cria uma cópia do formulário (campos, aparência e configurações) para o cliente informado, com link novo. */
   duplicateTemplate(id: number, payload: { clientId: number; name: string }): Observable<FormTemplate> {
     return this.http.post<FormTemplate>(`${this.apiUrl}/${id}/duplicate`, payload);
+  }
+
+  /** Story 1.4 — prévia de mover todos os cadastros de um formulário para outro (só ADMIN). */
+  previewMoveSubmissions(sourceId: number, targetId: number): Observable<MoveSubmissionsPreview> {
+    return this.http.get<MoveSubmissionsPreview>(
+      `${this.apiUrl}/${sourceId}/move-submissions/preview?targetId=${targetId}`,
+    );
+  }
+
+  /** Story 1.4 — move todos os cadastros (mantém id e data). Não apaga a origem. */
+  moveSubmissions(sourceId: number, targetId: number): Observable<{ moved: number }> {
+    return this.http.post<{ moved: number }>(`${this.apiUrl}/${sourceId}/move-submissions`, { targetId });
   }
 
   getAllTemplates(page = 0, size = 20): Observable<PageResponse<FormTemplate>> {

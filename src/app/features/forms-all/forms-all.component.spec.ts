@@ -40,6 +40,8 @@ function createSuite() {
   const templateMock = {
     deleteTemplate: vi.fn().mockReturnValue(of({})),
     duplicateTemplate: vi.fn().mockReturnValue(of({ id: 9, slug: 'form-a-copia' })),
+    previewMoveSubmissions: vi.fn().mockReturnValue(of({ sourceCount: 72, targetCount: 182, missingLabels: [] })),
+    moveSubmissions: vi.fn().mockReturnValue(of({ moved: 72 })),
   };
   const clientMock = {
     findAll: vi.fn().mockReturnValue(of({ content: [{ id: 3, name: 'Cliente X' }, { id: 4, name: 'Cliente Y' }] })),
@@ -316,5 +318,93 @@ describe('FormsAllComponent', () => {
     authMock.role.set('ROLE_CLIENT');
     fixture.detectChanges();
     expect(duplicateButtons(fixture.nativeElement)).toHaveLength(0);
+  });
+
+  // ─── mover cadastros (Story 1.4) ───────────────────────────────────────────
+
+  const cadillac = [
+    mockTemplate({ id: 65, name: 'respostas3010', clientId: 7, submissionCount: 72 }),
+    mockTemplate({ id: 63, name: 'respostas2010', clientId: 7, submissionCount: 182 }),
+    mockTemplate({ id: 80, name: 'Outro cliente', clientId: 8, submissionCount: 5 }),
+  ];
+  const moveButtons = (el: HTMLElement) =>
+    (Array.from(el.querySelectorAll('button')) as HTMLElement[]).filter((b) => b.textContent?.trim() === 'Mover cadastros');
+
+  it('openMove lista só formulários do mesmo cliente, sem a própria origem', () => {
+    const { component, dashMock } = createSuite();
+    dashMock.getSummary.mockReturnValue(of(mockSummary(cadillac)));
+    component.openMove(cadillac[0], ev());
+    expect(component.moveModalOpen()).toBe(true);
+    expect(component.moveTargets().map((t) => t.id)).toEqual([63]);
+  });
+
+  it('escolher o destino carrega a prévia; confirmar move, avisa e recarrega', () => {
+    const { component, dashMock, templateMock, messageMock } = createSuite();
+    dashMock.getSummary.mockReturnValue(of(mockSummary(cadillac)));
+    component.openMove(cadillac[0], ev());
+    component.onMoveTargetChange(63);
+    expect(templateMock.previewMoveSubmissions).toHaveBeenCalledWith(65, 63);
+    expect(component.movePreview()?.sourceCount).toBe(72);
+
+    const calls = dashMock.getSummary.mock.calls.length;
+    component.onMoveConfirmed();
+    expect(templateMock.moveSubmissions).toHaveBeenCalledWith(65, 63);
+    expect(messageMock.success).toHaveBeenCalledWith(expect.stringContaining('72 cadastros movidos para "respostas2010"'));
+    expect(component.moveModalOpen()).toBe(false);
+    expect(dashMock.getSummary.mock.calls.length).toBeGreaterThan(calls);
+  });
+
+  it('não move sem prévia carregada', () => {
+    const { component, dashMock, templateMock } = createSuite();
+    dashMock.getSummary.mockReturnValue(of(mockSummary(cadillac)));
+    component.openMove(cadillac[0], ev());
+    component.onMoveConfirmed();
+    expect(templateMock.moveSubmissions).not.toHaveBeenCalled();
+  });
+
+  it('prévia mostra o aviso das perguntas que faltam no destino', () => {
+    const { fixture, component, dashMock, templateMock } = createSuite();
+    dashMock.getSummary.mockReturnValue(of(mockSummary(cadillac)));
+    templateMock.previewMoveSubmissions.mockReturnValue(
+      of({ sourceCount: 72, targetCount: 182, missingLabels: ['Bairro', 'CPF'] }),
+    );
+    component.openMove(cadillac[0], ev());
+    component.onMoveTargetChange(63);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Bairro, CPF');
+    expect(text).toContain('254');
+  });
+
+  it('erro ao mover mostra a mensagem do servidor e mantém a janela aberta', () => {
+    const { component, dashMock, templateMock, messageMock } = createSuite();
+    dashMock.getSummary.mockReturnValue(of(mockSummary(cadillac)));
+    templateMock.moveSubmissions.mockReturnValue(
+      throwError(() => ({ error: { message: 'Só é possível mover cadastros entre formulários do mesmo cliente' } })),
+    );
+    component.openMove(cadillac[0], ev());
+    component.onMoveTargetChange(63);
+    component.onMoveConfirmed();
+    expect(messageMock.error).toHaveBeenCalledWith('Só é possível mover cadastros entre formulários do mesmo cliente');
+    expect(component.moving()).toBe(false);
+    expect(component.moveModalOpen()).toBe(true);
+  });
+
+  it('botão Mover cadastros só aparece para ADMIN', () => {
+    const { fixture, authMock } = createSuite();
+    expect(moveButtons(fixture.nativeElement)).toHaveLength(1);
+    authMock.role.set('ROLE_FUNCIONARIO');
+    fixture.detectChanges();
+    expect(moveButtons(fixture.nativeElement)).toHaveLength(0);
+    authMock.role.set('ROLE_CLIENT');
+    fixture.detectChanges();
+    expect(moveButtons(fixture.nativeElement)).toHaveLength(0);
+  });
+
+  it('botão Mover cadastros não aparece em formulário sem cadastros', () => {
+    const { fixture, component } = createSuite();
+    component.templates.set([mockTemplate({ submissionCount: 0 })]);
+    fixture.detectChanges();
+    expect(moveButtons(fixture.nativeElement)).toHaveLength(0);
   });
 });
