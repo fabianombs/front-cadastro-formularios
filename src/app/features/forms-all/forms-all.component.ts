@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { DashboardService, DashboardSummary, TemplateStatResponse } from '../../core/services/dashboard.service';
-import { FormTemplateService } from '../../core/services/form-template.service';
+import { FormTemplateService, MoveSubmissionsPreview } from '../../core/services/form-template.service';
 import { MessageService } from '../../core/services/message.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ClientService, Client } from '../../core/services/client.service';
@@ -80,6 +80,16 @@ export class FormsAllComponent implements OnInit {
   duplicating = signal(false);
   clients = signal<Client[]>([]);
   clientsLoading = signal(false);
+
+  // ── Modal de mover cadastros (Story 1.4, só ADMIN) ──
+  moveModalOpen = signal(false);
+  moveSource = signal<TemplateStatResponse | null>(null);
+  moveTargets = signal<TemplateStatResponse[]>([]);
+  moveTargetsLoading = signal(false);
+  moveTargetId = signal<number | null>(null);
+  movePreview = signal<MoveSubmissionsPreview | null>(null);
+  movePreviewLoading = signal(false);
+  moving = signal(false);
 
   globalScheduleCount = computed(() => this.summary()?.appointmentTemplateCount ?? 0);
   globalAttendanceCount = computed(() => this.summary()?.attendanceTemplateCount ?? 0);
@@ -237,6 +247,98 @@ export class FormsAllComponent implements OnInit {
     this.duplicateSourceName.set('');
     this.duplicateClientId.set(null);
     this.duplicateName.set('');
+  }
+
+  // ── Mover cadastros (Story 1.4) ──
+
+  openMove(template: TemplateStatResponse, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.moveSource.set(template);
+    this.moveTargetId.set(null);
+    this.movePreview.set(null);
+    this.moveTargets.set([]);
+    this.moveModalOpen.set(true);
+    this.loadMoveTargets(template);
+  }
+
+  /** Destinos possíveis: formulários do MESMO cliente, exceto a própria origem. */
+  private loadMoveTargets(source: TemplateStatResponse): void {
+    this.moveTargetsLoading.set(true);
+    this.dashboardService.getSummary(0, this.searchSize).subscribe({
+      next: (summary) => {
+        const targets = (summary.templates ?? []).filter(
+          (t) => t.id !== source.id && source.clientId != null && t.clientId === source.clientId,
+        );
+        this.moveTargets.set(targets);
+        this.moveTargetsLoading.set(false);
+      },
+      error: () => {
+        this.messages.error('Erro ao carregar formulários do cliente');
+        this.moveTargetsLoading.set(false);
+      },
+    });
+  }
+
+  onMoveTargetChange(targetId: number | null): void {
+    this.moveTargetId.set(targetId);
+    this.movePreview.set(null);
+    const source = this.moveSource();
+    if (!source || targetId === null) return;
+
+    this.movePreviewLoading.set(true);
+    this.templateService.previewMoveSubmissions(source.id, targetId).subscribe({
+      next: (preview) => {
+        // ignora resposta atrasada de um destino que já foi trocado
+        if (this.moveTargetId() === targetId) this.movePreview.set(preview);
+        this.movePreviewLoading.set(false);
+      },
+      error: (err) => {
+        this.messages.error(err?.error?.message || 'Erro ao calcular a prévia');
+        this.movePreviewLoading.set(false);
+      },
+    });
+  }
+
+  moveTargetName = computed(
+    () => this.moveTargets().find((t) => t.id === this.moveTargetId())?.name ?? '',
+  );
+
+  onMoveConfirmed(): void {
+    const source = this.moveSource();
+    const targetId = this.moveTargetId();
+    if (!source || targetId === null || !this.movePreview()) return;
+
+    this.moving.set(true);
+    this.templateService.moveSubmissions(source.id, targetId).subscribe({
+      next: (res) => {
+        this.messages.success(
+          `${res.moved} cadastros movidos para "${this.moveTargetName()}". Confira antes de excluir "${source.name}".`,
+        );
+        this.moving.set(false);
+        this.onMoveCancelled();
+        this.loadTemplates();
+      },
+      error: (err) => {
+        this.messages.error(err?.error?.message || 'Erro ao mover cadastros');
+        this.moving.set(false);
+      },
+    });
+  }
+
+  onMoveCancelled(): void {
+    if (this.moving()) return;
+    this.moveModalOpen.set(false);
+    this.moveSource.set(null);
+    this.moveTargetId.set(null);
+    this.movePreview.set(null);
+    this.moveTargets.set([]);
+  }
+
+  onMoveBackdropClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('dup-backdrop')) {
+      this.onMoveCancelled();
+    }
   }
 
   onDuplicateBackdropClick(event: MouseEvent): void {

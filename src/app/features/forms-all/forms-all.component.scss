@@ -507,3 +507,20 @@
   border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
 }
 
+
+// ── Mover cadastros (Story 1.4) ──
+.move-preview {
+  margin-top: 12px;
+}
+
+.move-ok {
+  margin: 4px 0 0;
+  color: var(--success, #15803d);
+  font-size: 14px;
+}
+
+.move-warn {
+  margin: 4px 0 0;
+  color: var(--warning, #b45309);
+  font-size: 14px;
+}
