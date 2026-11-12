@@ -180,6 +180,9 @@
         @if (canDuplicate()) {
           <button type="button" class="tc-btn-outline" (click)="openDuplicate(t, $event)">Duplicar</button>
         }
+        @if (isAdmin() && t.submissionCount > 0) {
+          <button type="button" class="tc-btn-outline" (click)="openMove(t, $event)">Mover cadastros</button>
+        }
       </div>
 
       <div class="tc-summary">
@@ -266,6 +269,77 @@
         <button class="btn-outline" (click)="onDuplicateCancelled()" [disabled]="duplicating()">Cancelar</button>
         <button class="btn-primary" (click)="onDuplicateConfirmed()" [disabled]="duplicating() || clientsLoading()">
           {{ duplicating() ? 'Duplicando...' : 'Duplicar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de mover cadastros (Story 1.4) -->
+@if (moveModalOpen()) {
+  <div class="dup-backdrop" (click)="onMoveBackdropClick($event)">
+    <div class="dup-dialog" role="dialog" aria-modal="true" aria-labelledby="move-title">
+      <div class="dup-header">
+        <h2 class="dup-title" id="move-title">Mover cadastros</h2>
+        <button class="dup-close-btn" (click)="onMoveCancelled()" [disabled]="moving()" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="dup-body">
+        <p class="dup-message">
+          Todos os cadastros de <strong>{{ moveSource()?.name }}</strong> vão passar para o formulário
+          escolhido, com a data original. <strong>{{ moveSource()?.name }}</strong> fica vazio e não é excluído.
+        </p>
+
+        <div class="field">
+          <label for="move-target">Formulário de destino <span class="required">*</span></label>
+          <select
+            id="move-target"
+            [ngModel]="moveTargetId()"
+            (ngModelChange)="onMoveTargetChange($event)"
+            [disabled]="moveTargetsLoading() || moving()"
+          >
+            <option [ngValue]="null" disabled>
+              {{ moveTargetsLoading() ? 'Carregando formulários...' : 'Selecione o formulário de destino' }}
+            </option>
+            @for (t of moveTargets(); track t.id) {
+              <option [ngValue]="t.id">{{ t.name }} ({{ t.submissionCount }} cadastros)</option>
+            }
+          </select>
+        </div>
+        @if (!moveTargetsLoading() && moveTargets().length === 0) {
+          <p class="dup-hint">Este cliente não tem outro formulário para receber os cadastros.</p>
+        }
+
+        @if (movePreviewLoading()) {
+          <p class="dup-hint">Calculando prévia...</p>
+        }
+        @if (movePreview(); as p) {
+          <div class="move-preview">
+            <p class="dup-message">
+              Serão movidos <strong>{{ p.sourceCount }}</strong> cadastros.
+              <strong>{{ moveTargetName() }}</strong> tem {{ p.targetCount }} e vai ficar com
+              <strong>{{ p.sourceCount + p.targetCount }}</strong>.
+            </p>
+            @if (p.missingLabels.length === 0) {
+              <p class="move-ok">✓ Todas as perguntas são iguais.</p>
+            } @else {
+              <p class="move-warn">
+                ⚠ Estas perguntas não existem no destino. As respostas ficam guardadas, mas não aparecem como coluna:
+                <strong>{{ p.missingLabels.join(', ') }}</strong>
+              </p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="dup-footer">
+        <button class="btn-outline" (click)="onMoveCancelled()" [disabled]="moving()">Cancelar</button>
+        <button
+          class="btn-primary"
+          (click)="onMoveConfirmed()"
+          [disabled]="moving() || !movePreview() || movePreview()!.sourceCount === 0"
+        >
+          {{ moving() ? 'Movendo...' : 'Mover cadastros' }}
         </button>
       </div>
     </div>
