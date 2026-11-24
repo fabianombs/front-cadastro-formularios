@@ -71,6 +71,19 @@ export interface QuizConfig {
   thankYouTextColor?: string | null;
   thankYouFontFamily?: string | null;
   thankYouTitleFontSize?: string | null;
+  // Logo do cliente e cores de texto — null mantém o visual padrão
+  logoUrl?: string | null;
+  registerTextColor?: string | null;
+  optionTextColor?: string | null;
+  // Fundo do card da pergunta/resultado e textos secundários — null mantém o padrão
+  questionCardColor?: string | null;
+  secondaryTextColor?: string | null;
+  // Em quais telas a logo aparece — ausente = mostra
+  showLogoRegister?: boolean;
+  showLogoReady?: boolean;
+  showLogoQuestion?: boolean;
+  showLogoResult?: boolean;
+  showLogoRanking?: boolean;
 }
 
 export interface QuizSession {
@@ -152,6 +165,19 @@ export interface QuizConfigRequest {
   thankYouTextColor?: string | null;
   thankYouFontFamily?: string | null;
   thankYouTitleFontSize?: string | null;
+  // Logo do cliente e cores de texto — null mantém o visual padrão
+  logoUrl?: string | null;
+  registerTextColor?: string | null;
+  optionTextColor?: string | null;
+  // Fundo do card da pergunta/resultado e textos secundários — null mantém o padrão
+  questionCardColor?: string | null;
+  secondaryTextColor?: string | null;
+  // Em quais telas a logo aparece — ausente = mostra
+  showLogoRegister?: boolean;
+  showLogoReady?: boolean;
+  showLogoQuestion?: boolean;
+  showLogoResult?: boolean;
+  showLogoRanking?: boolean;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

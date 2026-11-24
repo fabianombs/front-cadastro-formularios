@@ -25,6 +25,9 @@
 
       <!-- Header -->
       <header class="r-header">
+        @if (quizConfig()?.logoUrl && quizConfig()?.showLogoRanking !== false) {
+          <img class="client-logo" [src]="quizConfig()!.logoUrl" alt="Logo do cliente"/>
+        }
         <span class="r-trophy">🏆</span>
         <h1 class="r-title" [style.color]="quizText()">Ranking</h1>
         <p class="r-quiz-name" [style.color]="quizText() + 'aa'">{{ ranking()!.templateName }}</p>
