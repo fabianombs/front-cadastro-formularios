@@ -33,6 +33,10 @@
            [style.background]="quizRegisterCardColor() ?? undefined"
            [style.color]="quizText()">
 
+        @if (logoOn('showLogoReady')) {
+          <img class="client-logo" [src]="quiz()!.logoUrl" alt="Logo do cliente"/>
+        }
+
         <div class="quiz-badge">QUIZ</div>
 
         <h1 class="quiz-hero-title" [style.color]="quizText()">{{ quiz()?.name }}</h1>
@@ -75,6 +79,10 @@
            [style.background]="quizRegisterCardColor() ?? undefined"
            [style.color]="quizText()">
 
+        @if (logoOn('showLogoRegister')) {
+          <img class="client-logo" [src]="quiz()!.logoUrl" alt="Logo do cliente"/>
+        }
+
         <!-- Badge do quiz -->
         <div class="quiz-badge">QUIZ</div>
 
@@ -84,16 +92,17 @@
           <span class="pill">{{ quiz()?.timePerQuestion }}s cada</span>
         </p>
 
-        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="reg-form">
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="reg-form"
+              [style.--qfield]="quizRegisterText()">
           <div class="reg-field">
-            <label class="reg-label">Nome completo</label>
-            <input class="reg-input" formControlName="playerName" type="text"
+            <label class="reg-label" [class.reg-label--custom]="quizRegisterText()">Nome completo</label>
+            <input class="reg-input" [class.reg-input--custom]="quizRegisterText()" formControlName="playerName" type="text"
                    placeholder="Seu nome" autocomplete="name"
                    [style.background]="quizInputColor() ?? undefined"/>
           </div>
           <div class="reg-field">
-            <label class="reg-label">E-mail ou telefone</label>
-            <input class="reg-input" formControlName="playerContact" type="text"
+            <label class="reg-label" [class.reg-label--custom]="quizRegisterText()">E-mail ou telefone</label>
+            <input class="reg-input" [class.reg-input--custom]="quizRegisterText()" formControlName="playerContact" type="text"
                    placeholder="contato@email.com"
                    [style.background]="quizInputColor() ?? undefined"/>
           </div>
@@ -125,6 +134,10 @@
   <!-- ── PERGUNTA / FEEDBACK ──────────────────────────────────────────────── -->
   @if (step() === 'question' || step() === 'feedback') {
     <div class="game-wrap" [style.--qprimary]="quizPrimary()" [style.--qtext]="quizText()">
+
+      @if (logoOn('showLogoQuestion')) {
+        <img class="client-logo client-logo--game" [src]="quiz()!.logoUrl" alt="Logo do cliente"/>
+      }
 
       <!-- Topbar: progresso e score -->
       <div class="game-topbar">
@@ -167,6 +180,7 @@
       <div class="opts-grid">
         @for (opt of currentQuestion()?.options ?? []; track opt.id; let i = $index) {
           <button class="opt-btn"
+            [class.opt-btn--custom-text]="!!quiz()?.optionTextColor"
             [class.opt-btn--selected]="step() === 'question' && selectedOptionId() === opt.id"
             [class.opt-btn--correct]="step() === 'feedback' && isCorrectOption(opt.id)"
             [class.opt-btn--wrong]="step() === 'feedback' && isWrongOption(opt.id)"
@@ -174,10 +188,10 @@
             [disabled]="step() === 'feedback'"
             [style.--qprimary]="quizPrimary()"
             (click)="selectOption(opt.id)">
-            <span class="opt-letter" [style.background]="quizPrimary() + '28'">
+            <span class="opt-letter" [style.color]="quiz()?.optionTextColor || null" [style.background]="quizPrimary() + '28'">
               {{ 'ABCD'[i] }}
             </span>
-            <span class="opt-text" [style.color]="quizText()">{{ opt.optionText }}</span>
+            <span class="opt-text" [style.color]="quizOptionText()">{{ opt.optionText }}</span>
             @if (step() === 'feedback' && isCorrectOption(opt.id)) {
               <span class="opt-mark opt-mark--ok">✓</span>
             }
@@ -216,6 +230,9 @@
       </div>
 
       <div class="result-card glass-card">
+        @if (logoOn('showLogoResult')) {
+          <img class="client-logo" [src]="quiz()!.logoUrl" alt="Logo do cliente"/>
+        }
         <!-- Medalha -->
         <div class="r-medal">{{ rankEmoji() }}</div>
 

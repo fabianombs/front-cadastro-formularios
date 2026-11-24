@@ -934,3 +934,34 @@
     accent-color: #14b8a6;
   }
 }
+
+// ── Logo do cliente ─────────────────────────────────────────────────────────
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  img { max-width: 200px; max-height: 80px; object-fit: contain; }
+}
+
+.logo-screens { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+
+.logo-screen {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  input { width: 16px; height: 16px; accent-color: #14b8a6; cursor: pointer; }
+}
+
+.logo-error { margin: 8px 0 0; font-size: 12px; color: #ff4f6a; }
+
+.prev-logo {
+  display: block;
+  max-width: 70%;
+  max-height: 48px;
+  margin: 0 auto;
+  object-fit: contain;
+}
