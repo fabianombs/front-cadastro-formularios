@@ -78,9 +78,14 @@
             <button class="btn-ghost btn-ghost--sm" (click)="toggleActive(quiz)" [title]="quiz.active ? 'Desativar' : 'Ativar'">
               {{ quiz.active ? '⏸ Pausar' : '▶ Ativar' }}
             </button>
+            <button class="btn-ghost btn-ghost--sm" (click)="exportParticipants(quiz)" title="Baixar Excel com contato e campos do cadastro">📥 Participantes</button>
             <button class="btn-ghost btn-ghost--sm" (click)="openEdit(quiz)">✎ Editar</button>
             <button class="btn-ghost btn-ghost--sm btn-ghost--danger" (click)="confirmDelete(quiz.id)">🗑</button>
           </div>
+
+          @if (exportMsg()?.id === quiz.id) {
+            <p role="status">{{ exportMsg()!.text }}</p>
+          }
 
           <!-- Confirmação de exclusão inline -->
           @if (deletingId() === quiz.id) {

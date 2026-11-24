@@ -226,10 +226,15 @@ export class ExportService {
   exportRanking(ranking: RankingResponse, quizName: string): void {
     if (!ranking.top.length) return;
 
+    // Contato e campos do cadastro só vêm no relatório da equipe
+    const hasContact = ranking.top.some(s => s.playerContact);
+    const labels = [...new Set(ranking.top.flatMap(s => Object.keys(s.registerData ?? {})))];
+
     const rows = ranking.top.map((s, i) => ({
       'Posição':       s.rankPosition ?? i + 1,
       'Nome':          s.playerName,
-      'Contato':       s.playerContact ?? '',
+      ...(hasContact ? { 'Contato': s.playerContact ?? '' } : {}),
+      ...Object.fromEntries(labels.map(l => [`Cadastro: ${l}`, s.registerData?.[l] ?? ''])),
       'Acertos':       `${s.correctAnswers}/${s.totalQuestions}`,
       'Pontuação':     s.totalScore,
       'Concluído em':  s.completedAt ? this.formatDateTime(s.completedAt) : '',

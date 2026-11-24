@@ -19,12 +19,13 @@
         <span class="topbar-slug">{{ isCreateMode ? 'novo' : quiz()!.slug }}</span>
       </div>
       <div class="topbar-actions">
+        @if (saveError()) { <span class="logo-error" role="alert">{{ saveError() }}</span> }
         @if (saved()) {
           <span class="save-feedback">✓ Salvo!</span>
         }
         <button
           class="btn-save"
-          [disabled]="quizForm.invalid || saving()"
+          [disabled]="quizForm.invalid || !!fieldsError() || saving()"
           (click)="save()">
           {{ saving() ? 'Salvando...' : (isCreateMode ? '✅ Criar Quiz' : '💾 Salvar alterações') }}
         </button>
@@ -82,6 +83,43 @@
 
           </div>
 
+          <!-- Campos do cadastro -->
+          <section class="edit-section">
+            <div class="section-header">
+              <h2 class="section-title">📋 Campos do cadastro</h2>
+              @if (fieldsArray.length) {
+                <button type="button" class="btn-add-question" [disabled]="fieldsArray.length >= 10" (click)="addField()">+ Novo campo</button>
+              } @else {
+                <button type="button" class="btn-add-question" (click)="customizeFields()">Personalizar campos</button>
+              }
+            </div>
+
+            @if (!fieldsArray.length) {
+              <p class="section-hint">Padrão: "Nome completo" e "E-mail ou telefone".</p>
+            } @else {
+              <p class="section-hint">
+                O que estiver em "Ranking" aparece para todos, junto, como o nome do participante. O resto só a equipe vê.
+              </p>
+              <div formArrayName="registerFields">
+                @for (f of fieldsArray.controls; track f; let i = $index) {
+                  <div class="field-row" [formGroupName]="i">
+                    <input type="text" formControlName="label" maxlength="80" placeholder="Nome do campo. Ex: Código" class="input" />
+                    <select formControlName="type" class="input field-row__type" aria-label="Tipo do campo">
+                      @for (t of fieldTypes; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
+                    </select>
+                    <label class="logo-screen"><input type="checkbox" formControlName="required" /> Obrigatório</label>
+                    <label class="logo-screen"><input type="checkbox" formControlName="showInRanking" /> Ranking</label>
+                    <button type="button" class="btn-clear" title="Subir" [disabled]="i === 0" (click)="moveField(i, -1)">↑</button>
+                    <button type="button" class="btn-clear" title="Descer" [disabled]="i === fieldsArray.length - 1" (click)="moveField(i, 1)">↓</button>
+                    <button type="button" class="btn-remove" title="Remover campo" (click)="removeField(i)">✕</button>
+                  </div>
+                }
+              </div>
+              @if (fieldsError()) { <p class="logo-error" role="alert">{{ fieldsError() }}</p> }
+              <button type="button" class="btn-ghost-xs" (click)="resetFields()">Voltar ao padrão</button>
+            }
+          </section>
+
           <!-- Perguntas -->
           <section class="edit-section">
             <div class="section-header">
@@ -134,6 +172,13 @@
                     }
                   </div>
                   <button type="button" class="btn-ghost-xs" (click)="addOption(qi)">+ Opção</button>
+                  <textarea
+                    formControlName="explanation"
+                    rows="2"
+                    maxlength="1000"
+                    placeholder="Explicação da resposta certa (opcional). Aparece em um pop-up depois que a pessoa responde."
+                    class="input textarea">
+                  </textarea>
                 </div>
               }
 
@@ -282,6 +327,30 @@
                 </div>
 
               </div>
+            </section>
+
+            <!-- Fonte -->
+            <section class="edit-section">
+              <h2 class="section-title">🔤 Fonte <span class="hint">(sem envio, usa a padrão)</span></h2>
+              @for (slot of fontSlots; track slot.field) {
+                @if (slot.field === 'fontUrl' || quizForm.get('fontUrl')?.value) {
+                  <div class="font-row">
+                    <span class="field-label">{{ slot.label }}</span>
+                    @if (quizForm.get(slot.field)?.value) {
+                      <span>{{ fontName(quizForm.get(slot.field)?.value) }}</span>
+                      <button type="button" class="btn-clear" title="Remover fonte"
+                              (click)="slot.field === 'fontUrl' ? clearFont() : clearField(slot.field)">✕</button>
+                    } @else {
+                      <label class="btn-file-select">
+                        {{ fontUploading() ? 'Enviando...' : 'Selecionar arquivo' }}
+                        <input type="file" accept=".woff2,.woff,.otf,.ttf" [disabled]="fontUploading()" (change)="onFontSelect(slot.field, $event)" hidden />
+                      </label>
+                    }
+                  </div>
+                }
+              }
+              <p class="section-hint">WOFF2, WOFF, OTF ou TTF até 2 MB. Use só fontes que o cliente autorizou.</p>
+              @if (fontError()) { <p class="logo-error" role="alert">{{ fontError() }}</p> }
             </section>
 
             <!-- Logo do cliente -->
@@ -575,7 +644,8 @@
             </div>
 
             <div class="preview-phone">
-              <div class="preview-screen"
+              <div class="preview-screen" [class.has-quiz-font]="previewFont()"
+                   [style.--qfont]="previewFont() ? '\'' + previewFont() + '\'' : null"
                    [style.background]="previewBg()"
                    [style.color]="previewText()">
 
@@ -623,6 +693,16 @@
                     <p class="prev-subtitle" [style.color]="previewSecondaryText()">
                       {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
                     </p>
+                    @if (previewFields().length) {
+                    @for (f of previewFields(); track f.id) {
+                      <div class="prev-reg-field">
+                        <div class="prev-reg-label" [style.color]="previewRegisterText() ?? (previewText() + '88')">{{ f.label || 'Campo' }}</div>
+                        <div class="prev-reg-input"
+                             [style.background]="previewInputColor()"
+                             [style.border-color]="previewPrimary() + '44'">&nbsp;</div>
+                      </div>
+                    }
+                    } @else {
                     <div class="prev-reg-field">
                       <div class="prev-reg-label" [style.color]="previewRegisterText() ?? (previewText() + '88')">NOME COMPLETO</div>
                       <div class="prev-reg-input"
@@ -641,6 +721,7 @@
                               [style.opacity]="previewRegisterText() ? 0.6 : null">contato&#64;email.com</span>
                       </div>
                     </div>
+                    }
                     <div class="prev-btn"
                          [style.background]="previewButtonColor()"
                          [style.color]="previewButtonTextColor()">Começar Quiz 🚀</div>
