@@ -10,6 +10,7 @@ import {
   QuizOptionRequest,
   normalizeQuizLink,
 } from '../../core/services/quiz.service';
+import { ExportService } from '../../core/services/export.service';
 import { PageShellComponent } from '../../shared/components/page-shell/page-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
@@ -42,6 +43,7 @@ export class QuizLibraryComponent implements OnInit {
     private quizService: QuizService,
     private fb: FormBuilder,
     private router: Router,
+    private exportService: ExportService,
   ) {}
 
   ngOnInit() {
@@ -200,6 +202,23 @@ export class QuizLibraryComponent implements OnInit {
           list.map(q => (q.id === updated.id ? updated : q))
         );
       },
+    });
+  }
+
+  exportMsg = signal<{ id: number; text: string } | null>(null);
+
+  /** Excel da equipe: todos os participantes, com contato e campos do cadastro. */
+  exportParticipants(quiz: QuizConfig) {
+    this.exportMsg.set(null);
+    this.quizService.getAdminReport(quiz.id).subscribe({
+      next: (r) => {
+        if (!r.top.length) {
+          this.exportMsg.set({ id: quiz.id, text: 'Ninguém terminou este quiz ainda.' });
+          return;
+        }
+        this.exportService.exportRanking(r, quiz.name);
+      },
+      error: () => this.exportMsg.set({ id: quiz.id, text: 'Não foi possível baixar os participantes.' }),
     });
   }
 

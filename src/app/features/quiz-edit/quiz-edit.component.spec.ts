@@ -28,6 +28,7 @@ describe('QuizEditComponent — logo e cores de texto', () => {
   beforeEach(() => {
     service = {
       getQuizById: vi.fn(),
+      uploadFont: vi.fn().mockReturnValue(of({ url: '/quizzes/fonts/123e4567-e89b-12d3-a456-426614174000/L.woff' })),
       uploadImage: vi.fn().mockReturnValue(of({ url: 'https://img/logo.png' })),
       updateQuiz: vi.fn().mockReturnValue(of(QUIZ)),
     };
@@ -110,6 +111,49 @@ describe('QuizEditComponent — logo e cores de texto', () => {
     selectLogo(c, new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'l.png', { type: 'image/png' }));
     expect(c.logoError()).toContain('5 MB');
     expect(service.uploadImage).not.toHaveBeenCalled();
+  });
+
+  it('campos: personaliza, ordena, valida e salva', () => {
+    const c = create().componentInstance;
+    c.customizeFields();
+    c.addField();
+    expect(c.fieldsError()).toContain('nome');
+    c.save();
+    expect(service.updateQuiz).not.toHaveBeenCalled();
+    c.fieldsArray.at(2).patchValue({ label: 'Código LATAM', type: 'number' });
+    expect(c.fieldsError()).toBeNull();
+    c.moveField(2, -1);
+    expect(c.previewFields().map(f => f.label)).toEqual(['Nome', 'Código LATAM', 'Sobrenome']);
+    c.save();
+    expect(service.updateQuiz.mock.calls[0][1].registerFields[1]).toMatchObject({
+      label: 'Código LATAM', type: 'number', required: true, showInRanking: false,
+    });
+    c.fieldsArray.controls.forEach(f => f.patchValue({ showInRanking: false }));
+    expect(c.fieldsError()).toContain('ranking');
+    c.resetFields();
+    expect(c.fieldsError()).toBeNull();
+  });
+
+  it('fonte: envia, recusa formato errado e remove', () => {
+    const c = create().componentInstance;
+    const pick = (f: File) => c.onFontSelect('fontUrl', { target: { files: [f], value: 'x' } } as any);
+    pick(new File(['a'], 'f.exe'));
+    expect(c.fontError()).toContain('WOFF');
+    expect(service.uploadFont).not.toHaveBeenCalled();
+    pick(new File(['a'], 'f.woff'));
+    expect(c.fontName(c.quizForm.value.fontUrl)).toBe('L.woff');
+    c.clearFont();
+    c.save();
+    expect(service.updateQuiz.mock.calls[0][1].fontUrl).toBeNull();
+  });
+
+  it('preserva a explicação e mostra erro ao salvar', () => {
+    const c = create({ ...QUIZ, questions: [{ id: 1, question: 'P', imageUrl: null, orderIndex: 0, explanation: 'Porque', options: [] }] }).componentInstance;
+    service.updateQuiz.mockReturnValue(throwError(() => ({ error: { message: 'Falhou' } })));
+    c.save();
+    expect(service.updateQuiz.mock.calls[0][1].questions[0].explanation).toBe('Porque');
+    expect(c.saveError()).toBe('Falhou');
+    expect(c.saving()).toBe(false);
   });
 
   it('avisa quando o envio falha', () => {

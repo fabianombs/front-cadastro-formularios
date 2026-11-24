@@ -92,6 +92,36 @@
           <span class="pill">{{ quiz()?.timePerQuestion }}s cada</span>
         </p>
 
+        @if (customFields().length) {
+        <form [formGroup]="customForm" (ngSubmit)="submitRegister()" class="reg-form"
+              [style.--qfield]="quizRegisterText()">
+          @for (f of customFields(); track f.id) {
+            <div class="reg-field">
+              <label class="reg-label" [for]="'qf-' + f.id" [class.reg-label--custom]="quizRegisterText()">
+                {{ f.label }}{{ f.required ? ' *' : '' }}
+              </label>
+              <input class="reg-input" [class.reg-input--custom]="quizRegisterText()"
+                     [id]="'qf-' + f.id" [formControlName]="f.id" maxlength="255"
+                     [type]="f.type === 'number' ? 'text' : f.type"
+                     [attr.inputmode]="f.type === 'number' ? 'numeric' : null"
+                     [style.background]="quizInputColor() ?? undefined"/>
+              @if (customForm.controls[f.id].touched && customForm.controls[f.id].invalid) {
+                <span class="reg-error">
+                  {{ f.type === 'number' ? 'Use só números.' : f.type === 'email' ? 'Confira o e-mail.' : 'Preencha este campo.' }}
+                </span>
+              }
+            </div>
+          }
+          @if (errorMsg()) {
+            <p class="reg-error">{{ errorMsg() }}</p>
+          }
+          <button type="submit" class="btn-hero" [disabled]="customForm.invalid || starting()"
+                  [style.background]="quizButtonColor()"
+                  [style.color]="quizButtonTextColor()">
+            Começar Quiz 🚀
+          </button>
+        </form>
+        } @else {
         <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="reg-form"
               [style.--qfield]="quizRegisterText()">
           <div class="reg-field">
@@ -115,6 +145,7 @@
             Começar Quiz 🚀
           </button>
         </form>
+        }
       </div>
     </div>
   }
@@ -201,6 +232,27 @@
           </button>
         }
       </div>
+
+      <!-- Pop-up com a explicação da resposta -->
+      @if (step() === 'feedback' && lastAnswer()?.explanation) {
+        <div class="exp-overlay">
+          <div class="exp-card" role="dialog" aria-modal="true" aria-labelledby="exp-title">
+            <h2 id="exp-title" class="exp-title" [class.exp-title--ok]="lastAnswer()!.correct">
+              {{ lastAnswer()!.correct ? '🎉 Resposta certa!' : (selectedOptionId() === null ? '⏱ Tempo esgotado!' : '❌ Não foi dessa vez') }}
+            </h2>
+            @if (lastAnswer()!.correct) {
+              <p class="exp-points">+{{ lastAnswer()!.pointsEarned }} pts</p>
+            } @else if (correctOptionText()) {
+              <p class="exp-correct" [style.color]="quizText()">Resposta certa: <strong>{{ correctOptionText() }}</strong></p>
+            }
+            <p class="exp-text" [style.color]="quizText()">{{ lastAnswer()!.explanation }}</p>
+            <button type="button" class="btn-hero" (click)="continueAfterExplanation()"
+                    [style.background]="quizButtonColor()" [style.color]="quizButtonTextColor()">
+              Continuar
+            </button>
+          </div>
+        </div>
+      }
 
       <!-- Feedback banner -->
       @if (step() === 'feedback' && lastAnswer()) {

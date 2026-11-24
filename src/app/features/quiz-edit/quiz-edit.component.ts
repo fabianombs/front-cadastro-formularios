@@ -1,14 +1,15 @@
 import {
-  Component, OnInit, OnDestroy, signal, computed, inject, HostListener, DestroyRef
+  Component, OnInit, OnDestroy, signal, computed, effect, inject, HostListener, DestroyRef
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  QuizService, QuizConfig,
+  QuizService, QuizConfig, QuizRegisterField,
   QuizConfigRequest, QuizQuestionRequest, QuizOptionRequest,
 } from '../../core/services/quiz.service';
+import { loadQuizFont, quizFontName } from '../../core/utils/quiz-font';
 
 @Component({
   selector: 'app-quiz-edit',
@@ -28,6 +29,7 @@ export class QuizEditComponent implements OnInit {
   loading   = signal(true);
   saving    = signal(false);
   uploading = signal(false);
+  saveError = signal<string | null>(null);
   logoError = signal<string | null>(null);
   saved     = signal(false);  // feedback visual após save
   dragOver  = signal(false);
@@ -42,6 +44,11 @@ export class QuizEditComponent implements OnInit {
 
   // Espelho reativo do valor do form — atualizado via valueChanges para que os computed() reajam
   private formSnapshot = signal<Record<string, any>>({});
+
+  fontSlots: { field: 'fontUrl' | 'fontBoldUrl'; label: string }[] = [
+    { field: 'fontUrl', label: 'Normal' },
+    { field: 'fontBoldUrl', label: 'Negrito (opcional)' },
+  ];
 
   logoScreens = [
     { field: 'showLogoRegister', label: 'Cadastro' },
@@ -98,6 +105,9 @@ export class QuizEditComponent implements OnInit {
       questions: this.fb.array(
         quiz.questions?.map(q => this.buildQuestionGroup(q)) ?? []
       ),
+      fontUrl:            [quiz.fontUrl            ?? null],
+      fontBoldUrl:        [quiz.fontBoldUrl        ?? null],
+      registerFields: this.fb.array((quiz.registerFields ?? []).map(f => this.buildFieldGroup(f))),
       // Aparência
       backgroundColor:    [quiz.backgroundColor    ?? null],
       backgroundGradient: [quiz.backgroundGradient ?? null],
@@ -181,6 +191,7 @@ export class QuizEditComponent implements OnInit {
     return this.fb.group({
       question:  [q?.question ?? '', Validators.required],
       imageUrl:  [q?.imageUrl ?? null],
+      explanation: [q?.explanation ?? ''],
       orderIndex:[q?.orderIndex ?? 0],
       options: this.fb.array(
         q?.options?.map((o: any) => this.buildOptionGroup(o)) ?? [
@@ -225,6 +236,112 @@ export class QuizEditComponent implements OnInit {
   setCorrect(qi: number, oi: number) {
     const opts = this.getOptionsArray(qi);
     opts.controls.forEach((ctrl, i) => ctrl.get('correct')?.setValue(i === oi));
+  }
+
+  // ── Campos do cadastro ────────────────────────────────────────────────────
+
+  fieldTypes = [
+    { value: 'text', label: 'Texto' },
+    { value: 'number', label: 'Só números' },
+    { value: 'email', label: 'E-mail' },
+    { value: 'tel', label: 'Telefone' },
+  ];
+
+  get fieldsArray(): FormArray {
+    return this.quizForm.get('registerFields') as FormArray;
+  }
+
+  private buildFieldGroup(f?: Partial<QuizRegisterField>): FormGroup {
+    return this.fb.group({
+      id: [f?.id ?? `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`],
+      label: [f?.label ?? '', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(80)]],
+      type: [f?.type ?? 'text'],
+      required: [f?.required ?? true],
+      showInRanking: [f?.showInRanking ?? false],
+    });
+  }
+
+  customizeFields() {
+    this.fieldsArray.push(this.buildFieldGroup({ label: 'Nome', showInRanking: true }));
+    this.fieldsArray.push(this.buildFieldGroup({ label: 'Sobrenome', showInRanking: true }));
+  }
+
+  addField() {
+    if (this.fieldsArray.length < 10) this.fieldsArray.push(this.buildFieldGroup());
+  }
+
+  removeField(i: number) { this.fieldsArray.removeAt(i); }
+
+  resetFields() { this.fieldsArray.clear(); }
+
+  moveField(i: number, delta: number) {
+    const to = i + delta;
+    if (to < 0 || to >= this.fieldsArray.length) return;
+    const ctrl = this.fieldsArray.at(i);
+    this.fieldsArray.removeAt(i);
+    this.fieldsArray.insert(to, ctrl);
+  }
+
+  /** Mensagem do que falta nos campos do cadastro — null quando está tudo certo. */
+  fieldsError(): string | null {
+    const fields: QuizRegisterField[] = this.fieldsArray.value;
+    if (!fields.length) return null;
+    if (this.fieldsArray.invalid) return 'Dê um nome a cada campo.';
+    const labels = fields.map(f => f.label.trim().toLowerCase());
+    if (new Set(labels).size !== labels.length) return 'Há campos com o mesmo nome.';
+    if (!fields.some(f => f.required && f.showInRanking)) {
+      return 'Pelo menos um campo deve ser obrigatório e aparecer no ranking.';
+    }
+    return null;
+  }
+
+  previewFields = computed<QuizRegisterField[]>(() => this.formSnapshot()['registerFields'] ?? []);
+
+  // ── Fonte ─────────────────────────────────────────────────────────────────
+
+  fontName = quizFontName;
+  fontError = signal<string | null>(null);
+  fontUploading = signal(false);
+  previewFont = signal<string | null>(null);
+  private fontPaths = computed(() => `${this.formSnapshot()['fontUrl'] ?? ''}|${this.formSnapshot()['fontBoldUrl'] ?? ''}`);
+
+  private fontEffect = effect(() => {
+    const key = this.fontPaths();
+    const [regular, bold] = key.split('|');
+    loadQuizFont(regular || null, bold || null).then(family => {
+      if (this.fontPaths() === key) this.previewFont.set(family);
+    });
+  });
+
+  onFontSelect(field: 'fontUrl' | 'fontBoldUrl', event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!/\.(woff2?|otf|ttf)$/i.test(file.name)) {
+      this.fontError.set('Use um arquivo WOFF2, WOFF, OTF ou TTF.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.fontError.set('A fonte deve ter no máximo 2 MB.');
+      return;
+    }
+    this.fontError.set(null);
+    this.fontUploading.set(true);
+    this.quizService.uploadFont(file).subscribe({
+      next: (res) => {
+        this.quizForm.get(field)?.setValue(res.url);
+        this.fontUploading.set(false);
+      },
+      error: () => {
+        this.fontError.set('Não foi possível enviar a fonte. Tente novamente.');
+        this.fontUploading.set(false);
+      },
+    });
+  }
+
+  clearFont() {
+    this.quizForm.patchValue({ fontUrl: null, fontBoldUrl: null });
   }
 
   // ── Aparência ─────────────────────────────────────────────────────────────
@@ -358,7 +475,8 @@ export class QuizEditComponent implements OnInit {
   // ── Salvar ────────────────────────────────────────────────────────────────
 
   save() {
-    if (this.quizForm.invalid || this.saving()) return;
+    if (this.quizForm.invalid || this.fieldsError() || this.saving()) return;
+    this.saveError.set(null);
     this.saving.set(true);
 
     const v = this.quizForm.value;
@@ -370,6 +488,7 @@ export class QuizEditComponent implements OnInit {
       questions: v.questions.map((q: any, i: number) => ({
         question: q.question,
         imageUrl: q.imageUrl || null,
+        explanation: q.explanation?.trim() || null,
         orderIndex: i,
         options: q.options.map((o: any, j: number) => ({
           optionText: o.optionText,
@@ -377,6 +496,9 @@ export class QuizEditComponent implements OnInit {
           orderIndex: j,
         })),
       })),
+      fontUrl:            v.fontUrl            || null,
+      fontBoldUrl:        v.fontUrl ? (v.fontBoldUrl || null) : null,
+      registerFields:     v.registerFields,
       backgroundColor:    v.backgroundColor    || null,
       backgroundGradient: v.backgroundGradient || null,
       backgroundImageUrl: v.backgroundImageUrl || null,
@@ -425,7 +547,7 @@ export class QuizEditComponent implements OnInit {
           this.saving.set(false);
           this.router.navigate(['/quizzes', created.id, 'edit']);
         },
-        error: () => this.saving.set(false),
+        error: (e) => this.saveFailed(e),
       });
     } else {
       const quiz = this.quiz()!;
@@ -436,9 +558,14 @@ export class QuizEditComponent implements OnInit {
           this.saved.set(true);
           setTimeout(() => this.saved.set(false), 2500);
         },
-        error: () => this.saving.set(false),
+        error: (e) => this.saveFailed(e),
       });
     }
+  }
+
+  private saveFailed(e: any) {
+    this.saving.set(false);
+    this.saveError.set(e?.error?.message || 'Não foi possível salvar. Tente novamente.');
   }
 
   goBack() {
