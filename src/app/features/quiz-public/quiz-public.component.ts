@@ -2,9 +2,13 @@ import { Component, OnInit, OnDestroy, signal, computed, inject, ElementRef } fr
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormRecord, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { timeout, TimeoutError } from 'rxjs';
 import { QuizService, QuizConfig, QuizSession, QuizQuestion, AnswerResult, QuizRegisterField } from '../../core/services/quiz.service';
 import { loadQuizFont } from '../../core/utils/quiz-font';
 import { FormTemplateService } from '../../core/services/form-template.service';
+
+// Tempo máximo de espera do servidor antes de oferecer "tentar novamente"
+const REQUEST_TIMEOUT = 15000;
 
 // 'ready' = tela de confirmação quando o participante veio de um form (nome já conhecido)
 type QuizStep = 'loading' | 'ready' | 'register' | 'countdown' | 'question' | 'feedback' | 'result' | 'error';
@@ -94,7 +98,11 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     if (name) this.prefilledName.set(name);
     if (contact) this.prefilledContact.set(contact);
 
-    this.quizService.getQuizBySlug(this.slug).subscribe({
+    this.loadQuiz(name);
+  }
+
+  private loadQuiz(name: string) {
+    this.quizService.getQuizBySlug(this.slug).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
       next: (quiz) => {
         this.quiz.set(quiz);
         this.buildCustomForm(quiz.registerFields ?? []);
@@ -103,7 +111,11 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
         // em vez de pedir nome e telefone novamente
         this.step.set(name ? 'ready' : 'register');
       },
-      error: () => {
+      error: (e) => {
+        if (this.isConnectionError(e)) {
+          this.askRetry(() => this.loadQuiz(name));
+          return;
+        }
         this.errorMsg.set('Quiz não encontrado ou inativo.');
         this.step.set('error');
       },
@@ -116,12 +128,20 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   // ── Confirmação (vindo de formulário) ────────────────────────────────────
   confirmReady() {
-    this.quizService.startSession(this.slug, this.prefilledName(), this.prefilledContact()).subscribe({
+    if (this.starting()) return;
+    this.starting.set(true);
+    this.quizService.startSession(this.slug, this.prefilledName(), this.prefilledContact()).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
       next: (session) => {
+        this.starting.set(false);
         this.session.set(session);
         this.startCountdown();
       },
-      error: () => {
+      error: (e) => {
+        this.starting.set(false);
+        if (this.isConnectionError(e)) {
+          this.askRetry(() => this.confirmReady());
+          return;
+        }
         this.errorMsg.set('Erro ao iniciar quiz. Tente novamente.');
         this.step.set('error');
       },
@@ -134,27 +154,41 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
       if (this.customForm.invalid || this.starting()) return;
       this.starting.set(true);
       this.errorMsg.set('');
-      this.quizService.startSessionWithFields(this.slug, this.customForm.getRawValue()).subscribe({
+      this.quizService.startSessionWithFields(this.slug, this.customForm.getRawValue()).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
         next: (session) => {
           this.starting.set(false);
           this.session.set(session);
           this.startCountdown();
         },
-        error: () => {
+        error: (e) => {
           this.starting.set(false);
+          if (this.isConnectionError(e)) {
+            this.askRetry(() => this.submitRegister());
+            return;
+          }
           this.errorMsg.set('Erro ao iniciar quiz. Confira os dados e tente novamente.');
         },
       });
       return;
     }
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid || this.starting()) return;
+    this.starting.set(true);
+    this.errorMsg.set('');
     const { playerName, playerContact } = this.registerForm.value;
-    this.quizService.startSession(this.slug, playerName!, playerContact!).subscribe({
+    this.quizService.startSession(this.slug, playerName!, playerContact!).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
       next: (session) => {
+        this.starting.set(false);
         this.session.set(session);
         this.startCountdown();
       },
-      error: () => this.errorMsg.set('Erro ao iniciar quiz. Tente novamente.'),
+      error: (e) => {
+        this.starting.set(false);
+        if (this.isConnectionError(e)) {
+          this.askRetry(() => this.submitRegister());
+          return;
+        }
+        this.errorMsg.set('Erro ao iniciar quiz. Tente novamente.');
+      },
     });
   }
 
@@ -171,6 +205,30 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
         this.countdownValue.set(v);
       }
     }, 1000);
+  }
+
+  // ── Conexão ───────────────────────────────────────────────────────────────
+  sendingAnswer = signal(false);
+  // Ação que falhou e pode ser repetida — null quando está tudo bem
+  retryAction = signal<(() => void) | null>(null);
+
+  private askRetry(action: () => void) {
+    this.retryAction.set(action);
+  }
+
+  retry() {
+    const action = this.retryAction();
+    this.retryAction.set(null);
+    action?.();
+  }
+
+  restart() {
+    window.location.reload();
+  }
+
+  // Sem resposta do servidor (rede caiu, demorou demais) ou servidor fora do ar
+  private isConnectionError(e: any): boolean {
+    return e instanceof TimeoutError || e?.status === 0 || e?.status >= 500;
   }
 
   // ── Pergunta ──────────────────────────────────────────────────────────────
@@ -200,7 +258,8 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   }
 
   selectOption(optionId: number) {
-    if (this.selectedOptionId() !== null) return; // já respondeu
+    // já respondeu, ou o tempo acabou e a resposta está sendo enviada
+    if (this.selectedOptionId() !== null || this.sendingAnswer()) return;
     this.selectedOptionId.set(optionId);
     this.clearTimer();
     this.answerQuestion(optionId);
@@ -214,9 +273,16 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     // Zera e para o timer assim que a resposta é enviada (evita valor "congelado" durante feedback)
     this.clearTimer();
     this.timeLeft.set(0);
+    this.sendAnswer(session.id, question.id, optionId, timeTaken);
+  }
 
-    this.quizService.submitAnswer(session.id, question.id, optionId, timeTaken).subscribe({
+  // Separado para o reenvio manter o tempo original: ficar sem rede não tira pontos
+  private sendAnswer(sessionId: number, questionId: number, optionId: number | null, timeTaken: number) {
+    this.sendingAnswer.set(true);
+    this.quizService.submitAnswer(sessionId, questionId, optionId, timeTaken).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
+      error: () => this.askRetry(() => this.sendAnswer(sessionId, questionId, optionId, timeTaken)),
       next: (result) => {
+        this.sendingAnswer.set(false);
         this.lastAnswer.set(result);
         // Atualiza score na sessão local
         this.session.update(s => s ? { ...s, totalScore: result.totalScore } : s);
@@ -252,7 +318,8 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   private finishQuiz() {
     const session = this.session()!;
-    this.quizService.completeSession(session.id).subscribe({
+    this.quizService.completeSession(session.id).pipe(timeout(REQUEST_TIMEOUT)).subscribe({
+      error: () => this.askRetry(() => this.finishQuiz()),
       next: (completed) => {
         this.session.set(completed);
         this.step.set('result');
