@@ -899,3 +899,23 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
+
+// Aviso de conexão: cores próprias, porque pode aparecer antes de o quiz carregar
+.exp-overlay--top { z-index: 60; }
+
+.exp-card--net {
+  background: #0f1624;
+
+  .exp-text { color: #e2e8f0; }
+}
+
+.btn-restart {
+  margin-top: 14px;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #94a3b8;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

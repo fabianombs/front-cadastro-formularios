@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError, NEVER } from 'rxjs';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { QuizPublicComponent } from './quiz-public.component';
 import { QuizService } from '../../core/services/quiz.service';
@@ -86,6 +86,82 @@ describe('QuizPublicComponent — campos e explicação', () => {
     f.componentInstance.continueAfterExplanation();
     expect(f.componentInstance.currentQuestionIndex()).toBe(1);
     f.componentInstance.ngOnDestroy();
+  });
+
+  it('queda de rede na resposta: avisa, reenvia com o mesmo tempo e segue', () => {
+    service.submitAnswer.mockReturnValueOnce(throwError(() => ({ status: 0 })));
+    const f = create(QUIZ);
+    const c = f.componentInstance;
+    c.registerForm.setValue({ playerName: 'Ana', playerContact: 'a' });
+    c.submitRegister();
+    vi.advanceTimersByTime(3000);
+    vi.advanceTimersByTime(2000);
+    c.selectOption(1);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.exp-card--net')).not.toBeNull();
+    vi.advanceTimersByTime(60000);
+    service.submitAnswer.mockReturnValueOnce(of({ correct: true, correctOptionId: 1, pointsEarned: 1, totalScore: 1 }));
+    f.nativeElement.querySelector('.exp-card--net .btn-hero').click();
+    f.detectChanges();
+    expect(service.submitAnswer.mock.calls[1]).toEqual(service.submitAnswer.mock.calls[0]);
+    expect(service.submitAnswer.mock.calls[1][3]).toBe(2000);
+    expect(f.nativeElement.querySelector('.exp-card--net')).toBeNull();
+    expect(c.step()).toBe('feedback');
+    c.ngOnDestroy();
+  });
+
+  it('servidor que não responde: avisa após o limite e não aceita segunda resposta', () => {
+    service.submitAnswer.mockReturnValue(NEVER);
+    const c = create(QUIZ).componentInstance;
+    c.registerForm.setValue({ playerName: 'Ana', playerContact: 'a' });
+    c.submitRegister();
+    vi.advanceTimersByTime(3000 + 30000); // tempo da pergunta esgota
+    c.selectOption(1);
+    expect(service.submitAnswer).toHaveBeenCalledTimes(1);
+    expect(c.retryAction()).toBeNull();
+    vi.advanceTimersByTime(15000);
+    expect(c.retryAction()).not.toBeNull();
+    c.ngOnDestroy();
+  });
+
+  it('queda de rede ao abrir, ao iniciar e ao finalizar permite repetir', () => {
+    service.getQuizBySlug.mockReturnValueOnce(throwError(() => ({ status: 0 }))).mockReturnValueOnce(of({ ...QUIZ, totalQuestions: 1 }));
+    const f = TestBed.createComponent(QuizPublicComponent);
+    f.detectChanges();
+    const c = f.componentInstance;
+    c.retry();
+    expect(c.step()).toBe('register');
+
+    service.startSession.mockReturnValueOnce(throwError(() => ({ status: 0 })));
+    c.registerForm.setValue({ playerName: 'Ana', playerContact: 'a' });
+    c.submitRegister();
+    c.retry();
+    expect(c.step()).toBe('countdown');
+
+    service.submitAnswer.mockReturnValue(of({ correct: true, correctOptionId: 1, pointsEarned: 1, totalScore: 1 }));
+    service.completeSession.mockReturnValueOnce(throwError(() => ({ status: 502 })));
+    vi.advanceTimersByTime(3000);
+    c.selectOption(1);
+    vi.advanceTimersByTime(1500);
+    expect(c.retryAction()).not.toBeNull();
+    c.retry();
+    expect(c.step()).toBe('result');
+  });
+
+  it('quiz inexistente mostra a mensagem, sem pedir para repetir', () => {
+    service.getQuizBySlug.mockReturnValue(throwError(() => ({ status: 400 })));
+    const f = TestBed.createComponent(QuizPublicComponent);
+    f.detectChanges();
+    expect(f.componentInstance.step()).toBe('error');
+    expect(f.componentInstance.retryAction()).toBeNull();
+  });
+
+  it('campos não pedem sugestão de preenchimento', () => {
+    for (const quiz of [QUIZ, { ...QUIZ, registerFields: FIELDS }]) {
+      const inputs = [...create(quiz).nativeElement.querySelectorAll('.reg-input')] as HTMLInputElement[];
+      expect(inputs.length).toBe(2);
+      expect(inputs.every(i => i.getAttribute('autocomplete') === 'off')).toBe(true);
+    }
   });
 
   it('sem explicação, avança sozinho como antes', () => {
