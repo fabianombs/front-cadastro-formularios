@@ -6,6 +6,17 @@ import { environment } from '../../../environments/environment';
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
+export type QuizRegisterFieldType = 'text' | 'email' | 'tel' | 'number';
+
+export interface QuizRegisterField {
+  id: string;
+  label: string;
+  type: QuizRegisterFieldType;
+  required: boolean;
+  // Compõe o nome exibido no ranking público; os demais só a equipe vê
+  showInRanking: boolean;
+}
+
 export interface QuizOption {
   id: number;
   optionText: string;
@@ -19,6 +30,7 @@ export interface QuizQuestion {
   imageUrl: string | null;
   orderIndex: number;
   options: QuizOption[];
+  explanation?: string | null; // só no editor
 }
 
 export interface QuizConfig {
@@ -84,12 +96,17 @@ export interface QuizConfig {
   showLogoQuestion?: boolean;
   showLogoResult?: boolean;
   showLogoRanking?: boolean;
+  // Fonte enviada (null = padrão) e campos do cadastro (vazio = nome e contato)
+  fontUrl?: string | null;
+  fontBoldUrl?: string | null;
+  registerFields?: QuizRegisterField[] | null;
 }
 
 export interface QuizSession {
   id: number;
   playerName: string;
-  playerContact: string;
+  playerContact: string | null; // null no link público
+  registerData?: Record<string, string> | null;
   totalScore: number;
   correctAnswers: number;
   totalQuestions: number;
@@ -103,6 +120,7 @@ export interface AnswerResult {
   correctOptionId: number;
   pointsEarned: number;
   totalScore: number;
+  explanation?: string | null;
 }
 
 export interface RankingResponse {
@@ -122,6 +140,7 @@ export interface QuizQuestionRequest {
   imageUrl: string | null;
   orderIndex: number;
   options: QuizOptionRequest[];
+  explanation?: string | null;
 }
 
 export interface QuizConfigRequest {
@@ -178,6 +197,10 @@ export interface QuizConfigRequest {
   showLogoQuestion?: boolean;
   showLogoResult?: boolean;
   showLogoRanking?: boolean;
+  // Fonte enviada (null = padrão) e campos do cadastro (vazio = nome e contato)
+  fontUrl?: string | null;
+  fontBoldUrl?: string | null;
+  registerFields?: QuizRegisterField[] | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -257,6 +280,17 @@ export class QuizService {
 
   startSession(slug: string, playerName: string, playerContact: string): Observable<QuizSession> {
     return this.http.post<QuizSession>(`${this.api}/slug/${slug}/sessions`, { playerName, playerContact });
+  }
+
+  /** Início com os campos configurados no quiz (id do campo → valor). */
+  startSessionWithFields(slug: string, fields: Record<string, string>): Observable<QuizSession> {
+    return this.http.post<QuizSession>(`${this.api}/slug/${slug}/sessions`, { fields });
+  }
+
+  uploadFont(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ url: string }>(`${this.api}/fonts`, form);
   }
 
   submitAnswer(sessionId: number, questionId: number, optionId: number | null, timeTakenMs: number): Observable<AnswerResult> {

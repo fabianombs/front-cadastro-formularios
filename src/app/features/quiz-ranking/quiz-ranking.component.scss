@@ -434,3 +434,9 @@
   margin: 0 auto 14px;
   object-fit: contain;
 }
+
+// Fonte enviada para o quiz — vale para todos os textos da tela
+:host(.has-quiz-font),
+:host(.has-quiz-font) * {
+  font-family: var(--qfont), 'Poppins', system-ui, sans-serif !important;
+}

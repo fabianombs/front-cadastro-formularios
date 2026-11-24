@@ -849,3 +849,53 @@
   color: rgba(148, 163, 184, 0.85);
   margin: 4px 0 0;
 }
+
+// Fonte enviada para o quiz — vale para todos os textos da tela
+:host(.has-quiz-font),
+:host(.has-quiz-font) * {
+  font-family: var(--qfont), 'Poppins', system-ui, sans-serif !important;
+}
+
+// ── Pop-up da explicação ────────────────────────────────────────────────────
+.exp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.exp-card {
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+  padding: 28px 24px;
+  border-radius: 22px;
+  text-align: center;
+  // Cor do cartão por cima de um fundo opaco, para a pergunta não aparecer através dele
+  background: linear-gradient(var(--qquestion, #0f1624), var(--qquestion, #0f1624)), #0f1624;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  animation: cardIn 0.25s ease both;
+}
+
+.exp-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ff4f6a;
+
+  &--ok { color: #10c98a; }
+}
+
+.exp-points { margin: 0 0 12px; font-weight: 800; color: #10c98a; }
+.exp-correct { margin: 0 0 12px; font-size: 15px; }
+
+.exp-text {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

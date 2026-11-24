@@ -965,3 +965,28 @@
   margin: 0 auto;
   object-fit: contain;
 }
+
+// ── Fonte e campos do cadastro ──────────────────────────────────────────────
+.preview-screen.has-quiz-font,
+.preview-screen.has-quiz-font * { font-family: var(--qfont), sans-serif !important; }
+
+.font-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  .field-label { min-width: 130px; margin: 0; }
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  > .input { flex: 1 1 180px; }
+  > .field-row__type { flex: 0 0 130px; }
+}

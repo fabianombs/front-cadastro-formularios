@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, signal, computed, inject, ElementRef } fr
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { QuizService, RankingResponse, QuizSession, QuizConfig } from '../../core/services/quiz.service';
+import { loadQuizFont } from '../../core/utils/quiz-font';
 import { ExportService } from '../../core/services/export.service';
 
 @Component({
@@ -108,6 +109,11 @@ export class QuizRankingComponent implements OnInit, OnDestroy {
 
   // CSS vars para que o SCSS possa usar var(--qprimary) e var(--qtext)
   private applyAppearance(quiz: QuizConfig) {
+    loadQuizFont(quiz.fontUrl, quiz.fontBoldUrl).then(family => {
+      if (!family) return;
+      this.hostEl.nativeElement.style.setProperty('--qfont', `'${family}'`);
+      this.hostEl.nativeElement.classList.add('has-quiz-font');
+    });
     const el: HTMLElement = this.hostEl.nativeElement;
     if (quiz.primaryColor) el.style.setProperty('--qprimary', quiz.primaryColor);
     if (quiz.textColor)    el.style.setProperty('--qtext',    quiz.textColor);

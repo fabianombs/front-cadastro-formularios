@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject, ElementRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormRecord, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QuizService, QuizConfig, QuizSession, QuizQuestion, AnswerResult } from '../../core/services/quiz.service';
+import { QuizService, QuizConfig, QuizSession, QuizQuestion, AnswerResult, QuizRegisterField } from '../../core/services/quiz.service';
+import { loadQuizFont } from '../../core/utils/quiz-font';
 import { FormTemplateService } from '../../core/services/form-template.service';
 
 // 'ready' = tela de confirmação quando o participante veio de um form (nome já conhecido)
@@ -50,6 +51,22 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     playerContact: ['', [Validators.required]],
   });
 
+  // Campos configurados no editor — vazio usa o cadastro padrão (nome e contato)
+  customFields = computed(() => this.quiz()?.registerFields ?? []);
+  customForm: FormRecord<FormControl<string>> = new FormRecord<FormControl<string>>({});
+  starting = signal(false);
+
+  private buildCustomForm(fields: QuizRegisterField[]) {
+    for (const f of fields) {
+      const validators = [Validators.maxLength(255)];
+      // pattern em vez de required: só espaços não vale como preenchido
+      if (f.required) validators.push(Validators.required, Validators.pattern(/\S/));
+      if (f.type === 'email') validators.push(Validators.email);
+      if (f.type === 'number') validators.push(Validators.pattern(/^\s*\d+\s*$/));
+      this.customForm.addControl(f.id, new FormControl('', { nonNullable: true, validators }));
+    }
+  }
+
   // Dados pré-preenchidos quando o participante veio de um formulário
   prefilledName    = signal('');
   prefilledContact = signal('');
@@ -80,6 +97,7 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     this.quizService.getQuizBySlug(this.slug).subscribe({
       next: (quiz) => {
         this.quiz.set(quiz);
+        this.buildCustomForm(quiz.registerFields ?? []);
         this.applyAppearance(quiz);
         // Se veio com dados pré-preenchidos, vai para a tela de confirmação
         // em vez de pedir nome e telefone novamente
@@ -112,6 +130,23 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
 
   // ── Cadastro (quiz standalone, sem formulário) ────────────────────────────
   submitRegister() {
+    if (this.customFields().length) {
+      if (this.customForm.invalid || this.starting()) return;
+      this.starting.set(true);
+      this.errorMsg.set('');
+      this.quizService.startSessionWithFields(this.slug, this.customForm.getRawValue()).subscribe({
+        next: (session) => {
+          this.starting.set(false);
+          this.session.set(session);
+          this.startCountdown();
+        },
+        error: () => {
+          this.starting.set(false);
+          this.errorMsg.set('Erro ao iniciar quiz. Confira os dados e tente novamente.');
+        },
+      });
+      return;
+    }
     if (this.registerForm.invalid) return;
     const { playerName, playerContact } = this.registerForm.value;
     this.quizService.startSession(this.slug, playerName!, playerContact!).subscribe({
@@ -186,10 +221,22 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
         // Atualiza score na sessão local
         this.session.update(s => s ? { ...s, totalScore: result.totalScore } : s);
         this.step.set('feedback');
-        // Avança após 1.5s
-        setTimeout(() => this.nextQuestion(), 1500);
+        // Com explicação, quem avança é o botão "Continuar" do pop-up
+        if (!result.explanation) setTimeout(() => this.nextQuestion(), 1500);
       },
     });
+  }
+
+  correctOptionText(): string {
+    const id = this.lastAnswer()?.correctOptionId;
+    return this.currentQuestion()?.options.find(o => o.id === id)?.optionText ?? '';
+  }
+
+  /** Fecha o pop-up da explicação — ignora cliques repetidos. */
+  continueAfterExplanation() {
+    if (this.step() !== 'feedback' || !this.lastAnswer()) return;
+    this.lastAnswer.set(null);
+    this.nextQuestion();
   }
 
   private nextQuestion() {
@@ -364,6 +411,11 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   });
 
   private applyAppearance(quiz: QuizConfig) {
+    loadQuizFont(quiz.fontUrl, quiz.fontBoldUrl).then(family => {
+      if (!family) return;
+      this.hostEl.nativeElement.style.setProperty('--qfont', `'${family}'`);
+      this.hostEl.nativeElement.classList.add('has-quiz-font');
+    });
     // CSS vars para cores dinâmicas (usadas no SCSS via var())
     const el: HTMLElement = this.hostEl.nativeElement;
     if (quiz.primaryColor) el.style.setProperty('--qprimary', quiz.primaryColor);
