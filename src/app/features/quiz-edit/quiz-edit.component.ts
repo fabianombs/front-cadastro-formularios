@@ -28,6 +28,7 @@ export class QuizEditComponent implements OnInit {
   loading   = signal(true);
   saving    = signal(false);
   uploading = signal(false);
+  logoError = signal<string | null>(null);
   saved     = signal(false);  // feedback visual após save
   dragOver  = signal(false);
 
@@ -35,12 +36,20 @@ export class QuizEditComponent implements OnInit {
   activeTab = signal<'content' | 'appearance'>('content');
 
   // Modo do preview ao vivo: qual tela mostrar no painel lateral
-  previewMode = signal<'question' | 'register' | 'ready' | 'ranking'>('question');
+  previewMode = signal<'question' | 'register' | 'ready' | 'result' | 'ranking'>('question');
 
   quizForm!: FormGroup;
 
   // Espelho reativo do valor do form — atualizado via valueChanges para que os computed() reajam
   private formSnapshot = signal<Record<string, any>>({});
+
+  logoScreens = [
+    { field: 'showLogoRegister', label: 'Cadastro' },
+    { field: 'showLogoReady', label: 'Pronto' },
+    { field: 'showLogoQuestion', label: 'Perguntas' },
+    { field: 'showLogoResult', label: 'Resultado' },
+    { field: 'showLogoRanking', label: 'Ranking' },
+  ];
 
   gradientPresets = [
     { label: 'Noite Profunda',  value: 'linear-gradient(135deg,#0d1117,#1a1a2e)' },
@@ -122,6 +131,16 @@ export class QuizEditComponent implements OnInit {
       thankYouTextColor:        [quiz.thankYouTextColor        ?? null],
       thankYouFontFamily:       [quiz.thankYouFontFamily       ?? null],
       thankYouTitleFontSize:    [quiz.thankYouTitleFontSize    ?? null],
+      logoUrl:            [quiz.logoUrl            ?? null],
+      registerTextColor:  [quiz.registerTextColor  ?? null],
+      optionTextColor:    [quiz.optionTextColor    ?? null],
+      questionCardColor:  [quiz.questionCardColor  ?? null],
+      secondaryTextColor: [quiz.secondaryTextColor ?? null],
+      showLogoRegister: [quiz.showLogoRegister ?? true],
+      showLogoReady: [quiz.showLogoReady ?? true],
+      showLogoQuestion: [quiz.showLogoQuestion ?? true],
+      showLogoResult: [quiz.showLogoResult ?? true],
+      showLogoRanking: [quiz.showLogoRanking ?? true],
     });
 
     // Inicializa snapshot e mantém atualizado para que computed() reajam ao form
@@ -228,6 +247,18 @@ export class QuizEditComponent implements OnInit {
   previewCardColor         = computed(() => this.formSnapshot()['cardColor']         || 'rgba(8,12,20,0.58)');
   previewRegisterCardColor = computed(() => this.formSnapshot()['registerCardColor'] || 'rgba(8,12,20,0.68)');
   previewInputColor        = computed(() => this.formSnapshot()['inputColor']        || 'rgba(255,255,255,0.06)');
+  previewLogo              = computed(() => this.formSnapshot()['logoUrl']           || null);
+  /** Logo da tela exibida no preview — null quando não há logo ou ela está desligada ali. */
+  previewScreenLogo = computed(() => {
+    const field = { question: 'showLogoQuestion', register: 'showLogoRegister', ready: 'showLogoReady', result: 'showLogoResult', ranking: 'showLogoRanking' }[this.previewMode()];
+    return this.formSnapshot()[field] ? this.previewLogo() : null;
+  });
+  // null = mantém as cores de antes (texto do quiz com transparência)
+  previewRegisterText      = computed(() => this.formSnapshot()['registerTextColor'] || null);
+  previewOptionText        = computed(() => this.formSnapshot()['optionTextColor']   || this.previewText());
+  // Mesmos padrões da tela pública, para o preview não enganar
+  previewQuestionCardColor = computed(() => this.formSnapshot()['questionCardColor'] || 'rgba(8,12,20,0.65)');
+  previewSecondaryText     = computed(() => this.formSnapshot()['secondaryTextColor'] || 'rgba(255,255,255,0.65)');
   previewRankingCardColor  = computed(() => this.formSnapshot()['rankingCardColor']  || 'rgba(8,12,20,0.65)');
   // Fallback: se buttonColor não definido, usa primaryColor
   previewButtonColor     = computed(() => this.formSnapshot()['buttonColor']     || this.formSnapshot()['primaryColor'] || '#5b8dee');
@@ -278,6 +309,34 @@ export class QuizEditComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) this.uploadFile(input.files[0], field);
     input.value = '';
+  }
+
+  onLogoSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    // Mesmos limites do servidor (ver ImageUploadController)
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      this.logoError.set('Use uma imagem PNG ou JPG.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.logoError.set('A imagem deve ter no máximo 5 MB.');
+      return;
+    }
+    this.logoError.set(null);
+    this.uploading.set(true);
+    this.quizService.uploadImage(file).subscribe({
+      next: (res) => {
+        this.quizForm.get('logoUrl')?.setValue(res.url);
+        this.uploading.set(false);
+      },
+      error: () => {
+        this.logoError.set('Não foi possível enviar a logo. Tente novamente.');
+        this.uploading.set(false);
+      },
+    });
   }
 
   onDropZone(e: DragEvent) {
@@ -347,6 +406,16 @@ export class QuizEditComponent implements OnInit {
       thankYouTextColor:        v.thankYouEnabled ? (v.thankYouTextColor || null) : null,
       thankYouFontFamily:       v.thankYouEnabled ? (v.thankYouFontFamily || null) : null,
       thankYouTitleFontSize:    v.thankYouEnabled ? (v.thankYouTitleFontSize || null) : null,
+      logoUrl:            v.logoUrl            || null,
+      registerTextColor:  v.registerTextColor  || null,
+      optionTextColor:    v.optionTextColor    || null,
+      questionCardColor:  v.questionCardColor  || null,
+      secondaryTextColor: v.secondaryTextColor || null,
+      showLogoRegister: v.showLogoRegister,
+      showLogoReady: v.showLogoReady,
+      showLogoQuestion: v.showLogoQuestion,
+      showLogoResult: v.showLogoResult,
+      showLogoRanking: v.showLogoRanking,
     };
 
     if (this.isCreateMode) {

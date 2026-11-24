@@ -425,3 +425,12 @@
 
   &:active { transform: translateY(-1px); }
 }
+
+// Logo do cliente
+.client-logo {
+  display: block;
+  max-width: min(280px, 90%);
+  max-height: 150px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+}

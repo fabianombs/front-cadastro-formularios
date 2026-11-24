@@ -319,6 +319,12 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   quizRegisterCardColor = computed(() => this.quiz()?.registerCardColor || null);
   // Cor dos inputs de cadastro — null mantém o padrão semitransparente do SCSS
   quizInputColor = computed(() => this.quiz()?.inputColor || null);
+  logoOn(screen: 'showLogoRegister' | 'showLogoReady' | 'showLogoQuestion' | 'showLogoResult'): boolean {
+    const q = this.quiz();
+    return !!q?.logoUrl && q[screen] !== false;
+  }
+  quizRegisterText = computed(() => this.quiz()?.registerTextColor || null);
+  quizOptionText   = computed(() => this.quiz()?.optionTextColor   || this.quizText());
   // Cor do botão — fallback para primaryColor se não configurado
   quizButtonColor     = computed(() => this.quiz()?.buttonColor     || this.quiz()?.primaryColor || '#5b8dee');
   quizButtonTextColor = computed(() => this.quiz()?.buttonTextColor || '#fff');
@@ -362,6 +368,8 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
     const el: HTMLElement = this.hostEl.nativeElement;
     if (quiz.primaryColor) el.style.setProperty('--qprimary', quiz.primaryColor);
     if (quiz.textColor)    el.style.setProperty('--qtext',    quiz.textColor);
+    if (quiz.questionCardColor)  el.style.setProperty('--qquestion', quiz.questionCardColor);
+    if (quiz.secondaryTextColor) el.style.setProperty('--qsecondary', quiz.secondaryTextColor);
     // --qcard: cor dos cards de opção; sem valor o SCSS usa o fallback glassmorphism
     if (quiz.cardColor)    el.style.setProperty('--qcard',    quiz.cardColor);
   }

@@ -195,6 +195,15 @@
                   </div>
                 </div>
 
+                <div class="color-field">
+                  <label>Cor do texto dos cards de resposta <span class="hint">(padrão: cor do texto)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="optionTextColor" class="picker" />
+                    <input type="text"  formControlName="optionTextColor" placeholder="Ex: #ffffff" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('optionTextColor')">✕</button>
+                  </div>
+                </div>
+
                 <!-- Cor dos cards das telas de cadastro e "Tudo pronto!" -->
                 <div class="color-field">
                   <label>Cor do card de cadastro / "Tudo pronto!"</label>
@@ -225,6 +234,33 @@
                   </div>
                 </div>
 
+                <div class="color-field">
+                  <label>Cor do texto dos campos de cadastro <span class="hint">(título, exemplo e texto digitado)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="registerTextColor" class="picker" />
+                    <input type="text"  formControlName="registerTextColor" placeholder="Ex: #1a2040" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('registerTextColor')">✕</button>
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Cor do cartão da pergunta / resultado <span class="hint">(padrão: escuro)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="questionCardColor" class="picker" />
+                    <input type="text"  formControlName="questionCardColor" placeholder="Ex: #ffffff" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('questionCardColor')">✕</button>
+                  </div>
+                </div>
+
+                <div class="color-field">
+                  <label>Cor dos textos secundários <span class="hint">("10 perguntas · 30s", legendas do resultado)</span></label>
+                  <div class="color-row">
+                    <input type="color" formControlName="secondaryTextColor" class="picker" />
+                    <input type="text"  formControlName="secondaryTextColor" placeholder="Ex: #666666" class="input input--color-text" />
+                    <button type="button" class="btn-clear" title="Limpar" (click)="clearField('secondaryTextColor')">✕</button>
+                  </div>
+                </div>
+
                 <!-- Cor do botão principal — fallback: usa primaryColor se não definido -->
                 <div class="color-field">
                   <label>Cor do botão principal <span class="hint">(padrão: usa cor primária)</span></label>
@@ -246,6 +282,36 @@
                 </div>
 
               </div>
+            </section>
+
+            <!-- Logo do cliente -->
+            <section class="edit-section">
+              <h2 class="section-title">🏷️ Logo do cliente <span class="hint">(escolha abaixo em quais telas aparece)</span></h2>
+              @if (quizForm.get('logoUrl')?.value) {
+                <div class="logo-preview">
+                  <img [src]="quizForm.get('logoUrl')?.value" alt="Logo do cliente" />
+                  <button type="button" class="btn-clear" title="Remover logo" (click)="clearField('logoUrl')">✕</button>
+                </div>
+              } @else {
+                <label class="btn-file-select">
+                  {{ uploading() ? 'Enviando...' : 'Selecionar logo' }}
+                  <input type="file" accept="image/png,image/jpeg" [disabled]="uploading()" (change)="onLogoSelect($event)" hidden />
+                </label>
+                <p class="section-hint">PNG ou JPG até 5 MB. Prefira PNG com fundo transparente.</p>
+              }
+              @if (quizForm.get('logoUrl')?.value) {
+                <p class="section-hint">Mostrar a logo em:</p>
+                <div class="logo-screens">
+                  @for (sc of logoScreens; track sc.field) {
+                    <label class="logo-screen">
+                      <input type="checkbox" [formControlName]="sc.field" /> {{ sc.label }}
+                    </label>
+                  }
+                </div>
+              }
+              @if (logoError()) {
+                <p class="logo-error" role="alert">{{ logoError() }}</p>
+              }
             </section>
 
             <!-- Gradiente -->
@@ -504,6 +570,7 @@
               <button [class.active]="previewMode() === 'question'" (click)="previewMode.set('question')">🎯 Pergunta</button>
               <button [class.active]="previewMode() === 'register'" (click)="previewMode.set('register')">📋 Cadastro</button>
               <button [class.active]="previewMode() === 'ready'"    (click)="previewMode.set('ready')">✋ Pronto</button>
+              <button [class.active]="previewMode() === 'result'"   (click)="previewMode.set('result')">🏁 Resultado</button>
               <button [class.active]="previewMode() === 'ranking'"  (click)="previewMode.set('ranking')">🏆 Ranking</button>
             </div>
 
@@ -514,6 +581,7 @@
 
                 @if (previewMode() === 'question') {
                   <div class="prev-quiz-card">
+                    @if (previewScreenLogo()) { <img class="prev-logo" [src]="previewScreenLogo()" alt="Logo do cliente" /> }
                     <div class="prev-title" [style.color]="previewText()">
                       {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
                     </div>
@@ -526,7 +594,7 @@
                       </div>
                       <span class="prev-timer__val" [style.color]="previewText()">30s</span>
                     </div>
-                    <div class="prev-question" [style.color]="previewText()">
+                    <div class="prev-question" [style.background]="previewQuestionCardColor()" [style.color]="previewText()">
                       {{ questionsArray.length > 0 ? (questionsArray.at(0).get('question')?.value || 'Texto da pergunta') : 'Texto da pergunta' }}
                     </div>
                     <div class="prev-options">
@@ -534,7 +602,7 @@
                         <div class="prev-option"
                              [style.background]="previewCardColor()"
                              [style.border-color]="previewPrimary() + '55'"
-                             [style.color]="previewText()">{{ label }}</div>
+                             [style.color]="previewOptionText()">{{ label }}</div>
                       }
                     </div>
                     <div class="prev-btn"
@@ -547,27 +615,30 @@
                   <div class="prev-register-card"
                        [style.background]="previewRegisterCardColor()"
                        [style.color]="previewText()">
+                    @if (previewScreenLogo()) { <img class="prev-logo" [src]="previewScreenLogo()" alt="Logo do cliente" /> }
                     <div class="prev-reg-badge">QUIZ</div>
                     <div class="prev-title" [style.color]="previewText()">
                       {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
                     </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                    <p class="prev-subtitle" [style.color]="previewSecondaryText()">
                       {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
                     </p>
                     <div class="prev-reg-field">
-                      <div class="prev-reg-label" [style.color]="previewText() + '88'">NOME COMPLETO</div>
+                      <div class="prev-reg-label" [style.color]="previewRegisterText() ?? (previewText() + '88')">NOME COMPLETO</div>
                       <div class="prev-reg-input"
                            [style.background]="previewInputColor()"
                            [style.border-color]="previewPrimary() + '44'">
-                        <span [style.color]="previewText() + '55'">Seu nome</span>
+                        <span [style.color]="previewRegisterText() ?? (previewText() + '55')"
+                              [style.opacity]="previewRegisterText() ? 0.6 : null">Seu nome</span>
                       </div>
                     </div>
                     <div class="prev-reg-field">
-                      <div class="prev-reg-label" [style.color]="previewText() + '88'">E-MAIL OU TELEFONE</div>
+                      <div class="prev-reg-label" [style.color]="previewRegisterText() ?? (previewText() + '88')">E-MAIL OU TELEFONE</div>
                       <div class="prev-reg-input"
                            [style.background]="previewInputColor()"
                            [style.border-color]="previewPrimary() + '44'">
-                        <span [style.color]="previewText() + '55'">contato&#64;email.com</span>
+                        <span [style.color]="previewRegisterText() ?? (previewText() + '55')"
+                              [style.opacity]="previewRegisterText() ? 0.6 : null">contato&#64;email.com</span>
                       </div>
                     </div>
                     <div class="prev-btn"
@@ -580,11 +651,12 @@
                   <div class="prev-register-card"
                        [style.background]="previewRegisterCardColor()"
                        [style.color]="previewText()">
+                    @if (previewScreenLogo()) { <img class="prev-logo" [src]="previewScreenLogo()" alt="Logo do cliente" /> }
                     <div class="prev-reg-badge">QUIZ</div>
                     <div class="prev-title" [style.color]="previewText()">
                       {{ quizForm.get('name')?.value || 'Nome do Quiz' }}
                     </div>
-                    <p class="prev-subtitle" [style.color]="previewText() + '99'">
+                    <p class="prev-subtitle" [style.color]="previewSecondaryText()">
                       {{ questionsArray.length }} perguntas · {{ quizForm.get('timePerQuestion')?.value }}s cada
                     </p>
                     <div class="prev-ready-greeting">
@@ -608,9 +680,27 @@
                   </div>
                 }
 
+                @if (previewMode() === 'result') {
+                  <div class="prev-register-card" [style.background]="previewQuestionCardColor()">
+                    @if (previewScreenLogo()) { <img class="prev-logo" [src]="previewScreenLogo()" alt="Logo do cliente" /> }
+                    <div class="prev-title">🥇</div>
+                    <div class="prev-title" [style.color]="previewText()">Parabéns!</div>
+                    <p class="prev-subtitle" [style.color]="previewText() + '99'">Nome</p>
+                    <p class="prev-subtitle" [style.color]="previewSecondaryText()">SUA PONTUAÇÃO FOI</p>
+                    <div class="prev-title" [style.color]="previewPrimary()">
+                      1000 <span [style.color]="previewSecondaryText()">pts</span>
+                    </div>
+                    <p class="prev-subtitle" [style.color]="previewSecondaryText()">ACERTOS · POSIÇÃO</p>
+                    <div class="prev-btn"
+                         [style.background]="previewButtonColor()"
+                         [style.color]="previewButtonTextColor()">Ver Ranking Completo 📊</div>
+                  </div>
+                }
+
                 @if (previewMode() === 'ranking') {
                   <div class="prev-ranking">
                     <div class="prev-rank-header">
+                      @if (previewScreenLogo()) { <img class="prev-logo" [src]="previewScreenLogo()" alt="Logo do cliente" /> }
                       <span>🏆</span>
                       <div class="prev-title" [style.color]="previewText()">Ranking</div>
                       <div class="prev-subtitle" [style.color]="previewText() + '99'">
